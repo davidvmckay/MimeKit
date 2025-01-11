@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2024 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -96,18 +96,18 @@ namespace UnitTests.Cryptography {
 			using (var ctx = new DummyOpenPgpContext ()) {
 				var encryptionAlgorithms = ctx.EnabledEncryptionAlgorithms;
 
-				Assert.AreEqual (4, encryptionAlgorithms.Length);
-				Assert.AreEqual (EncryptionAlgorithm.Aes256, encryptionAlgorithms[0]);
-				Assert.AreEqual (EncryptionAlgorithm.Aes192, encryptionAlgorithms[1]);
-				Assert.AreEqual (EncryptionAlgorithm.Aes128, encryptionAlgorithms[2]);
-				Assert.AreEqual (EncryptionAlgorithm.TripleDes, encryptionAlgorithms[3]);
+				Assert.That (encryptionAlgorithms.Length, Is.EqualTo (4));
+				Assert.That (encryptionAlgorithms[0], Is.EqualTo (EncryptionAlgorithm.Aes256));
+				Assert.That (encryptionAlgorithms[1], Is.EqualTo (EncryptionAlgorithm.Aes192));
+				Assert.That (encryptionAlgorithms[2], Is.EqualTo (EncryptionAlgorithm.Aes128));
+				Assert.That (encryptionAlgorithms[3], Is.EqualTo (EncryptionAlgorithm.TripleDes));
 
 				var digestAlgorithms = ctx.EnabledDigestAlgorithms;
 
-				Assert.AreEqual (3, digestAlgorithms.Length);
-				Assert.AreEqual (DigestAlgorithm.Sha256, digestAlgorithms[0]);
-				Assert.AreEqual (DigestAlgorithm.Sha512, digestAlgorithms[1]);
-				Assert.AreEqual (DigestAlgorithm.Sha1, digestAlgorithms[2]);
+				Assert.That (digestAlgorithms.Length, Is.EqualTo (3));
+				Assert.That (digestAlgorithms[0], Is.EqualTo (DigestAlgorithm.Sha256));
+				Assert.That (digestAlgorithms[1], Is.EqualTo (DigestAlgorithm.Sha512));
+				Assert.That (digestAlgorithms[2], Is.EqualTo (DigestAlgorithm.Sha1));
 			}
 		}
 
@@ -124,20 +124,20 @@ namespace UnitTests.Cryptography {
 					keyIds.Add (key.KeyId);
 
 				foreach (var keyId in expectedKeyIds)
-					Assert.IsTrue (keyIds.Contains (keyId), "Expected keyId: {0}", keyId);
+					Assert.That (keyIds.Contains (keyId), Is.True, $"Expected keyId: {keyId}");
 
-				Assert.AreEqual (0, ctx.EnumeratePublicKeys (unknownMailbox).Count (), "Unexpected number of public keys for an unknown mailbox");
-				Assert.AreEqual (2, ctx.EnumeratePublicKeys (knownMailbox).Count (), "Unexpected number of public keys for a known mailbox");
+				Assert.That (ctx.EnumeratePublicKeys (unknownMailbox).Count (), Is.EqualTo (0), "Unexpected number of public keys for an unknown mailbox");
+				Assert.That (ctx.EnumeratePublicKeys (knownMailbox).Count (), Is.EqualTo (2), "Unexpected number of public keys for a known mailbox");
 
-				Assert.AreEqual (2, ctx.EnumerateSecretKeys ().Count (), "Unexpected number of secret keys");
-				Assert.AreEqual (0, ctx.EnumerateSecretKeys (unknownMailbox).Count (), "Unexpected number of secret keys for an unknown mailbox");
-				Assert.AreEqual (2, ctx.EnumerateSecretKeys (knownMailbox).Count (), "Unexpected number of secret keys for a known mailbox");
+				Assert.That (ctx.EnumerateSecretKeys ().Count (), Is.EqualTo (2), "Unexpected number of secret keys");
+				Assert.That (ctx.EnumerateSecretKeys (unknownMailbox).Count (), Is.EqualTo (0), "Unexpected number of secret keys for an unknown mailbox");
+				Assert.That (ctx.EnumerateSecretKeys (knownMailbox).Count (), Is.EqualTo (2), "Unexpected number of secret keys for a known mailbox");
 
-				Assert.IsTrue (ctx.CanSign (knownMailbox));
-				Assert.IsFalse (ctx.CanSign (unknownMailbox));
+				Assert.That (ctx.CanSign (knownMailbox), Is.True);
+				Assert.That (ctx.CanSign (unknownMailbox), Is.False);
 
-				Assert.IsTrue (ctx.CanEncrypt (knownMailbox));
-				Assert.IsFalse (ctx.CanEncrypt (unknownMailbox));
+				Assert.That (ctx.CanEncrypt (knownMailbox), Is.True);
+				Assert.That (ctx.CanEncrypt (unknownMailbox), Is.False);
 			}
 		}
 
@@ -152,16 +152,16 @@ namespace UnitTests.Cryptography {
 				ctx.GenerateKeyPair (mailbox, "password", DateTime.Now.AddYears (1), EncryptionAlgorithm.Cast5);
 
 				var pubring = ctx.EnumeratePublicKeyRings (mailbox).FirstOrDefault ();
-				Assert.IsNotNull (pubring, "Expected to find the generated public keyring");
+				Assert.That (pubring, Is.Not.Null, "Expected to find the generated public keyring");
 
 				ctx.Delete (pubring);
-				Assert.AreEqual (publicKeyRings, ctx.EnumeratePublicKeyRings ().Count (), "Unexpected number of public keyrings");
+				Assert.That (ctx.EnumeratePublicKeyRings ().Count (), Is.EqualTo (publicKeyRings), "Unexpected number of public keyrings");
 
 				var secring = ctx.EnumerateSecretKeyRings (mailbox).FirstOrDefault ();
-				Assert.IsNotNull (secring, "Expected to find the generated secret keyring");
+				Assert.That (secring, Is.Not.Null, "Expected to find the generated secret keyring");
 
 				ctx.Delete (secring);
-				Assert.AreEqual (secretKeyRings, ctx.EnumerateSecretKeyRings ().Count (), "Unexpected number of secret keyrings");
+				Assert.That (ctx.EnumerateSecretKeyRings ().Count (), Is.EqualTo (secretKeyRings), "Unexpected number of secret keyrings");
 			}
 		}
 
@@ -185,7 +185,7 @@ namespace UnitTests.Cryptography {
 				foreach (PgpSignature sig in pubkey.GetKeySignatures ())
 					sigCount++;
 
-				Assert.AreEqual (0, sigCount);
+				Assert.That (sigCount, Is.EqualTo (0));
 
 				ctx.SignKey (seckey, pubkey, DigestAlgorithm.Sha256, OpenPgpKeyCertification.CasualCertification);
 
@@ -195,13 +195,13 @@ namespace UnitTests.Cryptography {
 				sigCount = 0;
 
 				foreach (PgpSignature sig in pubkey.GetKeySignatures ()) {
-					Assert.AreEqual (seckey.KeyId, sig.KeyId);
-					Assert.AreEqual (HashAlgorithmTag.Sha256, sig.HashAlgorithm);
-					Assert.AreEqual ((int) OpenPgpKeyCertification.CasualCertification, sig.SignatureType);
+					Assert.That (sig.KeyId, Is.EqualTo (seckey.KeyId));
+					Assert.That (sig.HashAlgorithm, Is.EqualTo (HashAlgorithmTag.Sha256));
+					Assert.That (sig.SignatureType, Is.EqualTo ((int) OpenPgpKeyCertification.CasualCertification));
 					sigCount++;
 				}
 
-				Assert.AreEqual (1, sigCount);
+				Assert.That (sigCount, Is.EqualTo (1));
 
 				ctx.Delete (pubring);
 			}
@@ -228,36 +228,36 @@ namespace UnitTests.Cryptography {
 				// ok, now we can sign
 				message.Sign (ctx);
 
-				Assert.IsInstanceOf<MultipartSigned> (message.Body);
+				Assert.That (message.Body, Is.InstanceOf<MultipartSigned> ());
 
 				var multipart = (MultipartSigned) message.Body;
 
-				Assert.AreEqual (2, multipart.Count, "The multipart/signed has an unexpected number of children.");
+				Assert.That (multipart.Count, Is.EqualTo (2), "The multipart/signed has an unexpected number of children.");
 
 				var protocol = multipart.ContentType.Parameters["protocol"];
-				Assert.AreEqual (ctx.SignatureProtocol, protocol, "The multipart/signed protocol does not match.");
+				Assert.That (protocol, Is.EqualTo (ctx.SignatureProtocol), "The multipart/signed protocol does not match.");
 
-				Assert.IsInstanceOf<TextPart> (multipart[0], "The first child is not a text part.");
-				Assert.IsInstanceOf<ApplicationPgpSignature> (multipart[1], "The second child is not a detached signature.");
+				Assert.That (multipart[0], Is.InstanceOf<TextPart> (), "The first child is not a text part.");
+				Assert.That (multipart[1], Is.InstanceOf<ApplicationPgpSignature>(), "The second child is not a detached signature.");
 
 				var signatures = multipart.Verify (ctx);
-				Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+				Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 
 				var signature = signatures[0];
 
-				Assert.AreEqual ("MimeKit UnitTests", signature.SignerCertificate.Name);
-				Assert.AreEqual ("mimekit@example.com", signature.SignerCertificate.Email);
-				Assert.AreEqual ("44CD48EEC90D8849961F36BA50DCD107AB0821A2", signature.SignerCertificate.Fingerprint);
-				Assert.AreEqual (new DateTime (2013, 11, 3, 18, 32, 27), signature.SignerCertificate.CreationDate, "CreationDate");
-				Assert.AreEqual (DateTime.MaxValue, signature.SignerCertificate.ExpirationDate, "ExpirationDate");
-				Assert.AreEqual (PublicKeyAlgorithm.RsaGeneral, signature.SignerCertificate.PublicKeyAlgorithm);
+				Assert.That (signature.SignerCertificate.Name, Is.EqualTo ("MimeKit UnitTests"));
+				Assert.That (signature.SignerCertificate.Email, Is.EqualTo ("mimekit@example.com"));
+				Assert.That (signature.SignerCertificate.Fingerprint, Is.EqualTo ("44CD48EEC90D8849961F36BA50DCD107AB0821A2"));
+				Assert.That (signature.SignerCertificate.CreationDate, Is.EqualTo (new DateTime (2013, 11, 3, 18, 32, 27)), "CreationDate");
+				Assert.That (signature.SignerCertificate.ExpirationDate, Is.EqualTo (DateTime.MaxValue), "ExpirationDate");
+				Assert.That (signature.SignerCertificate.PublicKeyAlgorithm, Is.EqualTo (PublicKeyAlgorithm.RsaGeneral));
 
 				try {
 					bool valid = signature.Verify ();
 
-					Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+					Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 				} catch (DigitalSignatureVerifyException ex) {
-					Assert.Fail ("Failed to verify signature: {0}", ex);
+					Assert.Fail ($"Failed to verify signature: {ex}");
 				}
 			}
 		}
@@ -283,36 +283,36 @@ namespace UnitTests.Cryptography {
 				// ok, now we can sign
 				message.Sign (ctx);
 
-				Assert.IsInstanceOf<MultipartSigned> (message.Body);
+				Assert.That (message.Body, Is.InstanceOf<MultipartSigned> ());
 
 				var multipart = (MultipartSigned) message.Body;
 
-				Assert.AreEqual (2, multipart.Count, "The multipart/signed has an unexpected number of children.");
+				Assert.That (multipart.Count, Is.EqualTo (2), "The multipart/signed has an unexpected number of children.");
 
 				var protocol = multipart.ContentType.Parameters["protocol"];
-				Assert.AreEqual (ctx.SignatureProtocol, protocol, "The multipart/signed protocol does not match.");
+				Assert.That (protocol, Is.EqualTo (ctx.SignatureProtocol), "The multipart/signed protocol does not match.");
 
-				Assert.IsInstanceOf<TextPart> (multipart[0], "The first child is not a text part.");
-				Assert.IsInstanceOf<ApplicationPgpSignature> (multipart[1], "The second child is not a detached signature.");
+				Assert.That (multipart[0], Is.InstanceOf<TextPart> (), "The first child is not a text part.");
+				Assert.That (multipart[1], Is.InstanceOf<ApplicationPgpSignature> (), "The second child is not a detached signature.");
 
 				var signatures = await multipart.VerifyAsync (ctx);
-				Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+				Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 
 				var signature = signatures[0];
 
-				Assert.AreEqual ("MimeKit UnitTests", signature.SignerCertificate.Name);
-				Assert.AreEqual ("mimekit@example.com", signature.SignerCertificate.Email);
-				Assert.AreEqual ("44CD48EEC90D8849961F36BA50DCD107AB0821A2", signature.SignerCertificate.Fingerprint);
-				Assert.AreEqual (new DateTime (2013, 11, 3, 18, 32, 27), signature.SignerCertificate.CreationDate, "CreationDate");
-				Assert.AreEqual (DateTime.MaxValue, signature.SignerCertificate.ExpirationDate, "ExpirationDate");
-				Assert.AreEqual (PublicKeyAlgorithm.RsaGeneral, signature.SignerCertificate.PublicKeyAlgorithm);
+				Assert.That (signature.SignerCertificate.Name, Is.EqualTo ("MimeKit UnitTests"));
+				Assert.That (signature.SignerCertificate.Email, Is.EqualTo ("mimekit@example.com"));
+				Assert.That (signature.SignerCertificate.Fingerprint, Is.EqualTo ("44CD48EEC90D8849961F36BA50DCD107AB0821A2"));
+				Assert.That (signature.SignerCertificate.CreationDate, Is.EqualTo (new DateTime (2013, 11, 3, 18, 32, 27)), "CreationDate");
+				Assert.That (signature.SignerCertificate.ExpirationDate, Is.EqualTo (DateTime.MaxValue), "ExpirationDate");
+				Assert.That (signature.SignerCertificate.PublicKeyAlgorithm, Is.EqualTo (PublicKeyAlgorithm.RsaGeneral));
 
 				try {
 					bool valid = signature.Verify ();
 
-					Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+					Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 				} catch (DigitalSignatureVerifyException ex) {
-					Assert.Fail ("Failed to verify signature: {0}", ex);
+					Assert.Fail ($"Failed to verify signature: {ex}");
 				}
 			}
 		}
@@ -386,28 +386,28 @@ namespace UnitTests.Cryptography {
 
 					var multipart = MultipartSigned.Create (signer, digest, body);
 
-					Assert.AreEqual (2, multipart.Count, "The multipart/signed has an unexpected number of children.");
+					Assert.That (multipart.Count, Is.EqualTo (2), "The multipart/signed has an unexpected number of children.");
 
 					var protocol = multipart.ContentType.Parameters["protocol"];
-					Assert.AreEqual ("application/pgp-signature", protocol, "The multipart/signed protocol does not match.");
+					Assert.That (protocol, Is.EqualTo ("application/pgp-signature"), "The multipart/signed protocol does not match.");
 
 					var micalg = multipart.ContentType.Parameters["micalg"];
 					var algorithm = ctx.GetDigestAlgorithm (micalg);
 
-					Assert.AreEqual (digest, algorithm, "The multipart/signed micalg does not match.");
+					Assert.That (algorithm, Is.EqualTo (digest), "The multipart/signed micalg does not match.");
 
-					Assert.IsInstanceOf<TextPart> (multipart[0], "The first child is not a text part.");
-					Assert.IsInstanceOf<ApplicationPgpSignature> (multipart[1], "The second child is not a detached signature.");
+					Assert.That (multipart[0], Is.InstanceOf<TextPart> (), "The first child is not a text part.");
+					Assert.That (multipart[1], Is.InstanceOf<ApplicationPgpSignature> (), "The second child is not a detached signature.");
 
 					var signatures = multipart.Verify ();
-					Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+					Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 					foreach (var signature in signatures) {
 						try {
 							bool valid = signature.Verify ();
 
-							Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+							Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 						} catch (DigitalSignatureVerifyException ex) {
-							Assert.Fail ("Failed to verify signature: {0}", ex);
+							Assert.Fail ($"Failed to verify signature: {ex}");
 						}
 					}
 				}
@@ -434,28 +434,28 @@ namespace UnitTests.Cryptography {
 
 					var multipart = await MultipartSigned.CreateAsync (signer, digest, body);
 
-					Assert.AreEqual (2, multipart.Count, "The multipart/signed has an unexpected number of children.");
+					Assert.That (multipart.Count, Is.EqualTo (2), "The multipart/signed has an unexpected number of children.");
 
 					var protocol = multipart.ContentType.Parameters["protocol"];
-					Assert.AreEqual ("application/pgp-signature", protocol, "The multipart/signed protocol does not match.");
+					Assert.That (protocol, Is.EqualTo ("application/pgp-signature"), "The multipart/signed protocol does not match.");
 
 					var micalg = multipart.ContentType.Parameters["micalg"];
 					var algorithm = ctx.GetDigestAlgorithm (micalg);
 
-					Assert.AreEqual (digest, algorithm, "The multipart/signed micalg does not match.");
+					Assert.That (algorithm, Is.EqualTo (digest), "The multipart/signed micalg does not match.");
 
-					Assert.IsInstanceOf<TextPart> (multipart[0], "The first child is not a text part.");
-					Assert.IsInstanceOf<ApplicationPgpSignature> (multipart[1], "The second child is not a detached signature.");
+					Assert.That (multipart[0], Is.InstanceOf<TextPart> (), "The first child is not a text part.");
+					Assert.That (multipart[1], Is.InstanceOf<ApplicationPgpSignature> (), "The second child is not a detached signature.");
 
 					var signatures = await multipart.VerifyAsync ();
-					Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+					Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 					foreach (var signature in signatures) {
 						try {
 							bool valid = signature.Verify ();
 
-							Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+							Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 						} catch (DigitalSignatureVerifyException ex) {
-							Assert.Fail ("Failed to verify signature: {0}", ex);
+							Assert.Fail ($"Failed to verify signature: {ex}");
 						}
 					}
 				}
@@ -483,7 +483,7 @@ namespace UnitTests.Cryptography {
 
 				message.Encrypt (ctx);
 
-				Assert.IsInstanceOf<MultipartEncrypted> (message.Body);
+				Assert.That (message.Body, Is.InstanceOf<MultipartEncrypted> ());
 
 				var encrypted = (MultipartEncrypted) message.Body;
 
@@ -492,8 +492,8 @@ namespace UnitTests.Cryptography {
 
 				var decrypted = encrypted.Decrypt (ctx);
 
-				Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-				Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+				Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+				Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
 				// now do the same thing, but encrypt to the Resent-To headers
 				message.From.Clear ();
@@ -508,7 +508,7 @@ namespace UnitTests.Cryptography {
 
 				message.Encrypt (ctx);
 
-				Assert.IsInstanceOf<MultipartEncrypted> (message.Body);
+				Assert.That (message.Body, Is.InstanceOf<MultipartEncrypted> ());
 
 				encrypted = (MultipartEncrypted) message.Body;
 
@@ -517,8 +517,8 @@ namespace UnitTests.Cryptography {
 
 				decrypted = encrypted.Decrypt (ctx);
 
-				Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-				Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+				Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+				Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 			}
 		}
 
@@ -543,7 +543,7 @@ namespace UnitTests.Cryptography {
 
 				await message.EncryptAsync (ctx);
 
-				Assert.IsInstanceOf<MultipartEncrypted> (message.Body);
+				Assert.That (message.Body, Is.InstanceOf<MultipartEncrypted> ());
 
 				var encrypted = (MultipartEncrypted) message.Body;
 
@@ -553,8 +553,8 @@ namespace UnitTests.Cryptography {
 				// TODO: implement DecryptAsync
 				var decrypted = encrypted.Decrypt (ctx);
 
-				Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-				Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+				Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+				Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
 				// now do the same thing, but encrypt to the Resent-To headers
 				message.From.Clear ();
@@ -569,7 +569,7 @@ namespace UnitTests.Cryptography {
 
 				await message.EncryptAsync (ctx);
 
-				Assert.IsInstanceOf<MultipartEncrypted> (message.Body);
+				Assert.That (message.Body, Is.InstanceOf<MultipartEncrypted> ());
 
 				encrypted = (MultipartEncrypted) message.Body;
 
@@ -579,8 +579,8 @@ namespace UnitTests.Cryptography {
 				// TODO: implement DecryptAsync
 				decrypted = encrypted.Decrypt (ctx);
 
-				Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-				Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+				Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+				Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 			}
 		}
 
@@ -646,19 +646,19 @@ namespace UnitTests.Cryptography {
 
 				var entity = MimeEntity.Load (stream);
 
-				Assert.IsInstanceOf<MultipartEncrypted> (entity, "Encrypted part is not the expected type");
+				Assert.That (entity, Is.InstanceOf<MultipartEncrypted> (), "Encrypted part is not the expected type");
 
 				encrypted = (MultipartEncrypted) entity;
 
-				Assert.IsInstanceOf<ApplicationPgpEncrypted> (encrypted[0], "First child of multipart/encrypted is not the expected type");
-				Assert.IsInstanceOf<MimePart> (encrypted[1], "Second child of multipart/encrypted is not the expected type");
-				Assert.AreEqual ("application/octet-stream", encrypted[1].ContentType.MimeType, "Second child of multipart/encrypted is not the expected mime-type");
+				Assert.That (encrypted[0], Is.InstanceOf<ApplicationPgpEncrypted> (), "First child of multipart/encrypted is not the expected type");
+				Assert.That (encrypted[1], Is.InstanceOf<MimePart> (), "Second child of multipart/encrypted is not the expected type");
+				Assert.That (encrypted[1].ContentType.MimeType, Is.EqualTo ("application/octet-stream"), "Second child of multipart/encrypted is not the expected mime-type");
 			}
 
 			var decrypted = encrypted.Decrypt ();
 
-			Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-			Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+			Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+			Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 		}
 
 		[Test]
@@ -675,20 +675,20 @@ namespace UnitTests.Cryptography {
 
 				var entity = await MimeEntity.LoadAsync (stream);
 
-				Assert.IsInstanceOf<MultipartEncrypted> (entity, "Encrypted part is not the expected type");
+				Assert.That (entity, Is.InstanceOf<MultipartEncrypted> (), "Encrypted part is not the expected type");
 
 				encrypted = (MultipartEncrypted) entity;
 
-				Assert.IsInstanceOf<ApplicationPgpEncrypted> (encrypted[0], "First child of multipart/encrypted is not the expected type");
-				Assert.IsInstanceOf<MimePart> (encrypted[1], "Second child of multipart/encrypted is not the expected type");
-				Assert.AreEqual ("application/octet-stream", encrypted[1].ContentType.MimeType, "Second child of multipart/encrypted is not the expected mime-type");
+				Assert.That (encrypted[0], Is.InstanceOf<ApplicationPgpEncrypted> (), "First child of multipart/encrypted is not the expected type");
+				Assert.That (encrypted[1], Is.InstanceOf<MimePart> (), "Second child of multipart/encrypted is not the expected type");
+				Assert.That (encrypted[1].ContentType.MimeType, Is.EqualTo ("application/octet-stream"), "Second child of multipart/encrypted is not the expected mime-type");
 			}
 
 			// TODO: implement DecryptAsync
 			var decrypted = encrypted.Decrypt ();
 
-			Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-			Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+			Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+			Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 		}
 
 		[Test]
@@ -709,8 +709,8 @@ namespace UnitTests.Cryptography {
 
 			var decrypted = encrypted.Decrypt ();
 
-			Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-			Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+			Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+			Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 		}
 
 		[Test]
@@ -732,8 +732,8 @@ namespace UnitTests.Cryptography {
 			// TODO: implement DecryptAsync
 			var decrypted = encrypted.Decrypt ();
 
-			Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-			Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+			Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+			Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 		}
 
 		[Test]
@@ -754,8 +754,8 @@ namespace UnitTests.Cryptography {
 
 					var decrypted = encrypted.Decrypt (ctx);
 
-					Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-					Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+					Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+					Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 				}
 			}
 		}
@@ -779,8 +779,8 @@ namespace UnitTests.Cryptography {
 					// TODO: implement DecryptAsync
 					var decrypted = encrypted.Decrypt (ctx);
 
-					Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-					Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+					Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+					Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 				}
 			}
 		}
@@ -807,8 +807,8 @@ namespace UnitTests.Cryptography {
 
 				var decrypted = encrypted.Decrypt ();
 
-				Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-				Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+				Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+				Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 			}
 		}
 
@@ -835,8 +835,8 @@ namespace UnitTests.Cryptography {
 				// TODO: implement DecryptAsync
 				var decrypted = encrypted.Decrypt ();
 
-				Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-				Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+				Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+				Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 			}
 		}
 
@@ -862,7 +862,7 @@ namespace UnitTests.Cryptography {
 
 				message.SignAndEncrypt (ctx);
 
-				Assert.IsInstanceOf<MultipartEncrypted> (message.Body);
+				Assert.That (message.Body, Is.InstanceOf<MultipartEncrypted> ());
 
 				var encrypted = (MultipartEncrypted) message.Body;
 
@@ -871,17 +871,17 @@ namespace UnitTests.Cryptography {
 
 				var decrypted = encrypted.Decrypt (ctx, out signatures);
 
-				Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-				Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+				Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+				Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
-				Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+				Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 				foreach (var signature in signatures) {
 					try {
 						bool valid = signature.Verify ();
 
-						Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+						Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 					} catch (DigitalSignatureVerifyException ex) {
-						Assert.Fail ("Failed to verify signature: {0}", ex);
+						Assert.Fail ($"Failed to verify signature: {ex}");
 					}
 				}
 
@@ -898,7 +898,7 @@ namespace UnitTests.Cryptography {
 
 				message.SignAndEncrypt (ctx);
 
-				Assert.IsInstanceOf<MultipartEncrypted> (message.Body);
+				Assert.That (message.Body, Is.InstanceOf<MultipartEncrypted> ());
 
 				encrypted = (MultipartEncrypted) message.Body;
 
@@ -907,17 +907,17 @@ namespace UnitTests.Cryptography {
 
 				decrypted = encrypted.Decrypt (ctx, out signatures);
 
-				Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-				Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+				Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+				Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
-				Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+				Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 				foreach (var signature in signatures) {
 					try {
 						bool valid = signature.Verify ();
 
-						Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+						Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 					} catch (DigitalSignatureVerifyException ex) {
-						Assert.Fail ("Failed to verify signature: {0}", ex);
+						Assert.Fail ($"Failed to verify signature: {ex}");
 					}
 				}
 			}
@@ -945,7 +945,7 @@ namespace UnitTests.Cryptography {
 
 				await message.SignAndEncryptAsync (ctx);
 
-				Assert.IsInstanceOf<MultipartEncrypted> (message.Body);
+				Assert.That (message.Body, Is.InstanceOf<MultipartEncrypted> ());
 
 				var encrypted = (MultipartEncrypted) message.Body;
 
@@ -955,17 +955,17 @@ namespace UnitTests.Cryptography {
 				// TODO: implement DecryptAsync
 				var decrypted = encrypted.Decrypt (ctx, out signatures);
 
-				Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-				Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+				Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+				Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
-				Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+				Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 				foreach (var signature in signatures) {
 					try {
 						bool valid = signature.Verify ();
 
-						Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+						Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 					} catch (DigitalSignatureVerifyException ex) {
-						Assert.Fail ("Failed to verify signature: {0}", ex);
+						Assert.Fail ($"Failed to verify signature: {ex}");
 					}
 				}
 
@@ -982,7 +982,7 @@ namespace UnitTests.Cryptography {
 
 				await message.SignAndEncryptAsync (ctx);
 
-				Assert.IsInstanceOf<MultipartEncrypted> (message.Body);
+				Assert.That (message.Body, Is.InstanceOf<MultipartEncrypted> ());
 
 				encrypted = (MultipartEncrypted) message.Body;
 
@@ -992,17 +992,17 @@ namespace UnitTests.Cryptography {
 				// TODO: implement DecryptAsync
 				decrypted = encrypted.Decrypt (ctx, out signatures);
 
-				Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-				Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+				Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+				Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
-				Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+				Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 				foreach (var signature in signatures) {
 					try {
 						bool valid = signature.Verify ();
 
-						Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+						Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 					} catch (DigitalSignatureVerifyException ex) {
-						Assert.Fail ("Failed to verify signature: {0}", ex);
+						Assert.Fail ($"Failed to verify signature: {ex}");
 					}
 				}
 			}
@@ -1022,17 +1022,17 @@ namespace UnitTests.Cryptography {
 
 			var decrypted = encrypted.Decrypt (out signatures);
 
-			Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-			Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+			Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+			Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
-			Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+			Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 			foreach (var signature in signatures) {
 				try {
 					bool valid = signature.Verify ();
 
-					Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+					Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 				} catch (DigitalSignatureVerifyException ex) {
-					Assert.Fail ("Failed to verify signature: {0}", ex);
+					Assert.Fail ($"Failed to verify signature: {ex}");
 				}
 			}
 		}
@@ -1052,17 +1052,17 @@ namespace UnitTests.Cryptography {
 			// TODO: implement DecryptAsync
 			var decrypted = encrypted.Decrypt (out signatures);
 
-			Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-			Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+			Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+			Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
-			Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+			Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 			foreach (var signature in signatures) {
 				try {
 					bool valid = signature.Verify ();
 
-					Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+					Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 				} catch (DigitalSignatureVerifyException ex) {
-					Assert.Fail ("Failed to verify signature: {0}", ex);
+					Assert.Fail ($"Failed to verify signature: {ex}");
 				}
 			}
 		}
@@ -1088,17 +1088,17 @@ namespace UnitTests.Cryptography {
 
 			var decrypted = encrypted.Decrypt (out signatures);
 
-			Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-			Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+			Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+			Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
-			Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+			Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 			foreach (var signature in signatures) {
 				try {
 					bool valid = signature.Verify ();
 
-					Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+					Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 				} catch (DigitalSignatureVerifyException ex) {
-					Assert.Fail ("Failed to verify signature: {0}", ex);
+					Assert.Fail ($"Failed to verify signature: {ex}");
 				}
 			}
 		}
@@ -1125,17 +1125,17 @@ namespace UnitTests.Cryptography {
 			// TODO: implement DecryptAsync
 			var decrypted = encrypted.Decrypt (out signatures);
 
-			Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-			Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+			Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+			Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
-			Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+			Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 			foreach (var signature in signatures) {
 				try {
 					bool valid = signature.Verify ();
 
-					Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+					Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 				} catch (DigitalSignatureVerifyException ex) {
-					Assert.Fail ("Failed to verify signature: {0}", ex);
+					Assert.Fail ($"Failed to verify signature: {ex}");
 				}
 			}
 		}
@@ -1154,17 +1154,17 @@ namespace UnitTests.Cryptography {
 
 			var decrypted = encrypted.Decrypt (out signatures);
 
-			Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-			Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+			Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+			Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
-			Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+			Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 			foreach (var signature in signatures) {
 				try {
 					bool valid = signature.Verify ();
 
-					Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+					Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 				} catch (DigitalSignatureVerifyException ex) {
-					Assert.Fail ("Failed to verify signature: {0}", ex);
+					Assert.Fail ($"Failed to verify signature: {ex}");
 				}
 			}
 		}
@@ -1184,17 +1184,17 @@ namespace UnitTests.Cryptography {
 			// TODO: implement DecryptAsync
 			var decrypted = encrypted.Decrypt (out signatures);
 
-			Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-			Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+			Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+			Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
-			Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+			Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 			foreach (var signature in signatures) {
 				try {
 					bool valid = signature.Verify ();
 
-					Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+					Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 				} catch (DigitalSignatureVerifyException ex) {
-					Assert.Fail ("Failed to verify signature: {0}", ex);
+					Assert.Fail ($"Failed to verify signature: {ex}");
 				}
 			}
 		}
@@ -1220,17 +1220,17 @@ namespace UnitTests.Cryptography {
 
 			var decrypted = encrypted.Decrypt (out signatures);
 
-			Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-			Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+			Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+			Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
-			Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+			Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 			foreach (var signature in signatures) {
 				try {
 					bool valid = signature.Verify ();
 
-					Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+					Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 				} catch (DigitalSignatureVerifyException ex) {
-					Assert.Fail ("Failed to verify signature: {0}", ex);
+					Assert.Fail ($"Failed to verify signature: {ex}");
 				}
 			}
 		}
@@ -1257,17 +1257,17 @@ namespace UnitTests.Cryptography {
 			// TODO: implement DecryptAsync
 			var decrypted = encrypted.Decrypt (out signatures);
 
-			Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted part is not the expected type.");
-			Assert.AreEqual (body.Text, ((TextPart) decrypted).Text, "Decrypted content is not the same as the original.");
+			Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted part is not the expected type.");
+			Assert.That (((TextPart) decrypted).Text, Is.EqualTo (body.Text), "Decrypted content is not the same as the original.");
 
-			Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+			Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 			foreach (var signature in signatures) {
 				try {
 					bool valid = signature.Verify ();
 
-					Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+					Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 				} catch (DigitalSignatureVerifyException ex) {
-					Assert.Fail ("Failed to verify signature: {0}", ex);
+					Assert.Fail ($"Failed to verify signature: {ex}");
 				}
 			}
 		}
@@ -1278,17 +1278,17 @@ namespace UnitTests.Cryptography {
 			var message = MimeMessage.Load (Path.Combine (TestHelper.ProjectDir, "TestData", "openpgp", "[Announce] GnuPG 2.1.20 released.eml"));
 			var multipart = (MultipartSigned) ((Multipart) message.Body)[0];
 
-			Assert.AreEqual (2, multipart.Count, "The multipart/signed has an unexpected number of children.");
+			Assert.That (multipart.Count, Is.EqualTo (2), "The multipart/signed has an unexpected number of children.");
 
 			var protocol = multipart.ContentType.Parameters["protocol"];
-			Assert.AreEqual ("application/pgp-signature", protocol, "The multipart/signed protocol does not match.");
+			Assert.That (protocol, Is.EqualTo ("application/pgp-signature"), "The multipart/signed protocol does not match.");
 
 			var micalg = multipart.ContentType.Parameters["micalg"];
 
-			Assert.AreEqual ("pgp-sha1", micalg, "The multipart/signed micalg does not match.");
+			Assert.That (micalg, Is.EqualTo ("pgp-sha1"), "The multipart/signed micalg does not match.");
 
-			Assert.IsInstanceOf<TextPart> (multipart[0], "The first child is not a text part.");
-			Assert.IsInstanceOf<ApplicationPgpSignature> (multipart[1], "The second child is not a detached signature.");
+			Assert.That(multipart[0], Is.InstanceOf<TextPart>(), "The first child is not a text part.");
+			Assert.That(multipart[1], Is.InstanceOf<ApplicationPgpSignature>(), "The second child is not a detached signature.");
 
 			DigitalSignatureCollection signatures;
 
@@ -1296,19 +1296,19 @@ namespace UnitTests.Cryptography {
 				signatures = multipart.Verify ();
 			} catch (IOException ex) {
 				if (ex.Message == "unknown PGP public key algorithm encountered") {
-					Assert.Ignore ("Known issue: {0}", ex.Message);
+					Assert.Ignore ($"Known issue: {ex.Message}");
 					return;
 				}
 
 				throw;
 			}
 
-			Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+			Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 			foreach (var signature in signatures) {
 				try {
 					bool valid = signature.Verify ();
 
-					Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+					Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 				} catch (DigitalSignatureVerifyException) {
 					// Note: Werner Koch's keyring has an EdDSA subkey which breaks BouncyCastle's
 					// PgpPublicKeyRingBundle reader. If/when one of the round-robin keys.gnupg.net
@@ -1326,17 +1326,17 @@ namespace UnitTests.Cryptography {
 			var message = await MimeMessage.LoadAsync (Path.Combine (TestHelper.ProjectDir, "TestData", "openpgp", "[Announce] GnuPG 2.1.20 released.eml"));
 			var multipart = (MultipartSigned) ((Multipart) message.Body)[0];
 
-			Assert.AreEqual (2, multipart.Count, "The multipart/signed has an unexpected number of children.");
+			Assert.That (multipart.Count, Is.EqualTo (2), "The multipart/signed has an unexpected number of children.");
 
 			var protocol = multipart.ContentType.Parameters["protocol"];
-			Assert.AreEqual ("application/pgp-signature", protocol, "The multipart/signed protocol does not match.");
+			Assert.That (protocol, Is.EqualTo ("application/pgp-signature"), "The multipart/signed protocol does not match.");
 
 			var micalg = multipart.ContentType.Parameters["micalg"];
 
-			Assert.AreEqual ("pgp-sha1", micalg, "The multipart/signed micalg does not match.");
+			Assert.That (micalg, Is.EqualTo ("pgp-sha1"), "The multipart/signed micalg does not match.");
 
-			Assert.IsInstanceOf<TextPart> (multipart[0], "The first child is not a text part.");
-			Assert.IsInstanceOf<ApplicationPgpSignature> (multipart[1], "The second child is not a detached signature.");
+			Assert.That(multipart[0], Is.InstanceOf<TextPart>(), "The first child is not a text part.");
+			Assert.That(multipart[1], Is.InstanceOf<ApplicationPgpSignature>(), "The second child is not a detached signature.");
 
 			DigitalSignatureCollection signatures;
 
@@ -1344,19 +1344,19 @@ namespace UnitTests.Cryptography {
 				signatures = await multipart.VerifyAsync ();
 			} catch (IOException ex) {
 				if (ex.Message == "unknown PGP public key algorithm encountered") {
-					Assert.Ignore ("Known issue: {0}", ex.Message);
+					Assert.Ignore ($"Known issue: {ex.Message}");
 					return;
 				}
 
 				throw;
 			}
 
-			Assert.AreEqual (1, signatures.Count, "Verify returned an unexpected number of signatures.");
+			Assert.That (signatures.Count, Is.EqualTo (1), "Verify returned an unexpected number of signatures.");
 			foreach (var signature in signatures) {
 				try {
 					bool valid = signature.Verify ();
 
-					Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+					Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 				} catch (DigitalSignatureVerifyException) {
 					// Note: Werner Koch's keyring has an EdDSA subkey which breaks BouncyCastle's
 					// PgpPublicKeyRingBundle reader. If/when one of the round-robin keys.gnupg.net
@@ -1374,39 +1374,39 @@ namespace UnitTests.Cryptography {
 			var self = new MailboxAddress ("MimeKit UnitTests", "mimekit@example.com");
 
 			using (var ctx = new DummyOpenPgpContext ()) {
-				Assert.AreEqual ("application/pgp-keys", ctx.KeyExchangeProtocol, "The key-exchange protocol does not match.");
+				Assert.That (ctx.KeyExchangeProtocol, Is.EqualTo ("application/pgp-keys"), "The key-exchange protocol does not match.");
 
 				var keys = ctx.EnumeratePublicKeys (self).ToList ();
 				var exported = ctx.Export (new [] { self });
 
-				Assert.IsNotNull (exported, "The exported MIME part should not be null.");
-				Assert.IsInstanceOf<MimePart> (exported, "The exported MIME part should be a MimePart.");
-				Assert.AreEqual ("application/pgp-keys", exported.ContentType.MimeType);
+				Assert.That (exported, Is.Not.Null, "The exported MIME part should not be null.");
+				Assert.That(exported, Is.InstanceOf<MimePart>(), "The exported MIME part should be a MimePart.");
+				Assert.That (exported.ContentType.MimeType, Is.EqualTo ("application/pgp-keys"));
 
 				exported = ctx.Export (keys);
 
-				Assert.IsNotNull (exported, "The exported MIME part should not be null.");
-				Assert.IsInstanceOf<MimePart> (exported, "The exported MIME part should be a MimePart.");
-				Assert.AreEqual ("application/pgp-keys", exported.ContentType.MimeType);
+				Assert.That (exported, Is.Not.Null, "The exported MIME part should not be null.");
+				Assert.That(exported, Is.InstanceOf<MimePart>(), "The exported MIME part should be a MimePart.");
+				Assert.That (exported.ContentType.MimeType, Is.EqualTo ("application/pgp-keys"));
 
 				using (var stream = new MemoryStream ()) {
 					ctx.Export (new[] { self }, stream, true);
 
-					Assert.AreEqual (exported.Content.Stream.Length, stream.Length);
+					Assert.That (stream.Length, Is.EqualTo (exported.Content.Stream.Length));
 				}
 
 				foreach (var keyring in ctx.EnumeratePublicKeyRings (self)) {
 					using (var stream = new MemoryStream ()) {
 						ctx.Export (new[] { self }, stream, true);
 
-						Assert.AreEqual (exported.Content.Stream.Length, stream.Length);
+						Assert.That (stream.Length, Is.EqualTo (exported.Content.Stream.Length));
 					}
 				}
 
 				using (var stream = new MemoryStream ()) {
 					ctx.Export (keys, stream, true);
 
-					Assert.AreEqual (exported.Content.Stream.Length, stream.Length);
+					Assert.That (stream.Length, Is.EqualTo (exported.Content.Stream.Length));
 				}
 			}
 		}
@@ -1417,39 +1417,39 @@ namespace UnitTests.Cryptography {
 			var self = new MailboxAddress ("MimeKit UnitTests", "mimekit@example.com");
 
 			using (var ctx = new DummyOpenPgpContext ()) {
-				Assert.AreEqual ("application/pgp-keys", ctx.KeyExchangeProtocol, "The key-exchange protocol does not match.");
+				Assert.That (ctx.KeyExchangeProtocol, Is.EqualTo ("application/pgp-keys"), "The key-exchange protocol does not match.");
 
 				var keys = ctx.EnumeratePublicKeys (self).ToList ();
 				var exported = await ctx.ExportAsync (new[] { self });
 
-				Assert.IsNotNull (exported, "The exported MIME part should not be null.");
-				Assert.IsInstanceOf<MimePart> (exported, "The exported MIME part should be a MimePart.");
-				Assert.AreEqual ("application/pgp-keys", exported.ContentType.MimeType);
+				Assert.That (exported, Is.Not.Null, "The exported MIME part should not be null.");
+				Assert.That(exported, Is.InstanceOf<MimePart>(), "The exported MIME part should be a MimePart.");
+				Assert.That (exported.ContentType.MimeType, Is.EqualTo ("application/pgp-keys"));
 
 				exported = await ctx.ExportAsync (keys);
 
-				Assert.IsNotNull (exported, "The exported MIME part should not be null.");
-				Assert.IsInstanceOf<MimePart> (exported, "The exported MIME part should be a MimePart.");
-				Assert.AreEqual ("application/pgp-keys", exported.ContentType.MimeType);
+				Assert.That (exported, Is.Not.Null, "The exported MIME part should not be null.");
+				Assert.That(exported, Is.InstanceOf<MimePart>(), "The exported MIME part should be a MimePart.");
+				Assert.That (exported.ContentType.MimeType, Is.EqualTo ("application/pgp-keys"));
 
 				using (var stream = new MemoryStream ()) {
 					await ctx.ExportAsync (new[] { self }, stream, true);
 
-					Assert.AreEqual (exported.Content.Stream.Length, stream.Length);
+					Assert.That (stream.Length, Is.EqualTo (exported.Content.Stream.Length));
 				}
 
 				foreach (var keyring in ctx.EnumeratePublicKeyRings (self)) {
 					using (var stream = new MemoryStream ()) {
 						await ctx.ExportAsync (new[] { self }, stream, true);
 
-						Assert.AreEqual (exported.Content.Stream.Length, stream.Length);
+						Assert.That (stream.Length, Is.EqualTo (exported.Content.Stream.Length));
 					}
 				}
 
 				using (var stream = new MemoryStream ()) {
 					await ctx.ExportAsync (keys, stream, true);
 
-					Assert.AreEqual (exported.Content.Stream.Length, stream.Length);
+					Assert.That (stream.Length, Is.EqualTo (exported.Content.Stream.Length));
 				}
 			}
 		}
@@ -1466,7 +1466,7 @@ namespace UnitTests.Cryptography {
 
 					ctx.DefaultEncryptionAlgorithm = algorithm;
 
-					Assert.AreEqual (algorithm, ctx.DefaultEncryptionAlgorithm, "Default encryption algorithm does not match.");
+					Assert.That (ctx.DefaultEncryptionAlgorithm, Is.EqualTo (algorithm), "Default encryption algorithm does not match.");
 				}
 			}
 		}
@@ -1479,10 +1479,10 @@ namespace UnitTests.Cryptography {
 
 			using (var ctx = new DummyOpenPgpContext ()) {
 				for (int i = 0; i < supports.Length; i++)
-					Assert.IsTrue (ctx.Supports (supports[i]), supports[i]);
+					Assert.That (ctx.Supports (supports[i]), Is.True, supports[i]);
 
-				Assert.IsFalse (ctx.Supports ("application/octet-stream"), "application/octet-stream");
-				Assert.IsFalse (ctx.Supports ("text/plain"), "text/plain");
+				Assert.That (ctx.Supports ("application/octet-stream"), Is.False, "application/octet-stream");
+				Assert.That (ctx.Supports ("text/plain"), Is.False, "text/plain");
 			}
 		}
 
@@ -1497,31 +1497,31 @@ namespace UnitTests.Cryptography {
 					var name = ctx.GetDigestAlgorithmName (digest);
 					var algo = ctx.GetDigestAlgorithm (name);
 
-					Assert.AreEqual (digest, algo);
+					Assert.That (algo, Is.EqualTo (digest));
 				}
 
-				Assert.AreEqual (DigestAlgorithm.MD5, OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.MD5));
-				Assert.AreEqual (DigestAlgorithm.Sha1, OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Sha1));
-				Assert.AreEqual (DigestAlgorithm.RipeMD160, OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.RipeMD160));
-				Assert.AreEqual (DigestAlgorithm.DoubleSha, OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.DoubleSha));
-				Assert.AreEqual (DigestAlgorithm.MD2, OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.MD2));
-				Assert.AreEqual (DigestAlgorithm.Tiger192, OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Tiger192));
-				Assert.AreEqual (DigestAlgorithm.Haval5160, OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Haval5pass160));
-				Assert.AreEqual (DigestAlgorithm.Sha256, OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Sha256));
-				Assert.AreEqual (DigestAlgorithm.Sha384, OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Sha384));
-				Assert.AreEqual (DigestAlgorithm.Sha512, OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Sha512));
-				Assert.AreEqual (DigestAlgorithm.Sha224, OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Sha224));
+				Assert.That (OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.MD5), Is.EqualTo (DigestAlgorithm.MD5));
+				Assert.That (OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Sha1), Is.EqualTo (DigestAlgorithm.Sha1));
+				Assert.That (OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.RipeMD160), Is.EqualTo (DigestAlgorithm.RipeMD160));
+				Assert.That (OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.DoubleSha), Is.EqualTo (DigestAlgorithm.DoubleSha));
+				Assert.That (OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.MD2), Is.EqualTo (DigestAlgorithm.MD2));
+				Assert.That (OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Tiger192), Is.EqualTo (DigestAlgorithm.Tiger192));
+				Assert.That (OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Haval5pass160), Is.EqualTo (DigestAlgorithm.Haval5160));
+				Assert.That (OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Sha256), Is.EqualTo (DigestAlgorithm.Sha256));
+				Assert.That (OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Sha384), Is.EqualTo (DigestAlgorithm.Sha384));
+				Assert.That (OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Sha512), Is.EqualTo (DigestAlgorithm.Sha512));
+				Assert.That (OpenPgpContext.GetDigestAlgorithm (Org.BouncyCastle.Bcpg.HashAlgorithmTag.Sha224), Is.EqualTo (DigestAlgorithm.Sha224));
 
-				Assert.AreEqual (PublicKeyAlgorithm.RsaGeneral, OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.RsaGeneral));
-				Assert.AreEqual (PublicKeyAlgorithm.RsaEncrypt, OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.RsaEncrypt));
-				Assert.AreEqual (PublicKeyAlgorithm.RsaSign, OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.RsaSign));
-				Assert.AreEqual (PublicKeyAlgorithm.ElGamalGeneral, OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.ElGamalGeneral));
-				Assert.AreEqual (PublicKeyAlgorithm.ElGamalEncrypt, OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.ElGamalEncrypt));
-				Assert.AreEqual (PublicKeyAlgorithm.Dsa, OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.Dsa));
-				Assert.AreEqual (PublicKeyAlgorithm.EllipticCurve, OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.ECDH));
-				Assert.AreEqual (PublicKeyAlgorithm.EllipticCurveDsa, OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.ECDsa));
-				Assert.AreEqual (PublicKeyAlgorithm.DiffieHellman, OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.DiffieHellman));
-				//Assert.AreEqual (PublicKeyAlgorithm.EdwardsCurveDsa, OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.EdDSA));
+				Assert.That (OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.RsaGeneral), Is.EqualTo (PublicKeyAlgorithm.RsaGeneral));
+				Assert.That (OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.RsaEncrypt), Is.EqualTo (PublicKeyAlgorithm.RsaEncrypt));
+				Assert.That (OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.RsaSign), Is.EqualTo (PublicKeyAlgorithm.RsaSign));
+				Assert.That (OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.ElGamalGeneral), Is.EqualTo (PublicKeyAlgorithm.ElGamalGeneral));
+				Assert.That (OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.ElGamalEncrypt), Is.EqualTo (PublicKeyAlgorithm.ElGamalEncrypt));
+				Assert.That (OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.Dsa), Is.EqualTo (PublicKeyAlgorithm.Dsa));
+				Assert.That (OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.ECDH), Is.EqualTo (PublicKeyAlgorithm.EllipticCurve));
+				Assert.That (OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.ECDsa), Is.EqualTo (PublicKeyAlgorithm.EllipticCurveDsa));
+				Assert.That (OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.DiffieHellman), Is.EqualTo (PublicKeyAlgorithm.DiffieHellman));
+				//Assert.That (OpenPgpContext.GetPublicKeyAlgorithm (Org.BouncyCastle.Bcpg.PublicKeyAlgorithmTag.EdDSA), Is.EqualTo (PublicKeyAlgorithm.EdwardsCurveDsa));
 			}
 		}
 
@@ -1970,16 +1970,16 @@ namespace UnitTests.Cryptography {
 			var filter = new OpenPgpDetectionFilter ();
 
 			PumpDataThroughFilter (filter, Path.Combine (TestHelper.ProjectDir, "TestData", "openpgp", "mimekit.gpg.pub"), true);
-			Assert.AreEqual (OpenPgpDataType.PublicKey, filter.DataType);
-			Assert.AreEqual (0, filter.BeginOffset);
-			Assert.AreEqual (1754, filter.EndOffset);
+			Assert.That (filter.DataType, Is.EqualTo (OpenPgpDataType.PublicKey));
+			Assert.That (filter.BeginOffset, Is.EqualTo (0));
+			Assert.That (filter.EndOffset, Is.EqualTo (1754));
 
 			filter.Reset ();
 
 			PumpDataThroughFilter (filter, Path.Combine (TestHelper.ProjectDir, "TestData", "openpgp", "mimekit.gpg.sec"), true);
-			Assert.AreEqual (OpenPgpDataType.PrivateKey, filter.DataType);
-			Assert.AreEqual (0, filter.BeginOffset);
-			Assert.AreEqual (3650, filter.EndOffset);
+			Assert.That (filter.DataType, Is.EqualTo (OpenPgpDataType.PrivateKey));
+			Assert.That (filter.BeginOffset, Is.EqualTo (0));
+			Assert.That (filter.EndOffset, Is.EqualTo (3650));
 		}
 	}
 }

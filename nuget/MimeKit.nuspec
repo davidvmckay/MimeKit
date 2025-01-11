@@ -2,12 +2,12 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata minClientVersion="2.12">
     <id>MimeKit</id>
-    <version>4.1.0</version>
+    <version>4.9.0</version>
     <title>MimeKit</title>
     <authors>Jeffrey Stedfast</authors>
     <owners>Jeffrey Stedfast</owners>
     <license type="expression">MIT</license>
-    <projectUrl>http://www.mimekit.net</projectUrl>
+    <projectUrl>https://www.mimekit.net</projectUrl>
     <repository type="git" url="https://github.com/jstedfast/MimeKit" />
     <icon>icons\mimekit-50.png</icon>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -26,18 +26,24 @@
     </description>
     <summary>An Open Source library for creating and parsing MIME, S/MIME and PGP messages on desktop and mobile platforms.</summary>
     <releaseNotes>
-* Readded the System.Net.Mail-to-MimeKit conversion APIs for the netstandard2.x frameworks. (issue #913)
-* Fixed the MimeEntity.LoadAsync() overloads that take a ContentType parameter to to properly wait to dispose of the stream until after the entity has been parsed. (issue #916)
-* Optimized conversion between HeaderId and string.
-* Added a new IMimeParser interface that both MimeParser and ExperimentalMimePraser implement.
-* Added "unicode" to the list of charset aliases for UTF-8. (issue #923)
-* Added support for the Edwards Curve DSA PGP public key algorithm. (issue #932)
-* Bumped System.Security.Cryptography.Pkcs dependency to 7.0.2.
-* Bumped BouncyCastle dependency to 2.2.1.
-	</releaseNotes>
+* Started adding some DynamicallyAccessedMembers attributes for AOT compatibility.
+* Refactored some code for AOT Compatibility (MimeKitLite is now 100% AOT Compatible but MimeKit still has issues related to SQLite database loading for the S/MIME certificate database). (MailKit issue #10844)
+* Fixed TextPreviewer to use an encoding with an empty string fallback to prevent '?' characters from being appended to the generated preview string if the byte sequence was truncated.
+* Improved performance of InternetAddressList.Parse()/TryParse().
+* Improved InternetAddressList parser performance for malformed addresses that only contain display-name strings separated by commas. (issue #1106)
+* Exposed BouncyCastleCertificateExtensions.IsSelfSigned(), GetKeyUsageFlags() and IsDelta() as new public APIs.
+* Exposed X509KeyUsageBits enum as public.
+* Added support for domain-bound S/MIME certificates. (issue #1113)
+* Dropped support for net6.0 in the nuget packages (Microsoft support ended Nov 12, 2024).
+* Removed explicit dependency on System.Runtime.CompilerServices.Unsafe.
+* Bumped System.Security.Cryptography.Pkcs dependency to v8.0.1.
+* Bumped BouncyCastle.Cryptography dependency to v2.5.0.
+* Bumped System.Buffers dependency to v4.6.0.
+* Bumped System.Memory dependency to v4.6.0.
+    </releaseNotes>
     <copyright>.NET Foundation and Contributors</copyright>
     <language>en-US</language>
-    <tags>mime encryption arc dkim security smime s/mime openpgp pgp mbox mail email parser tnef net462 net47 net48 net6.0 netstandard netstandard2.0 netstandard2.1</tags>
+    <tags>mime encryption arc dkim security smime s/mime openpgp pgp mbox mail email parser tnef net462 net47 net48 net8.0 netstandard netstandard2.0 netstandard2.1</tags>
     <readme>docs\README.md</readme>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System" targetFramework=".NETFramework4.6.2" />
@@ -61,49 +67,44 @@
     </frameworkAssemblies>
     <dependencies>
       <group targetFramework="net462">
-        <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
-        <dependency id="System.Buffers" version="4.5.1" />
-        <dependency id="System.Memory" version="4.5.5" />
-        <dependency id="BouncyCastle.Cryptography" version="2.2.1" />
+        <dependency id="System.Buffers" version="4.6.0" />
+        <dependency id="System.Memory" version="4.6.0" />
+        <dependency id="BouncyCastle.Cryptography" version="2.5.0" />
       </group>
       <group targetFramework="net47">
-        <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
-        <dependency id="System.Buffers" version="4.5.1" />
-        <dependency id="System.Memory" version="4.5.5" />
-        <dependency id="BouncyCastle.Cryptography" version="2.2.1" />
+        <dependency id="System.Buffers" version="4.6.0" />
+        <dependency id="System.Memory" version="4.6.0" />
+        <dependency id="BouncyCastle.Cryptography" version="2.5.0" />
       </group>
       <group targetFramework="net48">
-        <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
-        <dependency id="System.Buffers" version="4.5.1" />
-        <dependency id="System.Memory" version="4.5.5" />
-        <dependency id="BouncyCastle.Cryptography" version="2.2.1" />
+        <dependency id="System.Buffers" version="4.6.0" />
+        <dependency id="System.Memory" version="4.6.0" />
+        <dependency id="BouncyCastle.Cryptography" version="2.5.0" />
       </group>
-      <group targetFramework="net6.0">
-        <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
-        <dependency id="System.Security.Cryptography.Pkcs" version="7.0.2" />
-        <dependency id="System.Text.Encoding.CodePages" version="7.0.0" />
-        <dependency id="BouncyCastle.Cryptography" version="2.2.1" />
+      <group targetFramework="net8.0">
+        <dependency id="System.Security.Cryptography.Pkcs" version="8.0.1" />
+        <dependency id="System.Formats.Asn1" version="8.0.1" />
+        <dependency id="BouncyCastle.Cryptography" version="2.5.0" />
       </group>
       <group targetFramework="netstandard2.0">
-        <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
-        <dependency id="System.Security.Cryptography.Pkcs" version="7.0.2" />
-        <dependency id="System.Text.Encoding.CodePages" version="7.0.0" />
+        <dependency id="System.Security.Cryptography.Pkcs" version="8.0.1" />
+        <dependency id="System.Formats.Asn1" version="8.0.1" />
+        <dependency id="System.Text.Encoding.CodePages" version="8.0.0" />
         <dependency id="System.Data.DataSetExtensions" version="4.5.0" />
-        <dependency id="System.Buffers" version="4.5.1" />
-        <dependency id="System.Memory" version="4.5.5" />
-        <dependency id="BouncyCastle.Cryptography" version="2.2.1" />
+        <dependency id="System.Buffers" version="4.6.0" />
+        <dependency id="System.Memory" version="4.6.0" />
+        <dependency id="BouncyCastle.Cryptography" version="2.5.0" />
       </group>
       <group targetFramework="netstandard2.1">
-        <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
-        <dependency id="System.Security.Cryptography.Pkcs" version="7.0.2" />
-        <dependency id="System.Text.Encoding.CodePages" version="7.0.0" />
-        <dependency id="System.Buffers" version="4.5.1" />
-        <dependency id="System.Memory" version="4.5.5" />
-        <dependency id="BouncyCastle.Cryptography" version="2.2.1" />
+        <dependency id="System.Security.Cryptography.Pkcs" version="8.0.1" />
+        <dependency id="System.Formats.Asn1" version="8.0.1" />
+        <dependency id="System.Text.Encoding.CodePages" version="8.0.0" />
+        <dependency id="BouncyCastle.Cryptography" version="2.5.0" />
       </group>
     </dependencies>
   </metadata>
   <files>
+    <file src="..\FAQ.md" target="docs\FAQ.md" />
     <file src="..\README.md" target="docs\README.md" />
     <file src="..\MimeKit\bin\Release\netstandard2.0\MimeKit.dll" target="lib\netstandard2.0\MimeKit.dll" />
     <file src="..\MimeKit\bin\Release\netstandard2.0\MimeKit.pdb" target="lib\netstandard2.0\MimeKit.pdb" />
@@ -116,19 +117,16 @@
     <file src="..\MimeKit\bin\Release\net462\MimeKit.dll" target="lib\net462\MimeKit.dll" />
     <file src="..\MimeKit\bin\Release\net462\MimeKit.pdb" target="lib\net462\MimeKit.pdb" />
     <file src="..\MimeKit\bin\Release\net462\MimeKit.xml" target="lib\net462\MimeKit.xml" />
-    <file src="..\MimeKit\bin\Release\net462\MimeKit.dll.config" target="lib\net462\MimeKit.dll.config" />
     <file src="..\MimeKit\bin\Release\net47\MimeKit.dll" target="lib\net47\MimeKit.dll" />
     <file src="..\MimeKit\bin\Release\net47\MimeKit.pdb" target="lib\net47\MimeKit.pdb" />
     <file src="..\MimeKit\bin\Release\net47\MimeKit.xml" target="lib\net47\MimeKit.xml" />
-    <file src="..\MimeKit\bin\Release\net47\MimeKit.dll.config" target="lib\net47\MimeKit.dll.config" />
     <file src="..\MimeKit\bin\Release\net48\MimeKit.dll" target="lib\net48\MimeKit.dll" />
     <file src="..\MimeKit\bin\Release\net48\MimeKit.pdb" target="lib\net48\MimeKit.pdb" />
     <file src="..\MimeKit\bin\Release\net48\MimeKit.xml" target="lib\net48\MimeKit.xml" />
-    <file src="..\MimeKit\bin\Release\net48\MimeKit.dll.config" target="lib\net48\MimeKit.dll.config" />
-    <file src="..\MimeKit\bin\Release\net6.0\MimeKit.dll" target="lib\net6.0\MimeKit.dll" />
-    <file src="..\MimeKit\bin\Release\net6.0\MimeKit.pdb" target="lib\net6.0\MimeKit.pdb" />
-    <file src="..\MimeKit\bin\Release\net6.0\MimeKit.xml" target="lib\net6.0\MimeKit.xml" />
-    <file src="..\MimeKit\bin\Release\net6.0\MimeKit.dll.config" target="lib\net6.0\MimeKit.dll.config" />
+    <file src="..\MimeKit\bin\Release\net8.0\MimeKit.dll" target="lib\net8.0\MimeKit.dll" />
+    <file src="..\MimeKit\bin\Release\net8.0\MimeKit.pdb" target="lib\net8.0\MimeKit.pdb" />
+    <file src="..\MimeKit\bin\Release\net8.0\MimeKit.xml" target="lib\net8.0\MimeKit.xml" />
+    <file src="..\MimeKit\bin\Release\net8.0\MimeKit.dll.config" target="lib\net8.0\MimeKit.dll.config" />
     <file src="mimekit-50.png" target="icons\mimekit-50.png" />
   </files>
 </package>

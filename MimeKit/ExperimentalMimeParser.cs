@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2024 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -70,7 +70,7 @@ namespace MimeKit {
 		/// </summary>
 		/// <remarks>
 		/// <para>Creates a new <see cref="ExperimentalMimeParser"/> that will parse the specified stream.</para>
-		/// <para>If <paramref name="persistent"/> is <c>true</c> and <paramref name="stream"/> is seekable, then
+		/// <para>If <paramref name="persistent"/> is <see langword="true" /> and <paramref name="stream"/> is seekable, then
 		/// the <see cref="ExperimentalMimeParser"/> will not copy the content of <see cref="MimePart"/>s into memory. Instead,
 		/// it will use a <see cref="BoundStream"/> to reference a substream of <paramref name="stream"/>.
 		/// This has the potential to not only save memory usage, but also improve <see cref="ExperimentalMimeParser"/>
@@ -80,9 +80,9 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="stream">The stream to parse.</param>
 		/// <param name="format">The format of the stream.</param>
-		/// <param name="persistent"><c>true</c> if the stream is persistent; otherwise <c>false</c>.</param>
+		/// <param name="persistent"><see langword="true" /> if the stream is persistent; otherwise, <see langword="false" />.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="stream"/> is <c>null</c>.
+		/// <paramref name="stream"/> is <see langword="null"/>.
 		/// </exception>
 		public ExperimentalMimeParser (Stream stream, MimeFormat format, bool persistent = false) : this (ParserOptions.Default, stream, format, persistent)
 		{
@@ -93,7 +93,7 @@ namespace MimeKit {
 		/// </summary>
 		/// <remarks>
 		/// <para>Creates a new <see cref="ExperimentalMimeParser"/> that will parse the specified stream.</para>
-		/// <para>If <paramref name="persistent"/> is <c>true</c> and <paramref name="stream"/> is seekable, then
+		/// <para>If <paramref name="persistent"/> is <see langword="true" /> and <paramref name="stream"/> is seekable, then
 		/// the <see cref="ExperimentalMimeParser"/> will not copy the content of <see cref="MimePart"/>s into memory. Instead,
 		/// it will use a <see cref="BoundStream"/> to reference a substream of <paramref name="stream"/>.
 		/// This has the potential to not only save memory usage, but also improve <see cref="ExperimentalMimeParser"/>
@@ -102,9 +102,9 @@ namespace MimeKit {
 		/// for <see cref="MimeContent"/> to read the content.</para>
 		/// </remarks>
 		/// <param name="stream">The stream to parse.</param>
-		/// <param name="persistent"><c>true</c> if the stream is persistent; otherwise <c>false</c>.</param>
+		/// <param name="persistent"><see langword="true" /> if the stream is persistent; otherwise, <see langword="false" />.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="stream"/> is <c>null</c>.
+		/// <paramref name="stream"/> is <see langword="null"/>.
 		/// </exception>
 		public ExperimentalMimeParser (Stream stream, bool persistent = false) : this (ParserOptions.Default, stream, MimeFormat.Default, persistent)
 		{
@@ -115,7 +115,7 @@ namespace MimeKit {
 		/// </summary>
 		/// <remarks>
 		/// <para>Creates a new <see cref="ExperimentalMimeParser"/> that will parse the specified stream.</para>
-		/// <para>If <paramref name="persistent"/> is <c>true</c> and <paramref name="stream"/> is seekable, then
+		/// <para>If <paramref name="persistent"/> is <see langword="true" /> and <paramref name="stream"/> is seekable, then
 		/// the <see cref="ExperimentalMimeParser"/> will not copy the content of <see cref="MimePart"/>s into memory. Instead,
 		/// it will use a <see cref="BoundStream"/> to reference a substream of <paramref name="stream"/>.
 		/// This has the potential to not only save memory usage, but also improve <see cref="ExperimentalMimeParser"/>
@@ -125,11 +125,11 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="options">The parser options.</param>
 		/// <param name="stream">The stream to parse.</param>
-		/// <param name="persistent"><c>true</c> if the stream is persistent; otherwise <c>false</c>.</param>
+		/// <param name="persistent"><see langword="true" /> if the stream is persistent; otherwise, <see langword="false" />.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="options"/> is <c>null</c>.</para>
+		/// <para><paramref name="options"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="stream"/> is <c>null</c>.</para>
+		/// <para><paramref name="stream"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public ExperimentalMimeParser (ParserOptions options, Stream stream, bool persistent = false) : this (options, stream, MimeFormat.Default, persistent)
 		{
@@ -140,7 +140,7 @@ namespace MimeKit {
 		/// </summary>
 		/// <remarks>
 		/// <para>Creates a new <see cref="ExperimentalMimeParser"/> that will parse the specified stream.</para>
-		/// <para>If <paramref name="persistent"/> is <c>true</c> and <paramref name="stream"/> is seekable, then
+		/// <para>If <paramref name="persistent"/> is <see langword="true" /> and <paramref name="stream"/> is seekable, then
 		/// the <see cref="ExperimentalMimeParser"/> will not copy the content of <see cref="MimePart"/>s into memory. Instead,
 		/// it will use a <see cref="BoundStream"/> to reference a substream of <paramref name="stream"/>.
 		/// This has the potential to not only save memory usage, but also improve <see cref="ExperimentalMimeParser"/>
@@ -151,11 +151,11 @@ namespace MimeKit {
 		/// <param name="options">The parser options.</param>
 		/// <param name="stream">The stream to parse.</param>
 		/// <param name="format">The format of the stream.</param>
-		/// <param name="persistent"><c>true</c> if the stream is persistent; otherwise <c>false</c>.</param>
+		/// <param name="persistent"><see langword="true" /> if the stream is persistent; otherwise, <see langword="false" />.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="options"/> is <c>null</c>.</para>
+		/// <para><paramref name="options"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="stream"/> is <c>null</c>.</para>
+		/// <para><paramref name="stream"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public ExperimentalMimeParser (ParserOptions options, Stream stream, MimeFormat format, bool persistent = false) : base (options, stream, format)
 		{
@@ -189,7 +189,7 @@ namespace MimeKit {
 		/// </summary>
 		/// <remarks>
 		/// <para>Sets the stream to parse.</para>
-		/// <para>If <paramref name="persistent"/> is <c>true</c> and <paramref name="stream"/> is seekable, then
+		/// <para>If <paramref name="persistent"/> is <see langword="true" /> and <paramref name="stream"/> is seekable, then
 		/// the <see cref="MimeParser"/> will not copy the content of <see cref="MimePart"/>s into memory. Instead,
 		/// it will use a <see cref="BoundStream"/> to reference a substream of <paramref name="stream"/>.
 		/// This has the potential to not only save memory usage, but also improve <see cref="MimeParser"/>
@@ -199,9 +199,9 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="stream">The stream to parse.</param>
 		/// <param name="format">The format of the stream.</param>
-		/// <param name="persistent"><c>true</c> if the stream is persistent; otherwise <c>false</c>.</param>
+		/// <param name="persistent"><see langword="true" /> if the stream is persistent; otherwise, <see langword="false" />.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="stream"/> is <c>null</c>.
+		/// <paramref name="stream"/> is <see langword="null"/>.
 		/// </exception>
 		public void SetStream (Stream stream, MimeFormat format, bool persistent)
 		{
@@ -221,7 +221,7 @@ namespace MimeKit {
 		/// <param name="stream">The stream to parse.</param>
 		/// <param name="format">The format of the stream.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="stream"/> is <c>null</c>.
+		/// <paramref name="stream"/> is <see langword="null"/>.
 		/// </exception>
 		public override void SetStream (Stream stream, MimeFormat format = MimeFormat.Default)
 		{
@@ -233,7 +233,7 @@ namespace MimeKit {
 		/// </summary>
 		/// <remarks>
 		/// <para>Sets the stream to parse.</para>
-		/// <para>If <paramref name="persistent"/> is <c>true</c> and <paramref name="stream"/> is seekable, then
+		/// <para>If <paramref name="persistent"/> is <see langword="true" /> and <paramref name="stream"/> is seekable, then
 		/// the <see cref="MimeParser"/> will not copy the content of <see cref="MimePart"/>s into memory. Instead,
 		/// it will use a <see cref="BoundStream"/> to reference a substream of <paramref name="stream"/>.
 		/// This has the potential to not only save memory usage, but also improve <see cref="MimeParser"/>
@@ -242,9 +242,9 @@ namespace MimeKit {
 		/// for <see cref="MimeContent"/> to read the content.</para>
 		/// </remarks>
 		/// <param name="stream">The stream to parse.</param>
-		/// <param name="persistent"><c>true</c> if the stream is persistent; otherwise <c>false</c>.</param>
+		/// <param name="persistent"><see langword="true" /> if the stream is persistent; otherwise, <see langword="false" />.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="stream"/> is <c>null</c>.
+		/// <paramref name="stream"/> is <see langword="null"/>.
 		/// </exception>
 		public void SetStream (Stream stream, bool persistent)
 		{
@@ -273,6 +273,22 @@ namespace MimeKit {
 		/// <para>When the stream is specified to be in <see cref="MimeFormat.Mbox"/> format, this method will be called whenever the parser encounters an Mbox marker.</para>
 		/// <para>It is not necessary to override this method unless it is desirable to track the offsets of mbox markers within a stream or to extract the mbox marker itself.</para>
 		/// </remarks>
+		/// <param name="beginOffset">The offset into the stream where the mbox marker begins.</param>
+		/// <param name="lineNumber">The line number where the mbox marker exists within the stream.</param>
+		/// <param name="cancellationToken">The cancellation token.</param>
+		protected override void OnMboxMarkerBegin (long beginOffset, int lineNumber, CancellationToken cancellationToken)
+		{
+			mboxMarkerOffset = beginOffset;
+			mboxMarkerLength = 0;
+		}
+
+		/// <summary>
+		/// Called when an Mbox marker is encountered in the stream.
+		/// </summary>
+		/// <remarks>
+		/// <para>When the stream is specified to be in <see cref="MimeFormat.Mbox"/> format, this method will be called whenever the parser encounters an Mbox marker.</para>
+		/// <para>It is not necessary to override this method unless it is desirable to track the offsets of mbox markers within a stream or to extract the mbox marker itself.</para>
+		/// </remarks>
 		/// <param name="buffer">The buffer containing the mbox marker.</param>
 		/// <param name="startIndex">The index denoting the starting position of the mbox marker within the buffer.</param>
 		/// <param name="count">The length of the mbox marker within the buffer, in bytes.</param>
@@ -281,12 +297,13 @@ namespace MimeKit {
 		/// <param name="cancellationToken">The cancellation token.</param>
 		protected override void OnMboxMarkerRead (byte[] buffer, int startIndex, int count, long beginOffset, int lineNumber, CancellationToken cancellationToken)
 		{
-			if (mboxMarkerBuffer.Length < count)
-				Array.Resize (ref mboxMarkerBuffer, count);
+			int needed = mboxMarkerLength + count;
 
-			Buffer.BlockCopy (buffer, startIndex, mboxMarkerBuffer, 0, count);
-			mboxMarkerOffset = beginOffset;
-			mboxMarkerLength = count;
+			if (mboxMarkerBuffer.Length < needed)
+				Array.Resize (ref mboxMarkerBuffer, needed);
+
+			Buffer.BlockCopy (buffer, startIndex, mboxMarkerBuffer, mboxMarkerLength, count);
+			mboxMarkerLength += count;
 		}
 
 		#endregion Mbox Events
