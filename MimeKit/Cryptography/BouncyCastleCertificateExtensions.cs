@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>The X509Certificate2.</returns>
 		/// <param name="certificate">The BouncyCastle certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public static X509Certificate2 AsX509Certificate2 (this X509Certificate certificate)
 		{
@@ -67,7 +67,15 @@ namespace MimeKit.Cryptography {
 			return new X509Certificate2 (certificate.GetEncoded ());
 		}
 
-		internal static bool IsSelfSigned (this X509Certificate certificate)
+		/// <summary>
+		/// Determines whether the specified certificate is self-signed.
+		/// </summary>
+		/// <remarks>
+		/// A certificate is considered self-signed if the subject and issuer names are the same.
+		/// </remarks>
+		/// <param name="certificate">The certificate to check.</param>
+		/// <returns><see langword="true" /> if the certificate is self-signed; otherwise, <see langword="false" />.</returns>
+		public static bool IsSelfSigned (this X509Certificate certificate)
 		{
 			return certificate.SubjectDN.Equivalent (certificate.IssuerDN);
 		}
@@ -82,19 +90,18 @@ namespace MimeKit.Cryptography {
 		/// <param name="certificate">The certificate.</param>
 		/// <param name="identifier">The name identifier.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public static string GetIssuerNameInfo (this X509Certificate certificate, DerObjectIdentifier identifier)
 		{
 			if (certificate == null)
 				throw new ArgumentNullException (nameof (certificate));
 
-			// FIXME: GetValueList() should be fixed to return IList<string>
 			var list = certificate.IssuerDN.GetValueList (identifier);
 			if (list.Count == 0)
 				return string.Empty;
 
-			return (string) list[0];
+			return list[0];
 		}
 
 		/// <summary>
@@ -107,19 +114,18 @@ namespace MimeKit.Cryptography {
 		/// <param name="certificate">The certificate.</param>
 		/// <param name="identifier">The name identifier.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public static string GetSubjectNameInfo (this X509Certificate certificate, DerObjectIdentifier identifier)
 		{
 			if (certificate == null)
 				throw new ArgumentNullException (nameof (certificate));
 
-			// FIXME: GetValueList() should be fixed to return IList<string>
 			var list = certificate.SubjectDN.GetValueList (identifier);
 			if (list.Count == 0)
 				return string.Empty;
 
-			return (string) list[0];
+			return list[0];
 		}
 
 		/// <summary>
@@ -131,7 +137,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>The common name.</returns>
 		/// <param name="certificate">The certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public static string GetCommonName (this X509Certificate certificate)
 		{
@@ -147,15 +153,41 @@ namespace MimeKit.Cryptography {
 		/// <returns>The subject name.</returns>
 		/// <param name="certificate">The certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public static string GetSubjectName (this X509Certificate certificate)
 		{
 			return certificate.GetSubjectNameInfo (X509Name.Name);
 		}
 
+		static string[] GetSubjectAlternativeNames (X509Certificate certificate, int tagNo)
+		{
+			var alt = certificate.GetExtensionValue (X509Extensions.SubjectAlternativeName);
+
+			if (alt == null)
+				return Array.Empty<string> ();
+
+			var seq = Asn1Sequence.GetInstance (Asn1Object.FromByteArray (alt.GetOctets ()));
+			var names = new string[seq.Count];
+			int count = 0;
+
+			foreach (Asn1Encodable encodable in seq) {
+				var name = GeneralName.GetInstance (encodable);
+				if (name.TagNo == tagNo)
+					names[count++] = ((IAsn1String) name.Name).GetString ();
+			}
+
+			if (count == 0)
+				return Array.Empty<string> ();
+
+			if (count < names.Length)
+				Array.Resize (ref names, count);
+
+			return names;
+		}
+
 		/// <summary>
-		/// Gets the subject email address of the certificate.
+		/// Get the subject email address of the certificate.
 		/// </summary>
 		/// <remarks>
 		/// The email address component of the certificate's Subject identifier is
@@ -164,31 +196,60 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <returns>The subject email address.</returns>
 		/// <param name="certificate">The certificate.</param>
+		/// <param name="idnEncode">If set to <see langword="true" />, international edomain names will be IDN encoded.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
-		public static string GetSubjectEmailAddress (this X509Certificate certificate)
+		public static string GetSubjectEmailAddress (this X509Certificate certificate, bool idnEncode = false)
 		{
+			if (certificate == null)
+				throw new ArgumentNullException (nameof (certificate));
+
 			var address = certificate.GetSubjectNameInfo (X509Name.EmailAddress);
 
-			if (!string.IsNullOrEmpty (address))
-				return address;
+			if (string.IsNullOrEmpty (address)) {
+				var addresses = GetSubjectAlternativeNames (certificate, GeneralName.Rfc822Name);
 
-			var alt = certificate.GetExtensionValue (X509Extensions.SubjectAlternativeName);
-
-			if (alt == null)
-				return string.Empty;
-
-			var seq = Asn1Sequence.GetInstance (Asn1Object.FromByteArray (alt.GetOctets ()));
-
-			foreach (Asn1Encodable encodable in seq) {
-				var name = GeneralName.GetInstance (encodable);
-
-				if (name.TagNo == GeneralName.Rfc822Name)
-					return ((IAsn1String) name.Name).GetString ();
+				if (addresses.Length > 0)
+					address = addresses[0];
 			}
 
-			return null;
+			if (idnEncode && !string.IsNullOrEmpty (address))
+				address = MailboxAddress.EncodeAddrspec (address);
+
+			return address;
+		}
+
+		/// <summary>
+		/// Get the subject domain names of the certificate.
+		/// </summary>
+		/// <remarks>
+		/// <para>Gets the subject DNS names of the certificate.</para>
+		/// <para>Some S/MIME certificates are domain-bound instead of being bound to a
+		/// particular email address.</para>
+		/// </remarks>
+		/// <returns>The subject DNS names.</returns>
+		/// <param name="certificate">The certificate.</param>
+		/// <param name="idnEncode">If set to <see langword="true" />, international domain names will be IDN encoded.</param>
+		/// <exception cref="System.ArgumentNullException">
+		/// <paramref name="certificate"/> is <see langword="null"/>.
+		/// </exception>
+		public static string[] GetSubjectDnsNames (this X509Certificate certificate, bool idnEncode = false)
+		{
+			if (certificate == null)
+				throw new ArgumentNullException (nameof (certificate));
+
+			var domains = GetSubjectAlternativeNames (certificate, GeneralName.DnsName);
+
+			if (idnEncode) {
+				for (int i = 0; i < domains.Length; i++)
+					domains[i] = MailboxAddress.IdnMapping.Encode (domains[i]);
+			} else {
+				for (int i = 0; i < domains.Length; i++)
+					domains[i] = MailboxAddress.IdnMapping.Decode (domains[i]);
+			}
+
+			return domains;
 		}
 
 		internal static string AsHex (this byte[] blob)
@@ -211,7 +272,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>The fingerprint.</returns>
 		/// <param name="certificate">The certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public static string GetFingerprint (this X509Certificate certificate)
 		{
@@ -238,7 +299,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>The public key algorithm.</returns>
 		/// <param name="certificate">The certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public static PublicKeyAlgorithm GetPublicKeyAlgorithm (this X509Certificate certificate)
 		{
@@ -261,7 +322,20 @@ namespace MimeKit.Cryptography {
 			return PublicKeyAlgorithm.None;
 		}
 
-		internal static X509KeyUsageFlags GetKeyUsageFlags (bool[] usage)
+		/// <summary>
+		/// Generates an X509KeyUsageFlags value based on the provided usage bit array.
+		/// </summary>
+		/// <param name="usage">A boolean array representing the key usage bits.
+		/// Each index corresponds to a specific value defined  by <see cref="X509KeyUsageBits"/>
+		/// </param>
+		/// <returns>
+		/// An X509KeyUsageFlags value that represents the combined key usage flags.
+		/// </returns>
+		/// <remarks>
+		/// If the usage array is null, all key usage flags are considered enabled by
+		/// returning a <see cref="X509KeyUsageFlags.None"/>
+		/// </remarks>
+		public static X509KeyUsageFlags GetKeyUsageFlags (bool[] usage)
 		{
 			var flags = X509KeyUsageFlags.None;
 
@@ -297,7 +371,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>The key usage flags.</returns>
 		/// <param name="certificate">The certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public static X509KeyUsageFlags GetKeyUsageFlags (this X509Certificate certificate)
 		{
@@ -340,7 +414,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>The encryption algorithms.</returns>
 		/// <param name="certificate">The X.509 certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public static EncryptionAlgorithm[] GetEncryptionAlgorithms (this X509Certificate certificate)
 		{
@@ -349,13 +423,27 @@ namespace MimeKit.Cryptography {
 
 			var capabilities = certificate.GetExtensionValue (SmimeAttributes.SmimeCapabilities);
 
-			if (capabilities != null)
-				return DecodeEncryptionAlgorithms (capabilities.GetOctets ());
+			if (capabilities != null) {
+				var algorithms = DecodeEncryptionAlgorithms (capabilities.GetOctets ());
+
+				if (algorithms != null)
+					return algorithms;
+			}
 
 			return new EncryptionAlgorithm[] { EncryptionAlgorithm.TripleDes };
 		}
 
-		internal static bool IsDelta (this X509Crl crl)
+		/// <summary>
+		/// Determines whether the specified X.509 CRL is a delta CRL.
+		/// </summary>
+		/// <remarks>
+		/// A delta CRL contains updates to a previously issued CRL. This method checks
+		/// if the CRL contains the Delta CRL Indicator extension.
+		/// <note>The X.509 delta CRL indicator extension must be marked critical to be found.</note>
+		/// </remarks>
+		/// <param name="crl">The X.509 CRL to check.</param>
+		/// <returns><see langword="true" /> if the specified CRL is a delta CRL; otherwise, <see langword="false" />.</returns>
+		public static bool IsDelta (this X509Crl crl)
 		{
 			var critical = crl.GetCriticalExtensionOids ();
 

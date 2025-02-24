@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ using MimeKit.IO.Filters;
 
 namespace MimeKit {
 	/// <summary>
-	/// A Textual MIME part.
+	/// A textual MIME part.
 	/// </summary>
 	/// <remarks>
 	/// <para>Unless overridden, all textual parts parsed by the <see cref="MimeParser"/>,
@@ -47,7 +47,7 @@ namespace MimeKit {
 	/// <example>
 	/// <code language="c#" source="Examples\MimeVisitorExamples.cs" region="HtmlPreviewVisitor" />
 	/// </example>
-	public class TextPart : MimePart
+	public class TextPart : MimePart, ITextPart
 	{
 		/// <summary>
 		/// Initialize a new instance of the <see cref="TextPart"/> class.
@@ -57,7 +57,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="args">Information used by the constructor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="args"/> is <c>null</c>.
+		/// <paramref name="args"/> is <see langword="null"/>.
 		/// </exception>
 		public TextPart (MimeEntityConstructorArgs args) : base (args)
 		{
@@ -69,7 +69,7 @@ namespace MimeKit {
 		/// </summary>
 		/// <remarks>
 		/// <para>Creates a new <see cref="TextPart"/> with the specified subtype.</para>
-		/// <note type="note"><para>Typically the <paramref name="subtype"/> should either be
+		/// <note type="note"><para>Typically, the <paramref name="subtype"/> should either be
 		/// <c>"plain"</c> for plain text content or <c>"html"</c> for HTML content.</para>
 		/// <para>For more options, check the MIME-type registry at
 		/// <a href="http://www.iana.org/assignments/media-types/media-types.xhtml#text">
@@ -79,9 +79,9 @@ namespace MimeKit {
 		/// <param name="subtype">The media subtype.</param>
 		/// <param name="args">An array of initialization parameters: headers, charset encoding and text.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="subtype"/> is <c>null</c>.</para>
+		/// <para><paramref name="subtype"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="args"/> is <c>null</c>.</para>
+		/// <para><paramref name="args"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <para><paramref name="args"/> contains more than one <see cref="System.Text.Encoding"/>.</para>
@@ -123,7 +123,7 @@ namespace MimeKit {
 			}
 
 			if (text != null) {
-				encoding = encoding ?? Encoding.UTF8;
+				encoding ??= Encoding.UTF8;
 				SetText (encoding, text);
 			}
 		}
@@ -138,7 +138,7 @@ namespace MimeKit {
 		/// </summary>
 		/// <remarks>
 		/// <para>Creates a new <see cref="TextPart"/> with the specified subtype.</para>
-		/// <note type="note"><para>Typically the <paramref name="subtype"/> should either be
+		/// <note type="note"><para>Typically, the <paramref name="subtype"/> should either be
 		/// <c>"plain"</c> for plain text content or <c>"html"</c> for HTML content.</para>
 		/// <para>For more options, check the MIME-type registry at
 		/// <a href="http://www.iana.org/assignments/media-types/media-types.xhtml#text">
@@ -147,7 +147,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="subtype">The media subtype.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="subtype"/> is <c>null</c>.
+		/// <paramref name="subtype"/> is <see langword="null"/>.
 		/// </exception>
 		public TextPart (string subtype) : base ("text", subtype)
 		{
@@ -244,13 +244,13 @@ namespace MimeKit {
 		}
 
 		/// <summary>
-		/// Get whether or not this text part contains enriched text.
+		/// Get whether this text part contains enriched text.
 		/// </summary>
 		/// <remarks>
-		/// Checks whether or not the text part's Content-Type is <c>text/enriched</c> or its
+		/// Checks whether the text part's Content-Type is <c>text/enriched</c> or its
 		/// predecessor, <c>text/richtext</c> (not to be confused with <c>text/rtf</c>).
 		/// </remarks>
-		/// <value><c>true</c> if the text is enriched; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the text is enriched; otherwise, <see langword="false" />.</value>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="TextPart"/> has been disposed.
 		/// </exception>
@@ -263,16 +263,16 @@ namespace MimeKit {
 		}
 
 		/// <summary>
-		/// Get whether or not this text part contains flowed text.
+		/// Get whether this text part contains flowed text.
 		/// </summary>
 		/// <remarks>
-		/// Checks whether or not the text part's Content-Type is <c>text/plain</c> and
+		/// Checks whether the text part's Content-Type is <c>text/plain</c> and
 		/// has a format parameter with a value of <c>flowed</c>.
 		/// </remarks>
 		/// <example>
 		/// <code language="c#" source="Examples\MimeVisitorExamples.cs" region="HtmlPreviewVisitor" />
 		/// </example>
-		/// <value><c>true</c> if the text is flowed; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the text is flowed; otherwise, <see langword="false" />.</value>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="TextPart"/> has been disposed.
 		/// </exception>
@@ -288,15 +288,15 @@ namespace MimeKit {
 		}
 
 		/// <summary>
-		/// Get whether or not this text part contains HTML.
+		/// Get whether this text part contains HTML.
 		/// </summary>
 		/// <remarks>
-		/// Checks whether or not the text part's Content-Type is <c>text/html</c>.
+		/// Checks whether the text part's Content-Type is <c>text/html</c>.
 		/// </remarks>
 		/// <example>
 		/// <code language="c#" source="Examples\MimeVisitorExamples.cs" region="HtmlPreviewVisitor" />
 		/// </example>
-		/// <value><c>true</c> if the text is html; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the text is html; otherwise, <see langword="false" />.</value>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="TextPart"/> has been disposed.
 		/// </exception>
@@ -309,12 +309,12 @@ namespace MimeKit {
 		}
 
 		/// <summary>
-		/// Get whether or not this text part contains plain text.
+		/// Get whether this text part contains plain text.
 		/// </summary>
 		/// <remarks>
-		/// Checks whether or not the text part's Content-Type is <c>text/plain</c>.
+		/// Checks whether the text part's Content-Type is <c>text/plain</c>.
 		/// </remarks>
-		/// <value><c>true</c> if the text is html; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the text is html; otherwise, <see langword="false" />.</value>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="TextPart"/> has been disposed.
 		/// </exception>
@@ -327,12 +327,12 @@ namespace MimeKit {
 		}
 
 		/// <summary>
-		/// Get whether or not this text part contains RTF.
+		/// Get whether this text part contains RTF.
 		/// </summary>
 		/// <remarks>
-		/// Checks whether or not the text part's Content-Type is <c>text/rtf</c>.
+		/// Checks whether the text part's Content-Type is <c>text/rtf</c>.
 		/// </remarks>
-		/// <value><c>true</c> if the text is RTF; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the text is RTF; otherwise, <see langword="false" />.</value>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="TextPart"/> has been disposed.
 		/// </exception>
@@ -383,7 +383,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="visitor">The visitor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="visitor"/> is <c>null</c>.
+		/// <paramref name="visitor"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="TextPart"/> has been disposed.
@@ -399,12 +399,12 @@ namespace MimeKit {
 		}
 
 		/// <summary>
-		/// Determine whether or not the text is in the specified format.
+		/// Determine whether the text is in the specified format.
 		/// </summary>
 		/// <remarks>
-		/// Determines whether or not the text is in the specified format.
+		/// Determines whether the text is in the specified format.
 		/// </remarks>
-		/// <returns><c>true</c> if the text is in the specified format; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the text is in the specified format; otherwise, <see langword="false" />.</returns>
 		/// <param name="format">The text format.</param>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="TextPart"/> has been disposed.
@@ -549,8 +549,8 @@ namespace MimeKit {
 		/// <paramref name="encoding"/> is set to the encoding for the specified charset and <paramref name="confidence"/> is
 		/// set to <see cref="TextEncodingConfidence.Tentative"/>.</para>
 		/// </remarks>
-		/// <returns><c>true</c> if an encoding was detected; otherwise, <c>false</c>.</returns>
-		/// <param name="encoding">The detected encoding; otherwise, <c>null</c>.</param>
+		/// <returns><see langword="true" /> if an encoding was detected; otherwise, <see langword="false" />.</returns>
+		/// <param name="encoding">The detected encoding; otherwise, <see langword="null"/>.</param>
 		/// <param name="confidence">The confidence in the detected encoding being correct.</param>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="TextPart"/> has been disposed.
@@ -635,7 +635,7 @@ namespace MimeKit {
 		/// <returns>The decoded text.</returns>
 		/// <param name="encoding">The charset encoding to use.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="encoding"/> is <c>null</c>.
+		/// <paramref name="encoding"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="TextPart"/> has been disposed.
@@ -676,7 +676,7 @@ namespace MimeKit {
 		/// <returns>The decoded text.</returns>
 		/// <param name="charset">The charset encoding to use.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="charset"/> is <c>null</c>.
+		/// <paramref name="charset"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.NotSupportedException">
 		/// The <paramref name="charset"/> is not supported.
@@ -703,9 +703,9 @@ namespace MimeKit {
 		/// <param name="encoding">The charset encoding.</param>
 		/// <param name="text">The text content.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="encoding"/> is <c>null</c>.</para>
+		/// <para><paramref name="encoding"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="text"/> is <c>null</c>.</para>
+		/// <para><paramref name="text"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="TextPart"/> has been disposed.
@@ -736,9 +736,9 @@ namespace MimeKit {
 		/// <param name="charset">The charset encoding.</param>
 		/// <param name="text">The text content.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="charset"/> is <c>null</c>.</para>
+		/// <para><paramref name="charset"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="text"/> is <c>null</c>.</para>
+		/// <para><paramref name="text"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.NotSupportedException">
 		/// The <paramref name="charset"/> is not supported.

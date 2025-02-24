@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -67,11 +67,11 @@ namespace MimeKit.IO {
 		/// Adds the stream to the end of the chain.
 		/// </remarks>
 		/// <param name="stream">The stream.</param>
-		/// <param name="leaveOpen"><c>true</c> if the <paramref name="stream"/>
+		/// <param name="leaveOpen"><see langword="true" /> if the <paramref name="stream"/>
 		/// should remain open after the <see cref="ChainedStream"/> is disposed;
-		/// otherwise, <c>false</c>.</param>
+		/// otherwise, <see langword="false" />.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="stream"/> is <c>null</c>.
+		/// <paramref name="stream"/> is <see langword="null"/>.
 		/// </exception>
 		public void Add (Stream stream, bool leaveOpen = false)
 		{
@@ -108,13 +108,13 @@ namespace MimeKit.IO {
 		}
 
 		/// <summary>
-		/// Check whether or not the stream supports reading.
+		/// Check whether the stream supports reading.
 		/// </summary>
 		/// <remarks>
 		/// The <see cref="ChainedStream"/> only supports reading if all of its
 		/// streams support it.
 		/// </remarks>
-		/// <value><c>true</c> if the stream supports reading; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the stream supports reading; otherwise, <see langword="false" />.</value>
 		public override bool CanRead {
 			get {
 				foreach (var stream in streams) {
@@ -127,13 +127,13 @@ namespace MimeKit.IO {
 		}
 
 		/// <summary>
-		/// Check whether or not the stream supports writing.
+		/// Check whether the stream supports writing.
 		/// </summary>
 		/// <remarks>
 		/// The <see cref="ChainedStream"/> only supports writing if all of its
 		/// streams support it.
 		/// </remarks>
-		/// <value><c>true</c> if the stream supports writing; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the stream supports writing; otherwise, <see langword="false" />.</value>
 		public override bool CanWrite {
 			get {
 				foreach (var stream in streams) {
@@ -146,13 +146,13 @@ namespace MimeKit.IO {
 		}
 
 		/// <summary>
-		/// Check whether or not the stream supports seeking.
+		/// Check whether the stream supports seeking.
 		/// </summary>
 		/// <remarks>
 		/// The <see cref="ChainedStream"/> only supports seeking if all of its
 		/// streams support it.
 		/// </remarks>
-		/// <value><c>true</c> if the stream supports seeking; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the stream supports seeking; otherwise, <see langword="false" />.</value>
 		public override bool CanSeek {
 			get {
 				foreach (var stream in streams) {
@@ -165,13 +165,13 @@ namespace MimeKit.IO {
 		}
 
 		/// <summary>
-		/// Check whether or not I/O operations can timeout.
+		/// Check whether I/O operations can time out.
 		/// </summary>
 		/// <remarks>
 		/// The <see cref="ChainedStream"/> only supports timeouts if all of its
 		/// streams support them.
 		/// </remarks>
-		/// <value><c>true</c> if I/O operations can timeout; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if I/O operations can time out; otherwise, <see langword="false" />.</value>
 		public override bool CanTimeout {
 			get { return false; }
 		}
@@ -253,7 +253,7 @@ namespace MimeKit.IO {
 		/// <param name="offset">The offset into the buffer to start reading data.</param>
 		/// <param name="count">The number of bytes to read.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <para><paramref name="offset"/> is less than zero or greater than the length of <paramref name="buffer"/>.</para>
@@ -317,7 +317,7 @@ namespace MimeKit.IO {
 		/// <param name="count">The number of bytes to read.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <para><paramref name="offset"/> is less than zero or greater than the length of <paramref name="buffer"/>.</para>
@@ -385,7 +385,7 @@ namespace MimeKit.IO {
 		/// <param name="offset">The offset of the first byte to write.</param>
 		/// <param name="count">The number of bytes to write.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <para><paramref name="offset"/> is less than zero or greater than the length of <paramref name="buffer"/>.</para>
@@ -451,7 +451,7 @@ namespace MimeKit.IO {
 		/// <param name="count">The number of bytes to write.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <para><paramref name="offset"/> is less than zero or greater than the length of <paramref name="buffer"/>.</para>
@@ -606,7 +606,7 @@ namespace MimeKit.IO {
 		/// to the underlying device.
 		/// </summary>
 		/// <remarks>
-		/// If all of the child streams support writing, then the current child stream
+		/// If all the child streams support writing, then the current child stream
 		/// will be flushed.
 		/// </remarks>
 		/// <exception cref="System.ObjectDisposedException">
@@ -632,7 +632,7 @@ namespace MimeKit.IO {
 		/// to the underlying device.
 		/// </summary>
 		/// <remarks>
-		/// If all of the child streams support writing, then the current child stream
+		/// If all the child streams support writing, then the current child stream
 		/// will be flushed.
 		/// </remarks>
 		/// <returns>A task that represents the asynchronous flush operation.</returns>
@@ -686,8 +686,8 @@ namespace MimeKit.IO {
 		/// Releases the unmanaged resources used by the <see cref="ChainedStream"/> and
 		/// optionally releases the managed resources.
 		/// </remarks>
-		/// <param name="disposing"><c>true</c> to release both managed and unmanaged resources;
-		/// <c>false</c> to release only the unmanaged resources.</param>
+		/// <param name="disposing"><see langword="true" /> to release both managed and unmanaged resources;
+		/// <see langword="false" /> to release only the unmanaged resources.</param>
 		protected override void Dispose (bool disposing)
 		{
 			if (disposing && !disposed) {

@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -76,8 +76,8 @@ namespace UnitTests {
 				var visitor = new TextRfc822HeadersVisitor ();
 				visitor.Visit (message);
 
-				Assert.IsNotNull (visitor.Rfc822Headers, "Rfc822Headers");
-				Assert.AreEqual ("id@localhost", visitor.Rfc822Headers.ContentId, "ContentId");
+				Assert.That (visitor.Rfc822Headers, Is.Not.Null, "Rfc822Headers");
+				Assert.That (visitor.Rfc822Headers.ContentId, Is.EqualTo ("id@localhost"), "ContentId");
 			}
 		}
 	}

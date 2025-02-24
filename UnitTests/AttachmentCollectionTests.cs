@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,8 @@
 // THE SOFTWARE.
 //
 
+using System.Collections;
+
 using MimeKit;
 
 namespace UnitTests {
@@ -37,6 +39,8 @@ namespace UnitTests {
 			var attachments = new AttachmentCollection ();
 			var items = new MimeEntity[10];
 			var data = new byte[1024];
+
+			Assert.That (attachments.IsReadOnly, Is.False, "IsReadOnly");
 
 			using (var stream = new MemoryStream ()) {
 				Assert.Throws<ArgumentException> (() => attachments.Add (string.Empty));
@@ -107,15 +111,15 @@ namespace UnitTests {
 			attachment = (MimePart) attachments.Add (fileName);
 			attachments.Clear ();
 
-			Assert.AreEqual (0, attachments.Count);
-			Assert.IsFalse (attachment.IsDisposed, "Attachment should not have been disposed after Clear().");
+			Assert.That (attachments.Count, Is.EqualTo (0));
+			Assert.That (attachment.IsDisposed, Is.False, "Attachment should not have been disposed after Clear().");
 			attachment.Dispose ();
 
 			attachment = (MimePart) attachments.Add (fileName);
 			attachments.Clear (true);
 
-			Assert.AreEqual (0, attachments.Count);
-			Assert.IsTrue (attachment.IsDisposed, "Attachment should have been disposed after Clear(true).");
+			Assert.That (attachments.Count, Is.EqualTo (0));
+			Assert.That (attachment.IsDisposed, Is.True, "Attachment should have been disposed after Clear(true).");
 		}
 
 		[Test]
@@ -126,19 +130,19 @@ namespace UnitTests {
 			MimePart attachment;
 
 			attachment = (MimePart) attachments.Add (fileName);
-			Assert.AreEqual ("image/jpeg", attachment.ContentType.MimeType);
-			Assert.AreEqual ("girl.jpg", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("girl.jpg", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("girl.jpg", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.Base64, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("image/jpeg"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.Base64));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -150,19 +154,19 @@ namespace UnitTests {
 			MimePart attachment;
 
 			attachment = (MimePart) await attachments.AddAsync (fileName);
-			Assert.AreEqual ("image/jpeg", attachment.ContentType.MimeType);
-			Assert.AreEqual ("girl.jpg", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("girl.jpg", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("girl.jpg", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.Base64, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("image/jpeg"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.Base64));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -174,19 +178,19 @@ namespace UnitTests {
 			MimePart attachment;
 
 			attachment = (MimePart) attachments.Add (fileName);
-			Assert.AreEqual ("image/jpeg", attachment.ContentType.MimeType);
-			Assert.AreEqual ("girl.jpg", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("inline", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("girl.jpg", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("girl.jpg", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.Base64, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("image/jpeg"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("inline"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.Base64));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -198,19 +202,19 @@ namespace UnitTests {
 			MimePart attachment;
 
 			attachment = (MimePart) await attachments.AddAsync (fileName);
-			Assert.AreEqual ("image/jpeg", attachment.ContentType.MimeType);
-			Assert.AreEqual ("girl.jpg", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("inline", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("girl.jpg", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("girl.jpg", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.Base64, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("image/jpeg"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("inline"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.Base64));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -223,19 +227,19 @@ namespace UnitTests {
 			MimePart attachment;
 
 			attachment = (MimePart) attachments.Add (fileName, contentType);
-			Assert.AreEqual (contentType.MimeType, attachment.ContentType.MimeType);
-			Assert.AreEqual ("girl.jpg", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("girl.jpg", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("girl.jpg", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.Base64, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo (contentType.MimeType));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.Base64));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -248,19 +252,19 @@ namespace UnitTests {
 			MimePart attachment;
 
 			attachment = (MimePart) await attachments.AddAsync (fileName, contentType);
-			Assert.AreEqual (contentType.MimeType, attachment.ContentType.MimeType);
-			Assert.AreEqual ("girl.jpg", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("girl.jpg", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("girl.jpg", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.Base64, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo (contentType.MimeType));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.Base64));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -272,19 +276,19 @@ namespace UnitTests {
 			MimePart attachment;
 
 			attachment = (MimePart) attachments.Add (fileName, File.ReadAllBytes (fileName));
-			Assert.AreEqual ("image/jpeg", attachment.ContentType.MimeType);
-			Assert.AreEqual ("girl.jpg", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("girl.jpg", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("girl.jpg", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.Base64, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("image/jpeg"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.Base64));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -297,19 +301,19 @@ namespace UnitTests {
 			MimePart attachment;
 
 			attachment = (MimePart) attachments.Add (fileName, File.ReadAllBytes (fileName), contentType);
-			Assert.AreEqual (contentType.MimeType, attachment.ContentType.MimeType);
-			Assert.AreEqual ("girl.jpg", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("girl.jpg", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("girl.jpg", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.Base64, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo (contentType.MimeType));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.Base64));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -323,19 +327,19 @@ namespace UnitTests {
 			using (var stream = File.OpenRead (fileName))
 				attachment = (MimePart) attachments.Add (fileName, stream);
 
-			Assert.AreEqual ("image/jpeg", attachment.ContentType.MimeType);
-			Assert.AreEqual ("girl.jpg", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("girl.jpg", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("girl.jpg", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.Base64, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("image/jpeg"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.Base64));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -349,19 +353,19 @@ namespace UnitTests {
 			using (var stream = File.OpenRead (fileName))
 				attachment = (MimePart) await attachments.AddAsync (fileName, stream);
 
-			Assert.AreEqual ("image/jpeg", attachment.ContentType.MimeType);
-			Assert.AreEqual ("girl.jpg", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("girl.jpg", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("girl.jpg", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.Base64, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("image/jpeg"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.Base64));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -376,19 +380,19 @@ namespace UnitTests {
 			using (var stream = File.OpenRead (fileName))
 				attachment = (MimePart) attachments.Add (fileName, stream, contentType);
 
-			Assert.AreEqual (contentType.MimeType, attachment.ContentType.MimeType);
-			Assert.AreEqual ("girl.jpg", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("girl.jpg", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("girl.jpg", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.Base64, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo (contentType.MimeType));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.Base64));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -403,19 +407,19 @@ namespace UnitTests {
 			using (var stream = File.OpenRead (fileName))
 				attachment = (MimePart) await attachments.AddAsync (fileName, stream, contentType);
 
-			Assert.AreEqual (contentType.MimeType, attachment.ContentType.MimeType);
-			Assert.AreEqual ("girl.jpg", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("girl.jpg", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("girl.jpg", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.Base64, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo (contentType.MimeType));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.FileName, Is.EqualTo ("girl.jpg"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.Base64));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -427,19 +431,19 @@ namespace UnitTests {
 			MimePart attachment;
 
 			attachment = (MimePart) attachments.Add (fileName);
-			Assert.AreEqual ("text/plain", attachment.ContentType.MimeType);
-			Assert.AreEqual ("lorem-ipsum.txt", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("lorem-ipsum.txt", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("lorem-ipsum.txt", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.SevenBit, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("text/plain"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("lorem-ipsum.txt"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("lorem-ipsum.txt"));
+			Assert.That (attachment.FileName, Is.EqualTo ("lorem-ipsum.txt"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.SevenBit));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -451,19 +455,19 @@ namespace UnitTests {
 			MimePart attachment;
 
 			attachment = (MimePart) await attachments.AddAsync (fileName);
-			Assert.AreEqual ("text/plain", attachment.ContentType.MimeType);
-			Assert.AreEqual ("lorem-ipsum.txt", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("lorem-ipsum.txt", attachment.ContentDisposition.FileName);
-			Assert.AreEqual ("lorem-ipsum.txt", attachment.FileName);
-			Assert.AreEqual (ContentEncoding.SevenBit, attachment.ContentTransferEncoding);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("text/plain"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("lorem-ipsum.txt"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("lorem-ipsum.txt"));
+			Assert.That (attachment.FileName, Is.EqualTo ("lorem-ipsum.txt"));
+			Assert.That (attachment.ContentTransferEncoding, Is.EqualTo (ContentEncoding.SevenBit));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -477,17 +481,17 @@ namespace UnitTests {
 			using (var stream = File.OpenRead (fileName))
 				attachment = attachments.Add ("message.eml", stream);
 
-			Assert.AreEqual ("message/rfc822", attachment.ContentType.MimeType);
-			Assert.AreEqual ("message.eml", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("message.eml", attachment.ContentDisposition.FileName);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("message/rfc822"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("message.eml"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("message.eml"));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -501,17 +505,65 @@ namespace UnitTests {
 			using (var stream = File.OpenRead (fileName))
 				attachment = await attachments.AddAsync ("message.eml", stream);
 
-			Assert.AreEqual ("message/rfc822", attachment.ContentType.MimeType);
-			Assert.AreEqual ("message.eml", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("attachment", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("message.eml", attachment.ContentDisposition.FileName);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("message/rfc822"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("message.eml"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("message.eml"));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
+			attachments.Clear (true);
+		}
+
+		[Test]
+		public void TestAddEmailMessageFallback ()
+		{
+			var fileName = Path.Combine (TestHelper.ProjectDir, "TestData", "images", "girl.jpg");
+			var attachments = new AttachmentCollection ();
+			MimeEntity attachment;
+
+			using (var stream = File.OpenRead (fileName))
+				attachment = attachments.Add ("message.eml", stream);
+
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("application/octet-stream"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("message.eml"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("message.eml"));
+			Assert.That (attachments.Count, Is.EqualTo (1));
+
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
+			attachments.Clear (true);
+		}
+
+		[Test]
+		public async Task TestAddEmailMessageFallbackAsync ()
+		{
+			var fileName = Path.Combine (TestHelper.ProjectDir, "TestData", "images", "girl.jpg");
+			var attachments = new AttachmentCollection ();
+			MimeEntity attachment;
+
+			using (var stream = File.OpenRead (fileName))
+				attachment = await attachments.AddAsync ("message.eml", stream);
+
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("application/octet-stream"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("message.eml"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("attachment"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("message.eml"));
+			Assert.That (attachments.Count, Is.EqualTo (1));
+
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -525,17 +577,17 @@ namespace UnitTests {
 			using (var stream = File.OpenRead (fileName))
 				attachment = attachments.Add ("message.eml", stream);
 
-			Assert.AreEqual ("message/rfc822", attachment.ContentType.MimeType);
-			Assert.AreEqual ("message.eml", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("inline", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("message.eml", attachment.ContentDisposition.FileName);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("message/rfc822"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("message.eml"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("inline"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("message.eml"));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
 		}
 
@@ -549,18 +601,57 @@ namespace UnitTests {
 			using (var stream = File.OpenRead (fileName))
 				attachment = await attachments.AddAsync ("message.eml", stream);
 
-			Assert.AreEqual ("message/rfc822", attachment.ContentType.MimeType);
-			Assert.AreEqual ("message.eml", attachment.ContentType.Name);
-			Assert.NotNull (attachment.ContentDisposition);
-			Assert.AreEqual ("inline", attachment.ContentDisposition.Disposition);
-			Assert.AreEqual ("message.eml", attachment.ContentDisposition.FileName);
-			Assert.AreEqual (1, attachments.Count);
+			Assert.That (attachment.ContentType.MimeType, Is.EqualTo ("message/rfc822"));
+			Assert.That (attachment.ContentType.Name, Is.EqualTo ("message.eml"));
+			Assert.That (attachment.ContentDisposition, Is.Not.Null);
+			Assert.That (attachment.ContentDisposition.Disposition, Is.EqualTo ("inline"));
+			Assert.That (attachment.ContentDisposition.FileName, Is.EqualTo ("message.eml"));
+			Assert.That (attachments.Count, Is.EqualTo (1));
 
-			Assert.IsTrue (attachments.Contains (attachment), "Contains");
-			Assert.AreEqual (0, attachments.IndexOf (attachment), "IndexOf");
-			Assert.IsTrue (attachments.Remove (attachment), "Remove");
-			Assert.AreEqual (0, attachments.Count);
+			Assert.That (attachments.Contains (attachment), Is.True, "Contains");
+			Assert.That (attachments.IndexOf (attachment), Is.EqualTo (0), "IndexOf");
+			Assert.That (attachments.Remove (attachment), Is.True, "Remove");
+			Assert.That (attachments.Count, Is.EqualTo (0));
 			attachments.Clear (true);
+		}
+
+		[Test]
+		public void TestListMethods ()
+		{
+			var attachments = new AttachmentCollection ();
+			string fileName;
+
+			fileName = Path.Combine (TestHelper.ProjectDir, "TestData", "text", "lorem-ipsum.txt");
+			var plain = (MimePart) attachments.Add (fileName);
+
+			fileName = Path.Combine (TestHelper.ProjectDir, "TestData", "images", "girl.jpg");
+			var jpeg = (MimePart) attachments.Add (fileName);
+
+			var copied = new MimeEntity[2];
+			attachments.CopyTo (copied, 0);
+
+			Assert.That (copied[0], Is.EqualTo (plain));
+			Assert.That (copied[1], Is.EqualTo (jpeg));
+
+			attachments.RemoveAt (0);
+			Assert.That (attachments.Count, Is.EqualTo (1));
+			Assert.That (attachments[0], Is.EqualTo (jpeg));
+
+			attachments[0] = plain;
+			Assert.That (attachments.Count, Is.EqualTo (1));
+			Assert.That (attachments[0], Is.EqualTo (plain));
+
+			attachments.Insert (0, jpeg);
+			Assert.That (attachments.Count, Is.EqualTo (2));
+			Assert.That (attachments[0], Is.EqualTo (jpeg));
+			Assert.That (attachments[1], Is.EqualTo (plain));
+
+			int i = 0;
+			foreach (MimeEntity attachment in (IEnumerable) attachments)
+				copied[i++] = attachment;
+
+			Assert.That (copied[0], Is.EqualTo (jpeg));
+			Assert.That (copied[1], Is.EqualTo (plain));
 		}
 	}
 }

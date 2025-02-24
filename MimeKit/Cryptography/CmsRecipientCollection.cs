@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -72,7 +72,7 @@ namespace MimeKit.Cryptography {
 		/// <remarks>
 		/// A <see cref="CmsRecipientCollection"/> is never read-only.
 		/// </remarks>
-		/// <value><c>true</c> if this instance is read only; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if this instance is read only; otherwise, <see langword="false" />.</value>
 		public bool IsReadOnly {
 			get { return false; }
 		}
@@ -85,7 +85,7 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <param name="recipient">The recipient.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="recipient"/> is <c>null</c>.
+		/// <paramref name="recipient"/> is <see langword="null"/>.
 		/// </exception>
 		public void Add (CmsRecipient recipient)
 		{
@@ -99,7 +99,7 @@ namespace MimeKit.Cryptography {
 		/// Clears the recipient collection.
 		/// </summary>
 		/// <remarks>
-		/// Removes all of the recipients from the collection.
+		/// Removes all the recipients from the collection.
 		/// </remarks>
 		public void Clear ()
 		{
@@ -110,13 +110,13 @@ namespace MimeKit.Cryptography {
 		/// Checks if the collection contains the specified recipient.
 		/// </summary>
 		/// <remarks>
-		/// Determines whether or not the collection contains the specified recipient.
+		/// Determines whether the collection contains the specified recipient.
 		/// </remarks>
-		/// <returns><value>true</value> if the specified recipient exists;
-		/// otherwise <value>false</value>.</returns>
+		/// <returns><see langword="true" /> if the specified recipient exists;
+		/// otherwise, <see langword="false" />.</returns>
 		/// <param name="recipient">The recipient.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="recipient"/> is <c>null</c>.
+		/// <paramref name="recipient"/> is <see langword="null"/>.
 		/// </exception>
 		public bool Contains (CmsRecipient recipient)
 		{
@@ -127,16 +127,16 @@ namespace MimeKit.Cryptography {
 		}
 
 		/// <summary>
-		/// Copies all of the recipients in the <see cref="CmsRecipientCollection"/> to the specified array.
+		/// Copies all the recipients in the <see cref="CmsRecipientCollection"/> to the specified array.
 		/// </summary>
 		/// <remarks>
-		/// Copies all of the recipients within the <see cref="CmsRecipientCollection"/> into the array,
+		/// Copies all the recipients within the <see cref="CmsRecipientCollection"/> into the array,
 		/// starting at the specified array index.
 		/// </remarks>
 		/// <param name="array">The array.</param>
 		/// <param name="arrayIndex">The array index.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="array"/> is <c>null</c>.
+		/// <paramref name="array"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="arrayIndex"/> is out of range.
@@ -158,10 +158,10 @@ namespace MimeKit.Cryptography {
 		/// <remarks>
 		/// Removes the specified recipient.
 		/// </remarks>
-		/// <returns><value>true</value> if the recipient was removed; otherwise <value>false</value>.</returns>
+		/// <returns><see langword="true" /> if the recipient was removed; otherwise, <see langword="false" />.</returns>
 		/// <param name="recipient">The recipient.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="recipient"/> is <c>null</c>.
+		/// <paramref name="recipient"/> is <see langword="null"/>.
 		/// </exception>
 		public bool Remove (CmsRecipient recipient)
 		{

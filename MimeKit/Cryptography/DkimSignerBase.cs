@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,9 +58,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="selector">The selector subdividing the domain.</param>
 		/// <param name="algorithm">The signature algorithm.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="domain"/> is <c>null</c>.</para>
+		/// <para><paramref name="domain"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="selector"/> is <c>null</c>.</para>
+		/// <para><paramref name="selector"/> is <see langword="null"/>.</para>
 		/// </exception>
 		protected DkimSignerBase (string domain, string selector, DkimSignatureAlgorithm algorithm = DkimSignatureAlgorithm.RsaSha256)
 		{

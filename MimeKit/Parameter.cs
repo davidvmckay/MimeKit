@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -54,9 +54,9 @@ namespace MimeKit {
 		/// <param name="name">The parameter name.</param>
 		/// <param name="value">The parameter value.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="name"/> is <c>null</c>.</para>
+		/// <para><paramref name="name"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="value"/> is <c>null</c>.</para>
+		/// <para><paramref name="value"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <paramref name="name"/> contains illegal characters.
@@ -91,11 +91,11 @@ namespace MimeKit {
 		/// <param name="name">The parameter name.</param>
 		/// <param name="value">The parameter value.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="encoding"/> is <c>null</c>.</para>
+		/// <para><paramref name="encoding"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="name"/> is <c>null</c>.</para>
+		/// <para><paramref name="name"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="value"/> is <c>null</c>.</para>
+		/// <para><paramref name="value"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <paramref name="name"/> contains illegal characters.
@@ -134,11 +134,11 @@ namespace MimeKit {
 		/// <param name="name">The parameter name.</param>
 		/// <param name="value">The parameter value.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="charset"/> is <c>null</c>.</para>
+		/// <para><paramref name="charset"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="name"/> is <c>null</c>.</para>
+		/// <para><paramref name="name"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="value"/> is <c>null</c>.</para>
+		/// <para><paramref name="value"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <paramref name="name"/> contains illegal characters.
@@ -249,7 +249,7 @@ namespace MimeKit {
 		/// adhere to the MIME specifications, this property can be used to force MimeKit to quote parameter values that would normally
 		/// not require quoting.</para>
 		/// </remarks>
-		/// <value><c>true</c> if the parameter value should always be quoted; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the parameter value should always be quoted; otherwise, <see langword="false" />.</value>
 		public bool AlwaysQuote {
 			get { return alwaysQuote; }
 			set {
@@ -269,7 +269,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <value>The parameter value.</value>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="value"/> is <c>null</c>.
+		/// <paramref name="value"/> is <see langword="null"/>.
 		/// </exception>
 		public string Value {
 			get { return text; }
@@ -392,16 +392,22 @@ namespace MimeKit {
 			return method;
 		}
 
-		static EncodeMethod GetEncodeMethod (byte[] value, int length)
+		static EncodeMethod GetEncodeMethod (FormatOptions options, byte[] value, int length)
 		{
 			var method = EncodeMethod.None;
 
 			for (int i = 0; i < length; i++) {
-				if (value[i] >= 127 || value[i].IsCtrl ())
-					return EncodeMethod.Rfc2231;
+				if (value[i] < 128) {
+					if (value[i].IsCtrl ())
+						return EncodeMethod.Rfc2231;
 
-				if (!value[i].IsAttr ())
+					if (!value[i].IsAttr ())
+						method = EncodeMethod.Quote;
+				} else if (options.International) {
 					method = EncodeMethod.Quote;
+				} else {
+					return EncodeMethod.Rfc2231;
+				}
 			}
 
 			return method;
@@ -429,20 +435,32 @@ namespace MimeKit {
 			}
 		}
 
-		static bool Rfc2231GetNextValue (FormatOptions options, string charset, Encoder encoder, HexEncoder hex, char[] chars, ref int index, ref byte[] bytes, ref byte[] encoded, int maxLength, out string value)
+		static bool Rfc2231GetNextValue (FormatOptions options, string charset, Encoder encoder, HexEncoder hex, char[] chars, ref bool isFirstValue, ref int index, ref byte[] bytes, ref byte[] encoded, int maxLength, out string value)
 		{
 			int length = chars.Length - index;
+			bool requiresCharset = false;
+			int charsetLength = 0;
 
-			if (length < maxLength) {
-				switch (GetEncodeMethod (options, chars, index, length)) {
-				case EncodeMethod.Quote:
-					value = MimeUtils.Quote (chars.AsSpan (index, length));
-					index += length;
-					return false;
-				case EncodeMethod.None:
-					value = new string (chars, index, length);
-					index += length;
-					return false;
+			// only the first value gets a charset declaration
+			if (isFirstValue) {
+				// check if we'll need to encode *any* of the values
+				var method = GetEncodeMethod (options, chars, 0, chars.Length);
+
+				// if any value needs to be encoded, we'll need to declare the charset
+				requiresCharset = method == EncodeMethod.Rfc2231;
+
+				if (requiresCharset) {
+					charsetLength = charset.Length + 2;
+
+					if (charsetLength >= maxLength) {
+						// this should only happen in rare cases where the parameter name + the charset name exceeds the max (line) length
+						value = charset + "''";
+						isFirstValue = false;
+						return true;
+					}
+
+					// reduce the max allowed length to account for the charset declaration
+					maxLength -= charsetLength;
 				}
 			}
 
@@ -465,17 +483,17 @@ namespace MimeKit {
 				count = encoder.GetBytes (chars, index, length, bytes, 0, true);
 
 				// Note: the first chunk needs to be encoded in order to declare the charset
-				if (index > 0 || charset == "us-ascii") {
-					var method = GetEncodeMethod (bytes, count);
+				if (!requiresCharset) {
+					var method = GetEncodeMethod (options, bytes, count);
 
 					if (method == EncodeMethod.Quote) {
-						value = MimeUtils.Quote (Encoding.ASCII.GetString (bytes, 0, count));
+						value = MimeUtils.Quote (Encoding.UTF8.GetString (bytes, 0, count));
 						index += length;
 						return false;
 					}
 
 					if (method == EncodeMethod.None) {
-						value = Encoding.ASCII.GetString (bytes, 0, count);
+						value = Encoding.UTF8.GetString (bytes, 0, count);
 						index += length;
 						return false;
 					}
@@ -485,14 +503,11 @@ namespace MimeKit {
 				if (encoded.Length < n)
 					Array.Resize<byte> (ref encoded, n);
 
-				// only the first value gets a charset declaration
-				int charsetLength = index == 0 ? charset.Length + 2 : 0;
-
 				n = hex.Encode (bytes, 0, count, encoded);
-				if (n > 3 && (charsetLength + n) > maxLength) {
+				if (length > 1 && n > 3 && n > maxLength) {
 					int x = 0;
 
-					for (int i = n - 1; i >= 0 && charsetLength + i >= maxLength; i--) {
+					for (int i = n - 1; i >= 0 && i >= maxLength; i--) {
 						if (encoded[i] == (byte) '%')
 							x--;
 						else
@@ -506,10 +521,13 @@ namespace MimeKit {
 					continue;
 				}
 
-				if (index == 0)
+				if (requiresCharset) {
 					value = charset + "''" + Encoding.ASCII.GetString (encoded, 0, n);
-				else
+					isFirstValue = false;
+				} else {
 					value = Encoding.ASCII.GetString (encoded, 0, n);
+				}
+
 				index += length;
 				return true;
 			} while (true);
@@ -517,21 +535,23 @@ namespace MimeKit {
 
 		void EncodeRfc2231 (FormatOptions options, ref ValueStringBuilder builder, ref int lineLength, Encoding headerEncoding)
 		{
-			var bestEncoding = options.International ? CharsetUtils.UTF8 : GetBestEncoding (Value, encoding ?? headerEncoding);
-			int maxLength = options.MaxLineLength - (Name.Length + 6);
+			// Note: Arguably, this should be: bestEncoding = encoding ?? GetBestEncoding (Value, headerEncoding);
+			var bestEncoding = GetBestEncoding (Value, encoding ?? headerEncoding);
+			int maxLength = Math.Max (options.MaxLineLength - (Name.Length + 6), 3);
 			var charset = CharsetUtils.GetMimeCharset (bestEncoding);
 			var encoder = (Encoder) bestEncoding.GetEncoder ();
 			var bytes = new byte[Math.Max (maxLength, 6)];
 			var hexbuf = new byte[bytes.Length * 3 + 3];
 			var chars = Value.ToCharArray ();
 			var hex = new HexEncoder ();
+			var isFirstValue = true;
 			int index = 0, i = 0;
 
 			do {
 				builder.Append (';');
 				lineLength++;
 
-				bool encoded = Rfc2231GetNextValue (options, charset, encoder, hex, chars, ref index, ref bytes, ref hexbuf, maxLength, out string value);
+				bool encoded = Rfc2231GetNextValue (options, charset, encoder, hex, chars, ref isFirstValue, ref index, ref bytes, ref hexbuf, maxLength, out string value);
 				int length = Name.Length + (encoded ? 1 : 0) + 1 + value.Length;
 
 				if (i == 0 && index == chars.Length) {
@@ -653,7 +673,8 @@ namespace MimeKit {
 
 		void EncodeRfc2047 (FormatOptions options, ref ValueStringBuilder builder, ref int lineLength, Encoding headerEncoding)
 		{
-			var bestEncoding = options.International ? CharsetUtils.UTF8 : GetBestEncoding (Value, encoding ?? headerEncoding);
+			// Note: Arguably, this should be: bestEncoding = encoding ?? GetBestEncoding (Value, headerEncoding);
+			var bestEncoding = GetBestEncoding (Value, encoding ?? headerEncoding);
 			var charset = CharsetUtils.GetMimeCharset (bestEncoding);
 			var encoder = (Encoder) bestEncoding.GetEncoder ();
 			int index = 0;

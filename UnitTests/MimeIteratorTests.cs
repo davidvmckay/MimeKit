@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -134,32 +134,32 @@ namespace UnitTests {
 			var iter = new MimeIterator (message);
 			int i = 0;
 
-			Assert.IsTrue (iter.MoveNext (), "Initialize");
+			Assert.That (iter.MoveNext (), Is.True, "Initialize");
 			do {
 				var current = iter.Current;
 				var parent = iter.Parent;
 
-				Assert.AreEqual (expectedDepths[i], iter.Depth, "Depth #{0}", i);
-				Assert.AreEqual (expectedParents[i], parent, "Parent #{0}", i);
-				Assert.IsInstanceOf (expectedTypes[i], current, "Type #{0}", i);
-				Assert.AreEqual (expectedPathSpecifiers[i], iter.PathSpecifier, "PathSpecifier #{0}", i);
+				Assert.That (iter.Depth, Is.EqualTo (expectedDepths[i]), $"Depth #{i}");
+				Assert.That (parent, Is.EqualTo (expectedParents[i]), $"Parent #{i}");
+				Assert.That (current, Is.InstanceOf (expectedTypes[i]), $"Type #{i}");
+				Assert.That (iter.PathSpecifier, Is.EqualTo (expectedPathSpecifiers[i]), $"PathSpecifier #{i}");
 				i++;
 			} while (iter.MoveNext ());
 
-			Assert.AreEqual (expectedTypes.Length, i);
+			Assert.That (i, Is.EqualTo (expectedTypes.Length));
 
 			iter.Reset ();
 			i = 0;
 
-			Assert.IsTrue (iter.MoveNext (), "Reset");
+			Assert.That (iter.MoveNext (), Is.True, "Reset");
 			do {
 				var current = iter.Current;
 				var parent = iter.Parent;
 
-				Assert.AreEqual (expectedDepths[i], iter.Depth, "Reset Depth #{0}", i);
-				Assert.AreEqual (expectedParents[i], parent, "Reset Parent #{0}", i);
-				Assert.IsInstanceOf (expectedTypes[i], current, "Reset Type #{0}", i);
-				Assert.AreEqual (expectedPathSpecifiers[i], iter.PathSpecifier, "Reset PathSpecifier #{0}", i);
+				Assert.That (iter.Depth, Is.EqualTo (expectedDepths[i]), $"Reset Depth #{i}");
+				Assert.That (parent, Is.EqualTo (expectedParents[i]), $"Reset Parent #{i}");
+				Assert.That (current, Is.InstanceOf (expectedTypes[i]), $"Reset Type #{i}");
+				Assert.That (iter.PathSpecifier, Is.EqualTo (expectedPathSpecifiers[i]), $"Reset PathSpecifier #{i}");
 				i++;
 			} while (iter.MoveNext ());
 		}
@@ -178,11 +178,11 @@ namespace UnitTests {
 			foreach (var path in paths) {
 				int i = expectedPathSpecifiers.IndexOf (path);
 
-				Assert.IsTrue (iter.MoveTo (expectedPathSpecifiers[i]), "MoveTo {0}", expectedPathSpecifiers[i]);
-				Assert.AreEqual (expectedPathSpecifiers[i], iter.PathSpecifier, "PathSpecifier {0}", expectedPathSpecifiers[i]);
-				Assert.AreEqual (expectedParents[i], iter.Parent, "Parent {0}", expectedPathSpecifiers[i]);
-				Assert.IsInstanceOf (expectedTypes[i], iter.Current, "Type {0}", expectedPathSpecifiers[i]);
-				Assert.AreEqual (expectedDepths[i], iter.Depth, "Depth {0}", expectedPathSpecifiers[i]);
+				Assert.That (iter.MoveTo (expectedPathSpecifiers[i]), Is.True, $"MoveTo {expectedPathSpecifiers[i]}");
+				Assert.That (iter.PathSpecifier, Is.EqualTo (expectedPathSpecifiers[i]), $"PathSpecifier {expectedPathSpecifiers[i]}");
+				Assert.That (iter.Parent, Is.EqualTo (expectedParents[i]), $"Parent {expectedPathSpecifiers[i]}");
+				Assert.That (iter.Current, Is.InstanceOf (expectedTypes[i]), $"Type {expectedPathSpecifiers[i]}");
+				Assert.That (iter.Depth, Is.EqualTo (expectedDepths[i]), $"Depth {expectedPathSpecifiers[i]}");
 			}
 		}
 	}

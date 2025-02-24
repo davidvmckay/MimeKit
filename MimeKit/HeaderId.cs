@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ namespace MimeKit {
 	/// An enumeration of common header fields.
 	/// </summary>
 	/// <remarks>
-	/// Comparing enum  values is not only faster, but less error prone than
+	/// Comparing enum  values is not only faster, but less error-prone than
 	/// comparing strings.
 	/// </remarks>
 	public enum HeaderId {
@@ -121,11 +121,20 @@ namespace MimeKit {
 		/// <summary>
 		/// The Auto-Submitted header field.
 		/// </summary>
+		/// <remarks>
+		/// The header as defined in <a href="https://www.rfc-editor.org/rfc/rfc3834">RFC3834</a>.
+		/// </remarks>
 		AutoSubmitted,
 
 		/// <summary>
 		/// The Autosubmitted header field.
 		/// </summary>
+		/// <remarks>
+		/// <note type="warning">
+		/// <para>This is a legacy header as defined in <a href="https://datatracker.ietf.org/doc/html/rfc2156">RFC2156</a>.</para>
+		/// <para>Most likely, you want to use <see cref="AutoSubmitted"/> instead.</para>
+		/// </note>
+		/// </remarks>
 		Autosubmitted,
 
 		/// <summary>
@@ -844,12 +853,19 @@ namespace MimeKit {
 
 		static HeaderIdExtensions ()
 		{
-			var values = (HeaderId[]) Enum.GetValues (typeof (HeaderId));
+#if NET8_0_OR_GREATER
+			var values = Enum.GetValuesAsUnderlyingType<HeaderId> ();
+#else
+			var values = Enum.GetValues (typeof (HeaderId));
+#endif
 
 			IdMapping = new Dictionary<string, HeaderId> (values.Length - 1, MimeUtils.OrdinalIgnoreCase);
 
-			for (int i = 0; i < values.Length - 1; i++)
-				IdMapping.Add (HeaderNames[i], values[i]);
+			for (int i = 0; i < values.Length - 1; i++) {
+				var value = (HeaderId) values.GetValue (i);
+
+				IdMapping.Add (HeaderNames[i], value);
+			}
 		}
 
 		/// <summary>

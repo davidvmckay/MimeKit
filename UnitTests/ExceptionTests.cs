@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
+
+#if NET6_0
 
 #pragma warning disable SYSLIB0011
 
@@ -47,8 +49,8 @@ namespace UnitTests {
 				stream.Position = 0;
 
 				var ex = (ParseException) formatter.Deserialize (stream);
-				Assert.AreEqual (expected.TokenIndex, ex.TokenIndex, "Unexpected TokenIndex.");
-				Assert.AreEqual (expected.ErrorIndex, ex.ErrorIndex, "Unexpected ErrorIndex.");
+				Assert.That (ex.TokenIndex, Is.EqualTo (expected.TokenIndex), "Unexpected TokenIndex.");
+				Assert.That (ex.ErrorIndex, Is.EqualTo (expected.ErrorIndex), "Unexpected ErrorIndex.");
 			}
 		}
 
@@ -63,7 +65,7 @@ namespace UnitTests {
 				stream.Position = 0;
 
 				var ex = (CertificateNotFoundException) formatter.Deserialize (stream);
-				Assert.IsTrue (expected.Mailbox.Equals (ex.Mailbox), "Unexpected Mailbox.");
+				Assert.That (ex.Mailbox, Is.EqualTo (expected.Mailbox), "Unexpected Mailbox.");
 			}
 		}
 
@@ -78,7 +80,7 @@ namespace UnitTests {
 				stream.Position = 0;
 
 				var ex = (DigitalSignatureVerifyException) formatter.Deserialize (stream);
-				Assert.AreEqual (expected.KeyId, ex.KeyId, "Unexpected KeyId.");
+				Assert.That (ex.KeyId, Is.EqualTo (expected.KeyId), "Unexpected KeyId.");
 			}
 
 			expected = new DigitalSignatureVerifyException ("Message", new Exception ("InnerException"));
@@ -89,7 +91,7 @@ namespace UnitTests {
 				stream.Position = 0;
 
 				var ex = (DigitalSignatureVerifyException) formatter.Deserialize (stream);
-				Assert.AreEqual (expected.KeyId, ex.KeyId, "Unexpected KeyId.");
+				Assert.That (ex.KeyId, Is.EqualTo (expected.KeyId), "Unexpected KeyId.");
 			}
 
 			expected = new DigitalSignatureVerifyException (0xdeadbeef, "Message");
@@ -100,7 +102,7 @@ namespace UnitTests {
 				stream.Position = 0;
 
 				var ex = (DigitalSignatureVerifyException) formatter.Deserialize (stream);
-				Assert.AreEqual (expected.KeyId, ex.KeyId, "Unexpected KeyId.");
+				Assert.That (ex.KeyId, Is.EqualTo (expected.KeyId), "Unexpected KeyId.");
 			}
 
 			expected = new DigitalSignatureVerifyException ("Message");
@@ -111,7 +113,7 @@ namespace UnitTests {
 				stream.Position = 0;
 
 				var ex = (DigitalSignatureVerifyException) formatter.Deserialize (stream);
-				Assert.AreEqual (expected.KeyId, ex.KeyId, "Unexpected KeyId.");
+				Assert.That (ex.KeyId, Is.EqualTo (expected.KeyId), "Unexpected KeyId.");
 			}
 		}
 
@@ -123,7 +125,7 @@ namespace UnitTests {
 				stream.Position = 0;
 
 				var ex = (PrivateKeyNotFoundException) formatter.Deserialize (stream);
-				Assert.AreEqual (expected.KeyId, ex.KeyId, "Unexpected KeyId.");
+				Assert.That (ex.KeyId, Is.EqualTo (expected.KeyId), "Unexpected KeyId.");
 			}
 		}
 
@@ -149,7 +151,7 @@ namespace UnitTests {
 				stream.Position = 0;
 
 				var ex = (PublicKeyNotFoundException) formatter.Deserialize (stream);
-				Assert.IsTrue (expected.Mailbox.Equals (ex.Mailbox), "Unexpected Mailbox.");
+				Assert.That (ex.Mailbox, Is.EqualTo (expected.Mailbox), "Unexpected Mailbox.");
 			}
 		}
 
@@ -164,7 +166,7 @@ namespace UnitTests {
 				stream.Position = 0;
 
 				var ex = (TnefException) formatter.Deserialize (stream);
-				Assert.AreEqual (expected.Error, ex.Error, "Unexpected Error.");
+				Assert.That (ex.Error, Is.EqualTo (expected.Error), "Unexpected Error.");
 			}
 
 			expected = new TnefException (TnefComplianceStatus.AttributeOverflow, "Message");
@@ -175,10 +177,12 @@ namespace UnitTests {
 				stream.Position = 0;
 
 				var ex = (TnefException) formatter.Deserialize (stream);
-				Assert.AreEqual (expected.Error, ex.Error, "Unexpected Error.");
+				Assert.That (ex.Error, Is.EqualTo (expected.Error), "Unexpected Error.");
 			}
 		}
 	}
 }
 
 #pragma warning restore SYSLIB0011
+
+#endif // NET6_0

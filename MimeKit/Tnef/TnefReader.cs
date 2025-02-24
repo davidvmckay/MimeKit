@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -226,7 +226,7 @@ namespace MimeKit.Tnef {
 		/// <param name="defaultMessageCodepage">The default message codepage.</param>
 		/// <param name="complianceMode">The compliance mode.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="inputStream"/> is <c>null</c>.
+		/// <paramref name="inputStream"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="defaultMessageCodepage"/> is not a valid codepage.
@@ -268,7 +268,7 @@ namespace MimeKit.Tnef {
 		/// </remarks>
 		/// <param name="inputStream">The input stream.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="inputStream"/> is <c>null</c>.
+		/// <paramref name="inputStream"/> is <see langword="null"/>.
 		/// </exception>
 		public TnefReader (Stream inputStream) : this (inputStream, 0, TnefComplianceMode.Loose)
 		{
@@ -480,7 +480,7 @@ namespace MimeKit.Tnef {
 
 			UpdateChecksum (input, inputIndex, 4);
 
-			var result = BinaryPrimitives.ReadInt32LittleEndian (input.AsSpan(inputIndex));
+			var result = BinaryPrimitives.ReadInt32LittleEndian (input.AsSpan (inputIndex));
 
 			inputIndex += 4;
 
@@ -537,14 +537,14 @@ namespace MimeKit.Tnef {
 			return result;
 		}
 
-		internal bool Seek (int offset)
+		internal bool Skip (int count)
 		{
 			CheckDisposed ();
 
-			int left = offset - StreamOffset;
-
-			if (left <= 0)
+			if (count <= 0)
 				return true;
+
+			int left = count;
 
 			do {
 				int n = Math.Min (inputEnd - inputIndex, left);
@@ -570,7 +570,7 @@ namespace MimeKit.Tnef {
 			int offset = AttributeRawValueStreamOffset + AttributeRawValueLength;
 			int expected, actual;
 
-			if (!Seek (offset))
+			if (!Skip (offset - StreamOffset))
 				return false;
 
 			// Note: ReadInt16() will update the checksum, so we need to capture it here
@@ -595,7 +595,7 @@ namespace MimeKit.Tnef {
 		/// <remarks>
 		/// Advances to the next attribute in the TNEF stream.
 		/// </remarks>
-		/// <returns><c>true</c> if there is another attribute available to be read; otherwise <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if there is another attribute available to be read; otherwise, <see langword="false" />.</returns>
 		/// <exception cref="TnefException">
 		/// The TNEF stream is corrupted or invalid.
 		/// </exception>
@@ -660,7 +660,7 @@ namespace MimeKit.Tnef {
 		/// <param name="offset">The offset into the buffer to start reading data.</param>
 		/// <param name="count">The number of bytes to read.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <para><paramref name="offset"/> is less than zero or greater than the length of <paramref name="buffer"/>.</para>
@@ -744,8 +744,8 @@ namespace MimeKit.Tnef {
 		/// Releases the unmanaged resources used by the <see cref="TnefReader"/> and
 		/// optionally releases the managed resources.
 		/// </remarks>
-		/// <param name="disposing"><c>true</c> to release both managed and unmanaged resources;
-		/// <c>false</c> to release only the unmanaged resources.</param>
+		/// <param name="disposing"><see langword="true" /> to release both managed and unmanaged resources;
+		/// <see langword="false" /> to release only the unmanaged resources.</param>
 		protected virtual void Dispose (bool disposing)
 		{
 			if (disposing && !closed)

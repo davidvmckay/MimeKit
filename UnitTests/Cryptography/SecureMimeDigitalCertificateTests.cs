@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,8 @@ namespace UnitTests.Cryptography {
 		[Test]
 		public void TestArgumentExceptions ()
 		{
-			var signer = new CmsSigner (Path.Combine (TestHelper.ProjectDir, "TestData", "smime", "smime.pfx"), "no.secret");
+			var rsa = SecureMimeTestsBase.RsaCertificate;
+			var signer = new CmsSigner (rsa.FileName, "no.secret");
 
 			Assert.Throws<ArgumentNullException> (() => new SecureMimeDigitalCertificate (null));
 			Assert.Throws<ArgumentNullException> (() => new SecureMimeDigitalSignature (null, signer.Certificate));
@@ -79,48 +80,48 @@ namespace UnitTests.Cryptography {
 				certificate = GetCertificate (fileName);
 				digital = new SecureMimeDigitalCertificate (certificate);
 
-				Assert.AreEqual (PublicKeyAlgorithm.Dsa, digital.PublicKeyAlgorithm, "PublicKeyAlgorithm: {0}", fileName);
+				Assert.That (digital.PublicKeyAlgorithm, Is.EqualTo (PublicKeyAlgorithm.Dsa), $"PublicKeyAlgorithm: {fileName}");
 
 				certificate2 = certificate.AsX509Certificate2 ();
 				digital2 = new WindowsSecureMimeDigitalCertificate (certificate2);
 
-				Assert.AreEqual (PublicKeyAlgorithm.Dsa, digital2.PublicKeyAlgorithm, "Windows PublicKeyAlgorithm {0}", fileName);
+				Assert.That (digital2.PublicKeyAlgorithm, Is.EqualTo (PublicKeyAlgorithm.Dsa), $"Windows PublicKeyAlgorithm {fileName}");
 			}
 
 			foreach (var fileName in rsa) {
 				certificate = GetCertificate (fileName);
 				digital = new SecureMimeDigitalCertificate (certificate);
 
-				Assert.AreEqual (PublicKeyAlgorithm.RsaGeneral, digital.PublicKeyAlgorithm, "PublicKeyAlgorithm: {0}", fileName);
+				Assert.That (digital.PublicKeyAlgorithm, Is.EqualTo (PublicKeyAlgorithm.RsaGeneral), $"PublicKeyAlgorithm: {fileName}");
 
 				certificate2 = certificate.AsX509Certificate2 ();
 				digital2 = new WindowsSecureMimeDigitalCertificate (certificate2);
 
-				Assert.AreEqual (PublicKeyAlgorithm.RsaGeneral, digital2.PublicKeyAlgorithm, "Windows PublicKeyAlgorithm {0}", fileName);
+				Assert.That (digital2.PublicKeyAlgorithm, Is.EqualTo (PublicKeyAlgorithm.RsaGeneral), $"Windows PublicKeyAlgorithm {fileName}");
 			}
 
 			foreach (var fileName in ec) {
 				certificate = GetCertificate (fileName);
 				digital = new SecureMimeDigitalCertificate (certificate);
 
-				Assert.AreEqual (PublicKeyAlgorithm.EllipticCurve, digital.PublicKeyAlgorithm, "PublicKeyAlgorithm: {0}", fileName);
+				Assert.That (digital.PublicKeyAlgorithm, Is.EqualTo (PublicKeyAlgorithm.EllipticCurve), $"PublicKeyAlgorithm: {fileName}");
 
 				certificate2 = certificate.AsX509Certificate2 ();
 				digital2 = new WindowsSecureMimeDigitalCertificate (certificate2);
 
-				Assert.AreEqual (PublicKeyAlgorithm.EllipticCurve, digital2.PublicKeyAlgorithm, "Windows PublicKeyAlgorithm {0}", fileName);
+				Assert.That (digital2.PublicKeyAlgorithm, Is.EqualTo (PublicKeyAlgorithm.EllipticCurve), $"Windows PublicKeyAlgorithm {fileName}");
 			}
 
 			//foreach (var fileName in dh) {
 			//	certificate = GetCertificate (fileName);
 			//	digital = new SecureMimeDigitalCertificate (certificate);
 
-			//	Assert.AreEqual (PublicKeyAlgorithm.DiffieHellman, digital.PublicKeyAlgorithm, "PublicKeyAlgorithm: {0}", fileName);
+			//	Assert.That (digital.PublicKeyAlgorithm, Is.EqualTo (PublicKeyAlgorithm.DiffieHellman), $"PublicKeyAlgorithm: {fileName}");
 
 			//	certificate2 = certificate.AsX509Certificate2 ();
 			//	digital2 = new WindowsSecureMimeDigitalCertificate (certificate2);
 
-			//	Assert.AreEqual (PublicKeyAlgorithm.DiffieHellman, digital2.PublicKeyAlgorithm, "Windows PublicKeyAlgorithm {0}", fileName);
+			//	Assert.That (digital2.PublicKeyAlgorithm, Is.EqualTo (PublicKeyAlgorithm.DiffieHellman), $"Windows PublicKeyAlgorithm {fileName}");
 			//}
 		}
 	}

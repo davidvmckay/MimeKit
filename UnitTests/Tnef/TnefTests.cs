@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -100,27 +100,27 @@ namespace UnitTests.Tnef {
 						//Console.WriteLine ("RecipientTable Property: {0} = {1}", prop.PropertyTag.Id, addr);
 						break;
 					case TnefPropertyId.Addrtype:
-						Assert.AreEqual (typeof (string), type);
+						Assert.That (type, Is.EqualTo (typeof (string)));
 						value = prop.ReadValueAsString ();
 						break;
 					case TnefPropertyId.Rowid:
-						Assert.AreEqual (typeof (int), type);
+						Assert.That (type, Is.EqualTo (typeof (int)));
 						value = prop.ReadValueAsInt64 ();
 						break;
 					case TnefPropertyId.SearchKey:
-						Assert.AreEqual (typeof (byte[]), type);
+						Assert.That (type, Is.EqualTo (typeof (byte[])));
 						value = prop.ReadValueAsBytes ();
 						break;
 					case TnefPropertyId.SendRichInfo:
-						Assert.AreEqual (typeof (bool), type);
+						Assert.That (type, Is.EqualTo (typeof (bool)));
 						value = prop.ReadValueAsBoolean ();
 						break;
 					case TnefPropertyId.DisplayType:
-						Assert.AreEqual (typeof (int), type);
+						Assert.That (type, Is.EqualTo (typeof (int)));
 						value = prop.ReadValueAsInt16 ();
 						break;
 					case TnefPropertyId.SendInternetEncoding:
-						Assert.AreEqual (typeof (int), type);
+						Assert.That (type, Is.EqualTo (typeof (int)));
 						value = prop.ReadValueAsBoolean ();
 						break;
 					default:
@@ -147,13 +147,13 @@ namespace UnitTests.Tnef {
 
 						value = prop.ReadValue ();
 						//Console.WriteLine ("RecipientTable Property (unhandled): {0} = {1}", prop.PropertyTag.Id, value);
-						Assert.AreEqual (type, value.GetType (), "Unexpected value type for {0}: {1}", prop.PropertyTag, value.GetType ().Name);
+						Assert.That (value.GetType (), Is.EqualTo (type), $"Unexpected value type for {prop.PropertyTag}: {value.GetType ().Name}");
 						break;
 					}
 				}
 
-				Assert.IsNotNull (list, "The recipient type was never specified.");
-				Assert.IsNotNull (addr, "The address was never specified.");
+				Assert.That (list, Is.Not.Null, "The recipient type was never specified.");
+				Assert.That (addr, Is.Not.Null, "The address was never specified.");
 
 				list?.Add (new MailboxAddress (name, addr));
 			}
@@ -177,7 +177,7 @@ namespace UnitTests.Tnef {
 						message.MessageId = prop.ReadValueAsString ();
 						//Console.WriteLine ("Message Property: {0} = {1}", prop.PropertyTag.Id, message.MessageId);
 					} else {
-						Assert.Fail ("Unknown property type for Message-Id: {0}", prop.PropertyTag.ValueTnefType);
+						Assert.Fail ($"Unknown property type for Message-Id: {prop.PropertyTag.ValueTnefType}");
 					}
 					break;
 				case TnefPropertyId.Subject:
@@ -186,7 +186,7 @@ namespace UnitTests.Tnef {
 						message.Subject = prop.ReadValueAsString ();
 						//Console.WriteLine ("Message Property: {0} = {1}", prop.PropertyTag.Id, message.Subject);
 					} else {
-						Assert.Fail ("Unknown property type for Subject: {0}", prop.PropertyTag.ValueTnefType);
+						Assert.Fail ($"Unknown property type for Subject: {prop.PropertyTag.ValueTnefType}");
 					}
 					break;
 				case TnefPropertyId.RtfCompressed:
@@ -217,7 +217,7 @@ namespace UnitTests.Tnef {
 
 						//Console.WriteLine ("Message Property: {0} = <compressed rtf data>", prop.PropertyTag.Id);
 					} else {
-						Assert.Fail ("Unknown property type for {0}: {1}", prop.PropertyTag.Id, prop.PropertyTag.ValueTnefType);
+						Assert.Fail ($"Unknown property type for {prop.PropertyTag.Id}: {prop.PropertyTag.ValueTnefType}");
 					}
 					break;
 				case TnefPropertyId.BodyHtml:
@@ -232,7 +232,7 @@ namespace UnitTests.Tnef {
 
 						//Console.WriteLine ("Message Property: {0} = {1}", prop.PropertyTag.Id, html.Text);
 					} else {
-						Assert.Fail ("Unknown property type for {0}: {1}", prop.PropertyTag.Id, prop.PropertyTag.ValueTnefType);
+						Assert.Fail ($"Unknown property type for {prop.PropertyTag.Id}: {prop.PropertyTag.ValueTnefType}");
 					}
 					break;
 				case TnefPropertyId.Body:
@@ -247,127 +247,127 @@ namespace UnitTests.Tnef {
 
 						//Console.WriteLine ("Message Property: {0} = {1}", prop.PropertyTag.Id, plain.Text);
 					} else {
-						Assert.Fail ("Unknown property type for {0}: {1}", prop.PropertyTag.Id, prop.PropertyTag.ValueTnefType);
+						Assert.Fail ($"Unknown property type for {prop.PropertyTag.Id}: {prop.PropertyTag.ValueTnefType}");
 					}
 					break;
 				case TnefPropertyId.AlternateRecipientAllowed:
-					Assert.AreEqual (typeof (bool), type);
+					Assert.That (type, Is.EqualTo (typeof (bool)));
 					value = prop.ReadValueAsBoolean ();
 					break;
 				case TnefPropertyId.MessageClass:
-					Assert.AreEqual (typeof (string), type);
+					Assert.That (type, Is.EqualTo (typeof (string)));
 					value = prop.ReadValueAsString ();
 					break;
 				case TnefPropertyId.Importance:
-					Assert.AreEqual (typeof (int), type);
+					Assert.That (type, Is.EqualTo (typeof (int)));
 					value = prop.ReadValueAsInt16 ();
 					break;
 				case TnefPropertyId.Priority:
-					Assert.AreEqual (typeof (int), type);
+					Assert.That (type, Is.EqualTo (typeof (int)));
 					value = prop.ReadValueAsInt16 ();
 					break;
 				case TnefPropertyId.Sensitivity:
-					Assert.AreEqual (typeof (int), type);
+					Assert.That (type, Is.EqualTo (typeof (int)));
 					value = prop.ReadValueAsInt16 ();
 					break;
 				case TnefPropertyId.ClientSubmitTime:
-					Assert.AreEqual (typeof (DateTime), type);
+					Assert.That (type, Is.EqualTo (typeof (DateTime)));
 					value = prop.ReadValueAsDateTime ();
 					break;
 				case TnefPropertyId.SubjectPrefix:
-					Assert.AreEqual (typeof (string), type);
+					Assert.That (type, Is.EqualTo (typeof (string)));
 					subjectPrefix = prop.ReadValueAsString ();
 					break;
 				case TnefPropertyId.MessageSubmissionId:
-					Assert.AreEqual (typeof (byte[]), type);
+					Assert.That (type, Is.EqualTo (typeof (byte[])));
 					value = prop.ReadValueAsString ();
 					break;
 				case TnefPropertyId.ConversationTopic:
-					Assert.AreEqual (typeof (string), type);
+					Assert.That (type, Is.EqualTo (typeof (string)));
 					value = prop.ReadValueAsString ();
 					break;
 				case TnefPropertyId.ConversationIndex:
-					Assert.AreEqual (typeof (byte[]), type);
+					Assert.That (type, Is.EqualTo (typeof (byte[])));
 					value = prop.ReadValueAsBytes ();
 					break;
 				case TnefPropertyId.SenderName:
-					Assert.AreEqual (typeof (string), type);
+					Assert.That (type, Is.EqualTo (typeof (string)));
 					value = prop.ReadValueAsString ();
 					break;
 				case TnefPropertyId.SenderEmailAddress:
-					Assert.AreEqual (typeof (string), type);
+					Assert.That (type, Is.EqualTo (typeof (string)));
 					value = prop.ReadValueAsString ();
 					break;
 				case TnefPropertyId.SenderAddrtype:
-					Assert.AreEqual (typeof (string), type);
+					Assert.That (type, Is.EqualTo (typeof (string)));
 					value = prop.ReadValueAsString ();
 					break;
 				case TnefPropertyId.SenderSearchKey:
-					Assert.AreEqual (typeof (byte[]), type);
+					Assert.That (type, Is.EqualTo (typeof (byte[])));
 					value = prop.ReadValueAsString ();
 					break;
 				case TnefPropertyId.NormalizedSubject:
-					Assert.AreEqual (typeof (string), type);
+					Assert.That (type, Is.EqualTo (typeof (string)));
 					normalizedSubject = prop.ReadValueAsString ();
 					break;
 				case TnefPropertyId.CreationTime:
-					Assert.AreEqual (typeof (DateTime), type);
+					Assert.That (type, Is.EqualTo (typeof (DateTime)));
 					value = prop.ReadValueAsDateTime ();
 					break;
 				case TnefPropertyId.LastModificationTime:
-					Assert.AreEqual (typeof (DateTime), type);
+					Assert.That (type, Is.EqualTo (typeof (DateTime)));
 					value = prop.ReadValueAsDateTime ();
 					break;
 				case TnefPropertyId.InternetCPID:
-					Assert.AreEqual (typeof (int), type);
+					Assert.That (type, Is.EqualTo (typeof (int)));
 					value = prop.ReadValueAsInt32 ();
 					break;
 				case TnefPropertyId.MessageCodepage:
-					Assert.AreEqual (typeof (int), type);
+					Assert.That (type, Is.EqualTo (typeof (int)));
 					value = prop.ReadValueAsInt32 ();
 					break;
 				case TnefPropertyId.INetMailOverrideFormat:
-					Assert.AreEqual (typeof (int), type);
+					Assert.That (type, Is.EqualTo (typeof (int)));
 					value = prop.ReadValueAsInt32 ();
 					break;
 				case TnefPropertyId.ReadReceiptRequested:
-					Assert.AreEqual (typeof (bool), type);
+					Assert.That (type, Is.EqualTo (typeof (bool)));
 					value = prop.ReadValueAsBoolean ();
 					break;
 				case TnefPropertyId.OriginatorDeliveryReportRequested:
-					Assert.AreEqual (typeof (bool), type);
+					Assert.That (type, Is.EqualTo (typeof (bool)));
 					value = prop.ReadValueAsBoolean ();
 					break;
 				case TnefPropertyId.TnefCorrelationKey:
-					Assert.AreEqual (typeof (byte[]), type);
+					Assert.That (type, Is.EqualTo (typeof (byte[])));
 					value = prop.ReadValueAsString ();
 					break;
 				case TnefPropertyId.DeleteAfterSubmit:
-					Assert.AreEqual (typeof (bool), type);
+					Assert.That (type, Is.EqualTo (typeof (bool)));
 					value = prop.ReadValueAsBoolean ();
 					break;
 				case TnefPropertyId.MessageDeliveryTime:
-					Assert.AreEqual (typeof (DateTime), type);
+					Assert.That (type, Is.EqualTo (typeof (DateTime)));
 					value = prop.ReadValueAsDateTime ();
 					break;
 				case TnefPropertyId.SentmailEntryId:
-					Assert.AreEqual (typeof (byte[]), type);
+					Assert.That (type, Is.EqualTo (typeof (byte[])));
 					value = prop.ReadValueAsString ();
 					break;
 				case TnefPropertyId.RtfInSync:
-					Assert.AreEqual (typeof (bool), type);
+					Assert.That (type, Is.EqualTo (typeof (bool)));
 					value = prop.ReadValueAsBoolean ();
 					break;
 				case TnefPropertyId.MappingSignature:
-					Assert.AreEqual (typeof (byte[]), type);
+					Assert.That (type, Is.EqualTo (typeof (byte[])));
 					value = prop.ReadValueAsBytes ();
 					break;
 				case TnefPropertyId.StoreRecordKey:
-					Assert.AreEqual (typeof (byte[]), type);
+					Assert.That (type, Is.EqualTo (typeof (byte[])));
 					value = prop.ReadValueAsBytes ();
 					break;
 				case TnefPropertyId.StoreEntryId:
-					Assert.AreEqual (typeof (byte[]), type);
+					Assert.That (type, Is.EqualTo (typeof (byte[])));
 					value = prop.ReadValueAsBytes ();
 					break;
 				default:
@@ -400,7 +400,7 @@ namespace UnitTests.Tnef {
 					}
 
 					//Console.WriteLine ("Message Property (unhandled): {0} = {1}", prop.PropertyTag.Id, value);
-					Assert.AreEqual (type, value.GetType (), "Unexpected value type for {0}: {1}", prop.PropertyTag, value.GetType ().Name);
+					Assert.That (value.GetType (), Is.EqualTo (type), $"Unexpected value type for {prop.PropertyTag}: {value.GetType ().Name}");
 					break;
 				}
 			}
@@ -546,9 +546,7 @@ namespace UnitTests.Tnef {
 							//Console.WriteLine ("Attachment Property: {0} = {1}", prop.PropertyTag.Id, attachment.ContentType.Name);
 							break;
 						case TnefPropertyId.AttachSize:
-							if (attachment.ContentDisposition == null)
-								attachment.ContentDisposition = new ContentDisposition ();
-
+							attachment.ContentDisposition ??= new ContentDisposition ();
 							attachment.ContentDisposition.Size = prop.ReadValueAsInt64 ();
 							//Console.WriteLine ("Attachment Property: {0} = {1}", prop.PropertyTag.Id, attachment.ContentDisposition.Size.Value);
 							break;
@@ -575,9 +573,7 @@ namespace UnitTests.Tnef {
 					time = prop.ReadValueAsDateTime ();
 
 					if (attachment != null) {
-						if (attachment.ContentDisposition == null)
-							attachment.ContentDisposition = new ContentDisposition ();
-
+						attachment.ContentDisposition ??= new ContentDisposition ();
 						attachment.ContentDisposition.CreationDate = time;
 					}
 
@@ -587,9 +583,7 @@ namespace UnitTests.Tnef {
 					time = prop.ReadValueAsDateTime ();
 
 					if (attachment != null) {
-						if (attachment.ContentDisposition == null)
-							attachment.ContentDisposition = new ContentDisposition ();
-
+						attachment.ContentDisposition ??= new ContentDisposition ();
 						attachment.ContentDisposition.ModificationDate = time;
 					}
 
@@ -609,7 +603,7 @@ namespace UnitTests.Tnef {
 					var type = prop.ValueType;
 					var value = prop.ReadValue ();
 					//Console.WriteLine ("Attachment Attribute (unhandled): {0} = {1}", reader.AttributeTag, value);
-					Assert.AreEqual (type, value.GetType (), "Unexpected value type for {0}: {1}", reader.AttributeTag, value.GetType ().Name);
+					Assert.That (value.GetType (), Is.EqualTo (type), $"Unexpected value type for {reader.AttributeTag}: {value.GetType ().Name}");
 					break;
 				}
 			} while (reader.ReadNextAttribute ());
@@ -627,7 +621,7 @@ namespace UnitTests.Tnef {
 					break;
 
 				if (reader.AttributeLevel != TnefAttributeLevel.Message)
-					Assert.Fail ("Unknown attribute level: {0}", reader.AttributeLevel);
+					Assert.Fail ($"Unknown attribute level: {reader.AttributeLevel}");
 
 				var prop = reader.TnefPropertyReader;
 
@@ -649,8 +643,8 @@ namespace UnitTests.Tnef {
 				case TnefAttributeTag.TnefVersion:
 					//Console.WriteLine ("Message Attribute: {0} = {1}", reader.AttributeTag, prop.ReadValueAsInt32 ());
 					var version = prop.ReadValueAsInt32 ();
-					Assert.AreEqual (65536, version, "version");
-					Assert.AreEqual (65536, reader.TnefVersion, "TnefVersion");
+					Assert.That (version, Is.EqualTo (65536), "version");
+					Assert.That (reader.TnefVersion, Is.EqualTo (65536), "TnefVersion");
 					break;
 				case TnefAttributeTag.OemCodepage:
 					int codepage = prop.ReadValueAsInt32 ();
@@ -683,7 +677,7 @@ namespace UnitTests.Tnef {
 			using (var reader = new TnefReader (File.OpenRead (path), 0, TnefComplianceMode.Loose)) {
 				var message = ExtractTnefMessage (reader);
 
-				Assert.AreEqual (expected, reader.ComplianceStatus, "Unexpected compliance status.");
+				Assert.That (reader.ComplianceStatus, Is.EqualTo (expected), "Unexpected compliance status.");
 
 				return message;
 			}
@@ -721,7 +715,7 @@ namespace UnitTests.Tnef {
 				}
 
 				if (!found)
-					Assert.Fail ("Failed to locate attachment: {0}", name);
+					Assert.Fail ($"Failed to locate attachment: {name}");
 			}
 
 			// now use TnefPart to do the same thing
@@ -729,7 +723,7 @@ namespace UnitTests.Tnef {
 				var tnef = new TnefPart { Content = new MimeContent (content) };
 				var attachments = tnef.ExtractAttachments ().ToList ();
 
-				// Step 1: make sure we've extracted the body and all of the attachments
+				// Step 1: make sure we've extracted the body and all the attachments
 				foreach (var name in names) {
 					bool found = false;
 
@@ -756,7 +750,7 @@ namespace UnitTests.Tnef {
 					}
 
 					if (!found)
-						Assert.Fail ("Failed to locate attachment in TnefPart: {0}", name);
+						Assert.Fail ($"Failed to locate attachment in TnefPart: {name}");
 				}
 
 				// Step 2: verify that the content of the extracted attachments matches up with the expected content
@@ -814,9 +808,9 @@ namespace UnitTests.Tnef {
 					using (var stream = part.Content.Open ())
 						actualData = ReadAllBytes (stream, isText);
 
-					Assert.AreEqual (expectedData.Length, actualData.Length, $"{tnefName}: {fileName} content length does not match");
+					Assert.That (actualData.Length, Is.EqualTo (expectedData.Length), $"{tnefName}: {fileName} content length does not match");
 					for (int i = 0; i < expectedData.Length; i++)
-						Assert.AreEqual (expectedData[i], actualData[i], $"{tnefName}: {fileName} content differs at index {i}");
+						Assert.That (actualData[i], Is.EqualTo (expectedData[i]), $"{tnefName}: {fileName} content differs at index {i}");
 				}
 			}
 		}
@@ -941,117 +935,86 @@ namespace UnitTests.Tnef {
 		public void TestExtractedCharset ()
 		{
 			const string expected = "<html>\r\n<head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=koi8-r\">\r\n<style type=\"text/css\" style=\"display:none;\"><!-- P {margin-top:0;margin-bottom:0;} --></style>\r\n</head>\r\n<body dir=\"ltr\">\r\n<div id=\"divtagdefaultwrapper\" style=\"font-size:12pt;color:#000000;font-family:Calibri,Helvetica,sans-serif;\" dir=\"ltr\">\r\n<p>шостий</p>\r\n<p><br>\r\n</p>\r\n<p>{EMAILSIGNATURE}</p>\r\n<p><br>\r\n</p>\r\n<div id=\"Signature\"><br>\r\n<font color=\"#888888\" face=\"Arial, Helvetica, Helvetica, Geneva, Sans-Serif\" style=\"font-size: 10pt;\"><br>\r\n<font color=\"#888888\" face=\"Arial, Helvetica, Helvetica, Geneva, Sans-Serif\" style=\"font-size: 12pt;\"><b>RR Test 1</b></font>\r\n</font>\r\n<p><font color=\"#888888\" face=\"Arial, Helvetica, Helvetica, Geneva, Sans-Serif\" style=\"font-size: 10pt;\">&nbsp;</font></p>\r\n</div>\r\n</div>\r\n</body>\r\n</html>\r\n";
-			var message = MimeMessage.Load (Path.Combine (TestHelper.ProjectDir, "TestData", "tnef", "ukr.eml"));
+			using var message = MimeMessage.Load (Path.Combine (TestHelper.ProjectDir, "TestData", "tnef", "ukr.eml"));
 			var tnef = message.BodyParts.OfType<TnefPart> ().FirstOrDefault ();
+			using var extracted = tnef.ConvertToMessage ();
 
-			message = tnef.ConvertToMessage ();
+			Assert.That (extracted.Body, Is.InstanceOf<TextPart> ());
 
-			Assert.IsInstanceOf (typeof (TextPart), message.Body);
+			var text = (TextPart) extracted.Body;
 
-			var text = (TextPart) message.Body;
-
-			Assert.IsTrue (text.IsHtml);
+			Assert.That (text.IsHtml, Is.True);
 
 			var html = text.Text;
 
-			Assert.AreEqual ("koi8-r", text.ContentType.Charset);
-			Assert.AreEqual (expected.Replace ("\r\n", Environment.NewLine), html);
+			Assert.That (text.ContentType.Charset, Is.EqualTo ("koi8-r"));
+			Assert.That (html, Is.EqualTo (expected.Replace ("\r\n", Environment.NewLine)));
 		}
 
 		[Test]
 		public void TestRichTextEml ()
 		{
-			var message = MimeMessage.Load (Path.Combine (TestHelper.ProjectDir, "TestData", "tnef", "rich-text.eml"));
+			using var message = MimeMessage.Load (Path.Combine (TestHelper.ProjectDir, "TestData", "tnef", "rich-text.eml"));
 			var tnef = message.BodyParts.OfType<TnefPart> ().FirstOrDefault ();
 			var mtime = new DateTimeOffset (new DateTime (2018, 12, 15, 10, 17, 38));
+			using var extracted = tnef.ConvertToMessage ();
 
-			message = tnef.ConvertToMessage ();
+			Assert.That (extracted.Subject, Is.Empty, "Subject");
+			Assert.That (extracted.Date, Is.EqualTo (DateTimeOffset.MinValue), "Date");
+			Assert.That (extracted.MessageId, Is.EqualTo ("DM5PR21MB0828DA2B8C88048BC03EFFA6CFA20@DM5PR21MB0828.namprd21.prod.outlook.com"), "Message-Id");
 
-			Assert.IsEmpty (message.Subject, "Subject");
-			Assert.AreEqual (DateTimeOffset.MinValue, message.Date, "Date");
-			Assert.AreEqual ("DM5PR21MB0828DA2B8C88048BC03EFFA6CFA20@DM5PR21MB0828.namprd21.prod.outlook.com", message.MessageId, "Message-Id");
+			Assert.That (extracted.Body, Is.InstanceOf<Multipart> ());
+			var multipart = (Multipart) extracted.Body;
 
-			Assert.IsInstanceOf (typeof (Multipart), message.Body);
-			var multipart = (Multipart) message.Body;
+			Assert.That (multipart.Count, Is.EqualTo (6));
 
-			Assert.AreEqual (6, multipart.Count);
-
-			Assert.IsInstanceOf (typeof (TextPart), multipart[0]);
-			Assert.IsInstanceOf (typeof (MimePart), multipart[1]);
-			Assert.IsInstanceOf (typeof (MimePart), multipart[2]);
-			Assert.IsInstanceOf (typeof (MimePart), multipart[3]);
-			Assert.IsInstanceOf (typeof (MimePart), multipart[4]);
-			Assert.IsInstanceOf (typeof (MimePart), multipart[5]);
+			Assert.That (multipart[0], Is.InstanceOf<TextPart> ());
+			Assert.That (multipart[1], Is.InstanceOf<MimePart> ());
+			Assert.That (multipart[2], Is.InstanceOf<MimePart> ());
+			Assert.That (multipart[3], Is.InstanceOf<MimePart> ());
+			Assert.That (multipart[4], Is.InstanceOf<MimePart> ());
+			Assert.That (multipart[5], Is.InstanceOf<MimePart> ());
 
 			var rtf = (TextPart) multipart[0];
-			Assert.AreEqual ("text/rtf", rtf.ContentType.MimeType, "MimeType");
+			Assert.That (rtf.ContentType.MimeType, Is.EqualTo ("text/rtf"), "MimeType");
 
 			var kitten = (MimePart) multipart[1];
-			Assert.AreEqual ("application/octet-stream", kitten.ContentType.MimeType, "MimeType");
-			Assert.AreEqual ("kitten-playing-with-a-christmas-tree.jpg", kitten.FileName, "FileName");
+			Assert.That (kitten.ContentType.MimeType, Is.EqualTo ("application/octet-stream"), "MimeType");
+			Assert.That (kitten.FileName, Is.EqualTo ("kitten-playing-with-a-christmas-tree.jpg"), "FileName");
 
 			// Note: For some reason, each task and appointment got duplicated. The first copy is attached as a
 			// TnefAttribute.AttachData and the second is a TnefPropertyId.AttachData.
 			var task1 = (MimePart) multipart[2];
-			Assert.AreEqual ("application/octet-stream", task1.ContentType.MimeType, "MimeType");
-			Assert.AreEqual ("Build a train table", task1.ContentType.Name, "Name");
-			Assert.AreEqual ("attachment", task1.ContentDisposition.Disposition, "Disposition");
-			Assert.AreEqual ("Untitled Attachment", task1.ContentDisposition.FileName, "FileName");
-			Assert.AreEqual (mtime, task1.ContentDisposition.ModificationDate, "ModificationDate");
-			Assert.AreEqual (9217, task1.ContentDisposition.Size, "Size");
+			Assert.That (task1.ContentType.MimeType, Is.EqualTo ("application/octet-stream"), "MimeType");
+			Assert.That (task1.ContentType.Name, Is.EqualTo ("Build a train table"), "Name");
+			Assert.That (task1.ContentDisposition.Disposition, Is.EqualTo ("attachment"), "Disposition");
+			Assert.That (task1.ContentDisposition.FileName, Is.EqualTo ("Untitled Attachment"), "FileName");
+			Assert.That (task1.ContentDisposition.ModificationDate, Is.EqualTo (mtime), "ModificationDate");
+			Assert.That (task1.ContentDisposition.Size, Is.EqualTo (9217), "Size");
 
 			var task2 = (MimePart) multipart[3];
-			Assert.AreEqual ("application/vnd.ms-tnef", task2.ContentType.MimeType, "MimeType");
-			Assert.AreEqual ("Build a train table", task2.ContentType.Name, "Name");
-			Assert.AreEqual ("attachment", task2.ContentDisposition.Disposition, "Disposition");
-			Assert.AreEqual ("Untitled Attachment", task2.ContentDisposition.FileName, "FileName");
-			Assert.AreEqual (mtime, task2.ContentDisposition.ModificationDate, "ModificationDate");
-			Assert.AreEqual (9217, task2.ContentDisposition.Size, "Size");
+			Assert.That (task2.ContentType.MimeType, Is.EqualTo ("application/vnd.ms-tnef"), "MimeType");
+			Assert.That (task2.ContentType.Name, Is.EqualTo ("Build a train table"), "Name");
+			Assert.That (task2.ContentDisposition.Disposition, Is.EqualTo ("attachment"), "Disposition");
+			Assert.That (task2.ContentDisposition.FileName, Is.EqualTo ("Untitled Attachment"), "FileName");
+			Assert.That (task2.ContentDisposition.ModificationDate, Is.EqualTo (mtime), "ModificationDate");
+			Assert.That (task2.ContentDisposition.Size, Is.EqualTo (9217), "Size");
 
 			var appointment1 = (MimePart) multipart[4];
-			Assert.AreEqual ("application/octet-stream", appointment1.ContentType.MimeType, "MimeType");
-			Assert.AreEqual ("Christmas Celebration!", appointment1.ContentType.Name, "Name");
-			Assert.AreEqual ("attachment", appointment1.ContentDisposition.Disposition, "Disposition");
-			Assert.AreEqual ("Untitled Attachment", appointment1.ContentDisposition.FileName, "FileName");
-			Assert.AreEqual (mtime, appointment1.ContentDisposition.ModificationDate, "ModificationDate");
-			Assert.AreEqual (387453, appointment1.ContentDisposition.Size, "Size");
+			Assert.That (appointment1.ContentType.MimeType, Is.EqualTo ("application/octet-stream"), "MimeType");
+			Assert.That (appointment1.ContentType.Name, Is.EqualTo ("Christmas Celebration!"), "Name");
+			Assert.That (appointment1.ContentDisposition.Disposition, Is.EqualTo ("attachment"), "Disposition");
+			Assert.That (appointment1.ContentDisposition.FileName, Is.EqualTo ("Untitled Attachment"), "FileName");
+			Assert.That (appointment1.ContentDisposition.ModificationDate, Is.EqualTo (mtime), "ModificationDate");
+			Assert.That (appointment1.ContentDisposition.Size, Is.EqualTo (387453), "Size");
 
 			var appointment2 = (MimePart) multipart[5];
-			Assert.AreEqual ("application/vnd.ms-tnef", appointment2.ContentType.MimeType, "MimeType");
-			Assert.AreEqual ("Christmas Celebration!", appointment2.ContentType.Name, "Name");
-			Assert.AreEqual ("attachment", appointment2.ContentDisposition.Disposition, "Disposition");
-			Assert.AreEqual ("Untitled Attachment", appointment2.ContentDisposition.FileName, "FileName");
-			Assert.AreEqual (mtime, appointment2.ContentDisposition.ModificationDate, "ModificationDate");
-			Assert.AreEqual (387453, appointment2.ContentDisposition.Size, "Size");
-		}
-
-		[Test]
-		public void TestTnefNameId ()
-		{
-			var guid = Guid.NewGuid ();
-			var tnef1 = new TnefNameId (guid, 17);
-			var tnef2 = new TnefNameId (guid, 17);
-
-			Assert.AreEqual (TnefNameIdKind.Id, tnef1.Kind, "Kind Id");
-			Assert.AreEqual (guid, tnef1.PropertySetGuid, "PropertySetGuid Id");
-			Assert.AreEqual (17, tnef1.Id, "Id");
-
-			Assert.AreEqual (tnef1.GetHashCode (), tnef2.GetHashCode (), "GetHashCode Id");
-			Assert.AreEqual (tnef1, tnef2, "Equal Id");
-
-			tnef1 = new TnefNameId (guid, "name");
-			Assert.AreEqual (TnefNameIdKind.Name, tnef1.Kind, "Kind Name");
-			Assert.AreEqual (guid, tnef1.PropertySetGuid, "PropertySetGuid");
-			Assert.AreEqual ("name", tnef1.Name, "Name");
-
-			Assert.AreNotEqual (tnef1.GetHashCode (), tnef2.GetHashCode (), "GetHashCode Name vs Id");
-			Assert.AreNotEqual (tnef1, tnef2, "Equal Name vs Id");
-
-			tnef2 = new TnefNameId (guid, "name");
-			Assert.AreEqual (tnef1.GetHashCode (), tnef2.GetHashCode (), "GetHashCode Name");
-			Assert.AreEqual (tnef1, tnef2, "Equal Name");
-
-			Assert.IsFalse (tnef1.Equals (new object ()), "Equals (object)");
+			Assert.That (appointment2.ContentType.MimeType, Is.EqualTo ("application/vnd.ms-tnef"), "MimeType");
+			Assert.That (appointment2.ContentType.Name, Is.EqualTo ("Christmas Celebration!"), "Name");
+			Assert.That (appointment2.ContentDisposition.Disposition, Is.EqualTo ("attachment"), "Disposition");
+			Assert.That (appointment2.ContentDisposition.FileName, Is.EqualTo ("Untitled Attachment"), "FileName");
+			Assert.That (appointment2.ContentDisposition.ModificationDate, Is.EqualTo (mtime), "ModificationDate");
+			Assert.That (appointment2.ContentDisposition.Size, Is.EqualTo (387453), "Size");
 		}
 	}
 }

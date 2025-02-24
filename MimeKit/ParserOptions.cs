@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@ using MimeKit.Cryptography;
 
 using MimeKit.Tnef;
 using MimeKit.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MimeKit {
 	/// <summary>
@@ -76,25 +77,25 @@ namespace MimeKit {
 		/// Get or set whether the rfc822 address parser should ignore unquoted commas in address names.
 		/// </summary>
 		/// <remarks>
-		/// <para>In general, you'll probably want this value to be <c>true</c> (the default) as it allows
+		/// <para>In general, you'll probably want this value to be <see langword="true" /> (the default) as it allows
 		/// maximum interoperability with existing (broken) mail clients and other mail software such as
 		/// sloppily written perl scripts (aka spambots) that do not properly quote the name when it
 		/// contains a comma.</para>
 		/// </remarks>
-		/// <value><c>true</c> if the address parser should ignore unquoted commas in address names; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the address parser should ignore unquoted commas in address names; otherwise, <see langword="false" />.</value>
 		public bool AllowUnquotedCommasInAddresses { get; set; }
 
 		/// <summary>
 		/// Get or set whether the rfc822 address parser should allow addresses without a domain.
 		/// </summary>
 		/// <remarks>
-		/// <para>In general, you'll probably want this value to be <c>true</c> (the default) as it allows
+		/// <para>In general, you'll probably want this value to be <see langword="true" /> (the default) as it allows
 		/// maximum interoperability with older email messages that may contain local UNIX addresses.</para>
 		/// <para>This option exists in order to allow parsing of mailbox addresses that do not have an
 		/// @domain component. These types of addresses are rare and were typically only used when sending
 		/// mail to other users on the same UNIX system.</para>
 		/// </remarks>
-		/// <value><c>true</c> if the address parser should allow mailbox addresses without a domain; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the address parser should allow mailbox addresses without a domain; otherwise, <see langword="false" />.</value>
 		public bool AllowAddressesWithoutDomain { get; set; }
 
 		/// <summary>
@@ -155,8 +156,8 @@ namespace MimeKit {
 		/// at <a href="http://www.jwz.org/doc/content-length.html">
 		/// http://www.jwz.org/doc/content-length.html</a>.
 		/// </remarks>
-		/// <value><c>true</c> if the Content-Length value should be respected;
-		/// otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the Content-Length value should be respected;
+		/// otherwise, <see langword="false" />.</value>
 		public bool RespectContentLength { get; set; }
 
 		/// <summary>
@@ -233,9 +234,9 @@ namespace MimeKit {
 		/// <see cref="MessagePart"/>, or one of their derivatives.
 		/// </remarks>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="mimeType"/> is <c>null</c>.</para>
+		/// <para><paramref name="mimeType"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="type"/> is <c>null</c>.</para>
+		/// <para><paramref name="type"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <para><paramref name="type"/> is not a subclass of <see cref="Multipart"/>,
@@ -244,7 +245,11 @@ namespace MimeKit {
 		/// <para><paramref name="type"/> does not have a constructor that takes
 		/// only a <see cref="MimeEntityConstructorArgs"/> argument.</para>
 		/// </exception>
-		public void RegisterMimeType (string mimeType, Type type)
+		public void RegisterMimeType (string mimeType,
+#if NET8_0_OR_GREATER
+			[DynamicallyAccessedMembers (DynamicallyAccessedMemberTypes.PublicConstructors)]
+#endif
+			Type type)
 		{
 			if (mimeType is null)
 				throw new ArgumentNullException (nameof (mimeType));
@@ -273,6 +278,7 @@ namespace MimeKit {
 			case ContentEncoding.SevenBit:
 			case ContentEncoding.EightBit:
 			case ContentEncoding.Binary:
+			case ContentEncoding.Default:
 				return false;
 			default:
 				return true;
@@ -285,7 +291,8 @@ namespace MimeKit {
 				if (headers[i].Id != HeaderId.ContentTransferEncoding)
 					continue;
 
-				MimeUtils.TryParse (headers[i].Value, out ContentEncoding encoding);
+				if (!MimeUtils.TryParse (headers[i].Value, out ContentEncoding encoding))
+					return false;
 
 				return IsEncoded (encoding);
 			}
@@ -303,30 +310,34 @@ namespace MimeKit {
 			return false;
 		}
 
-		internal MimeEntity CreateEntity (ContentType contentType, IList<Header> headers, bool toplevel, int depth)
+		internal MimeEntity CreateEntity (ContentType contentType, IList<Header> headers, bool hasBodySeparator, bool toplevel, int depth)
 		{
-			var args = new MimeEntityConstructorArgs (this, contentType, headers, toplevel);
-
-			if (depth >= MaxMimeDepth)
-				return new MimePart (args);
-
+			var args = new MimeEntityConstructorArgs (this, contentType, headers, hasBodySeparator, toplevel);
 			var subtype = contentType.MediaSubtype;
 			var type = contentType.MediaType;
 
 			if (mimeTypes.Count > 0) {
 				var mimeType = $"{type}/{subtype}";
 
-				if (mimeTypes.TryGetValue (mimeType, out var ctor))
-					return (MimeEntity) ctor.Invoke (new object[] { args });
+				if (mimeTypes.TryGetValue (mimeType, out var ctor)) {
+					// Instantiate the custom type if-and-only-if the current parser depth is < MaxMimeDepth -or- the custom type is a MimePart subclass.
+					if (depth < MaxMimeDepth || typeof (MimePart).IsAssignableFrom (ctor.DeclaringType))
+						return (MimeEntity) ctor.Invoke (new object[] { args });
+				}
 			}
 
 			if (type.Equals ("text", StringComparison.OrdinalIgnoreCase)) {
 				// text/rfc822-headers
-				if (subtype.Equals ("rfc822-headers", StringComparison.OrdinalIgnoreCase) && !IsEncoded (headers))
+				if (depth < MaxMimeDepth && subtype.Equals ("rfc822-headers", StringComparison.OrdinalIgnoreCase) && !IsEncoded (headers))
 					return new TextRfc822Headers (args);
 
 				return new TextPart (args);
 			} else if (type.Equals ("multipart", StringComparison.OrdinalIgnoreCase)) {
+				if (depth >= MaxMimeDepth) {
+					// We don't want to recurse any further, so treat this as a leaf node.
+					return new MimePart (args);
+				}
+
 				// multipart/alternative
 				if (subtype.Equals ("alternative", StringComparison.OrdinalIgnoreCase))
 					return new MultipartAlternative (args);
@@ -357,7 +368,7 @@ namespace MimeKit {
 				// it is necessary for us to treat those as opaque blobs instead, and thus the parser should
 				// parse them as normal MimeParts instead of MessageParts.
 				//
-				// Technically message/disposition-notification is only allowed to have use the 7bit encoding
+				// Technically message/disposition-notification is only allowed to use the 7bit encoding
 				// as well, but since MessageDispositionNotification is a MImePart subclass rather than a
 				// MessagePart subclass, it means that the content won't be parsed until later and so we can
 				// actually handle that w/o any problems.
@@ -375,13 +386,13 @@ namespace MimeKit {
 
 				// message/rfc822
 				if (EqualsAny (subtype, "rfc822", "global", "news", "external-body", "rfc2822")) {
-					if (!IsEncoded (headers))
+					if (depth < MaxMimeDepth && !IsEncoded (headers))
 						return new MessagePart (args);
 				} else if (subtype.Equals ("partial", StringComparison.OrdinalIgnoreCase)) {
 					if (!IsEncoded (headers))
 						return new MessagePartial (args);
 				} else if (subtype.Equals ("global-headers", StringComparison.OrdinalIgnoreCase)) {
-					if (!IsEncoded (headers))
+					if (depth < MaxMimeDepth && !IsEncoded (headers))
 						return new TextRfc822Headers (args);
 				}
 			} else if (type.Equals ("application", StringComparison.OrdinalIgnoreCase)) {

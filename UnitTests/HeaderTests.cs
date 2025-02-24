@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -67,6 +67,15 @@ namespace UnitTests {
 		{
 			var header = new Header ("utf-8", HeaderId.Subject, "This is a subject...");
 
+			Assert.Throws<ArgumentException> (() => new Header ("Illegal:char", "value"));
+			Assert.Throws<ArgumentException> (() => new Header ("测试文本", "value"));
+
+			Assert.Throws<ArgumentException> (() => new Header ("UTF-8", "Illegal:char", "value"));
+			Assert.Throws<ArgumentException> (() => new Header ("UTF-8", "测试文本", "value"));
+
+			Assert.Throws<ArgumentException> (() => new Header (Encoding.UTF8, "Illegal:char", "value"));
+			Assert.Throws<ArgumentException> (() => new Header (Encoding.UTF8, "测试文本", "value"));
+
 			Assert.Throws<ArgumentOutOfRangeException> (() => new Header (HeaderId.Unknown, "value"));
 			Assert.Throws<ArgumentNullException> (() => new Header (HeaderId.Subject, null));
 			Assert.Throws<ArgumentNullException> (() => new Header (null, "value"));
@@ -115,11 +124,31 @@ namespace UnitTests {
 			var header = new Header (HeaderId.Comments, "These are some comments.");
 			var clone = header.Clone ();
 
-			Assert.AreEqual (header.Id, clone.Id, "The cloned header id does not match.");
-			Assert.AreEqual (header.Field, clone.Field, "The cloned header field does not match.");
-			Assert.AreEqual (header.Value, clone.Value, "The cloned header value does not match.");
-			Assert.AreEqual (header.RawField, clone.RawField, "The cloned header raw field does not match.");
-			Assert.AreEqual (header.RawValue, clone.RawValue, "The cloned header raw value does not match.");
+			Assert.That (clone.Id, Is.EqualTo (header.Id), "The cloned header id does not match.");
+			Assert.That (clone.Field, Is.EqualTo (header.Field), "The cloned header field does not match.");
+			Assert.That (clone.Value, Is.EqualTo (header.Value), "The cloned header value does not match.");
+			Assert.That (clone.RawField, Is.EqualTo (header.RawField), "The cloned header raw field does not match.");
+			Assert.That (clone.RawValue, Is.EqualTo (header.RawValue), "The cloned header raw value does not match.");
+		}
+
+		[Test]
+		public void TestToString ()
+		{
+			var header = new Header ("Subject", "This is a subject...");
+			var value = header.ToString ();
+
+			Assert.That (value, Is.EqualTo ("Subject: This is a subject..."));
+
+			header = new Header ("SuBjEcT", "This is a subject...");
+			value = header.ToString ();
+
+			Assert.That (value, Is.EqualTo ("SuBjEcT: This is a subject..."));
+		}
+
+		[Test]
+		public void TestUnfoldNullValue ()
+		{
+			Assert.That (Header.Unfold (null), Is.EqualTo (string.Empty));
 		}
 
 		[Test]
@@ -131,10 +160,10 @@ namespace UnitTests {
 			var header = new Header ("To", "Jeffrey Stedfast <jeff@xamarin.com>, \"Jeffrey A. Stedfast\" <jeff@xamarin.com>, \"Dr. Gregory House, M.D.\" <house@princeton-plainsboro-hospital.com>");
 			var raw = ByteArrayToString (header.RawValue);
 
-			Assert.IsTrue (raw[raw.Length - 1] == '\n', "The RawValue does not end with a new line.");
+			Assert.That (raw[raw.Length - 1], Is.EqualTo ('\n'), "The RawValue does not end with a new line.");
 
-			Assert.IsTrue (GetMaxLineLength (raw) < FormatOptions.Default.MaxLineLength, "The RawValue is not folded properly.");
-			Assert.AreEqual (expected, raw, "The folded address header does not match the expected value.");
+			Assert.That (GetMaxLineLength (raw) < FormatOptions.Default.MaxLineLength, Is.True, "The RawValue is not folded properly.");
+			Assert.That (raw, Is.EqualTo (expected), "The folded address header does not match the expected value.");
 		}
 
 		static readonly string[] ArcAuthenticationResultsHeaderValues = {
@@ -153,9 +182,9 @@ namespace UnitTests {
 
 				var raw = ByteArrayToString (header.RawValue);
 
-				Assert.IsTrue (raw[raw.Length - 1] == '\n', "The RawValue does not end with a new line.");
+				Assert.That (raw[raw.Length - 1], Is.EqualTo ('\n'), "The RawValue does not end with a new line.");
 
-				Assert.AreEqual (authResults + FormatOptions.Default.NewLine, raw, "The folded ARC-Authentication-Results header does not match the expected value.");
+				Assert.That (raw, Is.EqualTo (authResults + FormatOptions.Default.NewLine), "The folded ARC-Authentication-Results header does not match the expected value.");
 			}
 		}
 
@@ -166,9 +195,9 @@ namespace UnitTests {
 			var expected = " " + header.Value + FormatOptions.Default.NewLine;
 			var raw = ByteArrayToString (header.RawValue);
 
-			Assert.IsTrue (raw[raw.Length - 1] == '\n', "The RawValue does not end with a new line.");
+			Assert.That (raw[raw.Length - 1], Is.EqualTo ('\n'), "The RawValue does not end with a new line.");
 
-			Assert.AreEqual (expected, raw, "The folded Message-Id header does not match the expected value.");
+			Assert.That (raw, Is.EqualTo (expected), "The folded Message-Id header does not match the expected value.");
 		}
 
 		[Test]
@@ -178,15 +207,27 @@ namespace UnitTests {
 			var header = new Header ("Subject", "Тестовый заголовок письма");
 			var actual = ByteArrayToString (header.RawValue).Replace ("\r", "");
 
-			Assert.AreEqual (expected, actual);
+			Assert.That (actual, Is.EqualTo (expected));
 		}
 
 		static readonly string[] ReceivedHeaderValues = {
-			" from thumper.bellcore.com by greenbush.bellcore.com (4.1/4.7)" + FormatOptions.Default.NewLine + "\tid <AA01648> for nsb; Fri, 29 Nov 91 07:13:33 EST",
-			" from joyce.cs.su.oz.au by thumper.bellcore.com (4.1/4.7)" + FormatOptions.Default.NewLine + "\tid <AA11898> for nsb@greenbush; Fri, 29 Nov 91 07:11:57 EST",
-			" from Messages.8.5.N.CUILIB.3.45.SNAP.NOT.LINKED.greenbush.galaxy.sun4.41" + FormatOptions.Default.NewLine + "\tvia MS.5.6.greenbush.galaxy.sun4_41; Fri, 12 Jun 1992 13:29:05 -0400 (EDT)",
-			" from sqhilton.pc.cs.cmu.edu by po3.andrew.cmu.edu (5.54/3.15)" + FormatOptions.Default.NewLine + "\tid <AA21478> for beatty@cosmos.vlsi.cs.cmu.edu; Wed, 26 Aug 92 22:14:07 EDT",
-			" from [127.0.0.1] by [127.0.0.1] id <AA21478> with sendmail (v1.8)" + FormatOptions.Default.NewLine + "\tfor <beatty@cosmos.vlsi.cs.cmu.edu>; Wed, 26 Aug 92 22:14:07 EDT",
+			" from thumper.bellcore.com by greenbush.bellcore.com (4.1/4.7)" + FormatOptions.Default.NewLine + "\tid <AA01648> for nsb; Fri, 29 Nov 91 07:13:33 EST" + FormatOptions.Default.NewLine,
+			" from joyce.cs.su.oz.au by thumper.bellcore.com (4.1/4.7)" + FormatOptions.Default.NewLine + "\tid <AA11898> for nsb@greenbush; Fri, 29 Nov 91 07:11:57 EST" + FormatOptions.Default.NewLine,
+			" from Messages.8.5.N.CUILIB.3.45.SNAP.NOT.LINKED.greenbush.galaxy.sun4.41" + FormatOptions.Default.NewLine + "\tvia MS.5.6.greenbush.galaxy.sun4_41; Fri, 12 Jun 1992 13:29:05 -0400 (EDT)" + FormatOptions.Default.NewLine,
+			" from sqhilton.pc.cs.cmu.edu by po3.andrew.cmu.edu (5.54/3.15)" + FormatOptions.Default.NewLine + "\tid <AA21478> for beatty@cosmos.vlsi.cs.cmu.edu; Wed, 26 Aug 92 22:14:07 EDT" + FormatOptions.Default.NewLine,
+			" from [127.0.0.1] by [127.0.0.1] id <AA21478> with sendmail (v1.8)" + FormatOptions.Default.NewLine + "\tfor <beatty@cosmos.vlsi.cs.cmu.edu>; Wed, 26 Aug 92 22:14:07 EDT" + FormatOptions.Default.NewLine,
+
+			// Incomplete comments
+			" (incomplete comment" + FormatOptions.Default.NewLine,
+			" from (incomplete comment" + FormatOptions.Default.NewLine,
+			" by (incomplete comment" + FormatOptions.Default.NewLine,
+			" via (incomplete comment" + FormatOptions.Default.NewLine,
+			" with (incomplete comment" + FormatOptions.Default.NewLine,
+			" id (incomplete comment" + FormatOptions.Default.NewLine,
+			" for (incomplete comment" + FormatOptions.Default.NewLine,
+
+			// Make sure long (incomplete) comments get folded properly
+			" from thumper.bellcore.com" + FormatOptions.Default.NewLine + "\tby greenbush.bellcore.com (this is an incomplete comment that is really really long in order to enforce folding..." + FormatOptions.Default.NewLine,
 		};
 
 		[Test]
@@ -199,9 +240,8 @@ namespace UnitTests {
 
 				var raw = ByteArrayToString (header.RawValue);
 
-				Assert.IsTrue (raw[raw.Length - 1] == '\n', "The RawValue does not end with a new line.");
-
-				Assert.AreEqual (received + FormatOptions.Default.NewLine, raw, "The folded Received header does not match the expected value.");
+				Assert.That (raw[raw.Length - 1], Is.EqualTo ('\n'), "The RawValue does not end with a new line.");
+				Assert.That (raw, Is.EqualTo (received), $"The folded Received header does not match the expected value: {raw}");
 			}
 		}
 
@@ -219,9 +259,9 @@ namespace UnitTests {
 			var header = new Header ("References", expected.ToString ());
 			var raw = ByteArrayToString (header.RawValue);
 
-			Assert.IsTrue (raw[raw.Length - 1] == '\n', "The RawValue does not end with a new line.");
+			Assert.That (raw[raw.Length - 1], Is.EqualTo ('\n'), "The RawValue does not end with a new line.");
 
-			Assert.AreEqual (expected.ToString (), raw, "The folded References header does not match the expected value.");
+			Assert.That (raw, Is.EqualTo (expected.ToString ()), "The folded References header does not match the expected value.");
 		}
 
 		[Test]
@@ -233,7 +273,36 @@ namespace UnitTests {
 
 			expected = expected.Replace ("\n", Environment.NewLine);
 
-			Assert.AreEqual (expected, raw, "The RawValue does not match the expected value.");
+			Assert.That (raw, Is.EqualTo (expected), "The RawValue does not match the expected value.");
+		}
+
+		[Test]
+		public void TestDkimSignatureHeaderFoldingWithZ ()
+		{
+			var header = new Header ("UTF-8", "DKIM-Signature", "v=1; a=rsa-sha256; c=simple/simple; d=maillist.codeproject.com; s=mail; t=1435835767; bh=tiafHSAvEg4GPJlbkR6e7qr1oydTj+ZXs392TcHwwvs=; z=MIME-Version|From|To|Date|Subject|Content-Type|Content-Transfer-Encoding|Message-Id; b=Qtgo0bWwT0H18CxD2+ey8/382791TBNYtZ8VOLlXxxsbw5fab8uEo53o5tPun6kNx4khmJx/yWowvrCOAcMoqgNO7Hb7JB8NR7eNyOvtLKCG34AfDZyHNcTZHR/QnBpRKHssu5w2CQDUAjKnuGKRW95LCMMX3r924dErZOJnGhs=");
+			var expected = " v=1; a=rsa-sha256; c=simple/simple;\n\td=maillist.codeproject.com; s=mail; t=1435835767;\n\tbh=tiafHSAvEg4GPJlbkR6e7qr1oydTj+ZXs392TcHwwvs=;\n\tz=MIME-Version|From|To|Date|Subject|Content-Type|Content-Transfer-Encoding|\n\tMessage-Id;\n\tb=Qtgo0bWwT0H18CxD2+ey8/382791TBNYtZ8VOLlXxxsbw5fab8uEo53o5tPun6kNx4khmJx/yWo\n\twvrCOAcMoqgNO7Hb7JB8NR7eNyOvtLKCG34AfDZyHNcTZHR/QnBpRKHssu5w2CQDUAjKnuGKRW95L\n\tCMMX3r924dErZOJnGhs=\n";
+			var raw = ByteArrayToString (header.RawValue);
+
+			expected = expected.Replace ("\n", Environment.NewLine);
+
+			Assert.That (raw, Is.EqualTo (expected), "The RawValue does not match the expected value.");
+		}
+
+		[Test]
+		public void TestReformatDkimSignature ()
+		{
+			var expected = " v=1; a=rsa-sha256; c=simple/simple;\n\td=maillist.codeproject.com; s=mail; t=1435835767;\n\tbh=tiafHSAvEg4GPJlbkR6e7qr1oydTj+ZXs392TcHwwvs=;\n\th=MIME-Version:From:To:Date:Subject:Content-Type:Content-Transfer-Encoding:\n\tMessage-Id;\n\tb=Qtgo0bWwT0H18CxD2+ey8/382791TBNYtZ8VOLlXxxsbw5fab8uEo53o5tPun6kNx4khmJx/yWo\n\twvrCOAcMoqgNO7Hb7JB8NR7eNyOvtLKCG34AfDZyHNcTZHR/QnBpRKHssu5w2CQDUAjKnuGKRW95L\n\tCMMX3r924dErZOJnGhs=\n";
+			var options = FormatOptions.Default.Clone ();
+			options.NewLineFormat = NewLineFormat.Dos;
+			options.International = true;
+
+			var rawValue = Encoding.UTF8.GetBytes (expected);
+			var header = new Header (ParserOptions.Default, HeaderId.DkimSignature, "DKIM-Signature", rawValue);
+
+			// reformat it the way it would be reformatted by MimeMessage.WriteTo()
+			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
+
+			Assert.That (result, Is.EqualTo (expected));
 		}
 
 		[Test]
@@ -242,12 +311,27 @@ namespace UnitTests {
 			var header = new Header ("Subject", "This is a subject value that should be long enough to force line wrapping to keep the line length under the 78 character limit.");
 			var raw = ByteArrayToString (header.RawValue);
 
-			Assert.IsTrue (raw[raw.Length - 1] == '\n', "The RawValue does not end with a new line.");
+			Assert.That (raw[raw.Length - 1], Is.EqualTo ('\n'), "The RawValue does not end with a new line.");
 
-			Assert.IsTrue (GetMaxLineLength (raw) < FormatOptions.Default.MaxLineLength, "The RawValue is not folded properly.");
+			Assert.That (GetMaxLineLength (raw), Is.LessThanOrEqualTo (FormatOptions.Default.MaxLineLength), "The RawValue is not folded properly.");
 
 			var unfolded = Header.Unfold (raw);
-			Assert.AreEqual (header.Value, unfolded, "Unfolded header does not match the original header value.");
+			Assert.That (unfolded, Is.EqualTo (header.Value), "Unfolded header does not match the original header value.");
+		}
+
+		[Test]
+		public void TestUnstructuredHeaderFoldingWithLongWhitespace ()
+		{
+			var spaces = new string (' ', 78);
+			var original = $"This is a header value with a really long sequence of {spaces} and such";
+			string folded, unfolded;
+
+			folded = Header.Fold (FormatOptions.Default, "Subject", original);
+			unfolded = Header.Unfold (folded);
+
+			Assert.That (folded[folded.Length - 1], Is.EqualTo ('\n'), "The folded header does not end with a new line.");
+			Assert.That (GetMaxLineLength (folded), Is.LessThanOrEqualTo (FormatOptions.Default.MaxLineLength), "The RawValue is not folded properly.");
+			Assert.That (unfolded, Is.EqualTo (original), "Unfolded header does not match the original header value.");
 		}
 
 		[Test]
@@ -262,9 +346,9 @@ namespace UnitTests {
 			folded = Header.Fold (options, "Subject", original);
 			unfolded = Header.Unfold (folded);
 
-			Assert.IsTrue (folded[folded.Length - 1] == '\n', "The folded header does not end with a new line.");
-			Assert.IsTrue (GetMaxLineLength (folded) < FormatOptions.Default.MaxLineLength, "The raw header value is not folded properly. ");
-			Assert.AreEqual (original, unfolded, "Unfolded header does not match the original header value.");
+			Assert.That (folded[folded.Length - 1], Is.EqualTo ('\n'), "The folded header does not end with a new line.");
+			Assert.That (GetMaxLineLength (folded), Is.LessThan (FormatOptions.Default.MaxLineLength), "The raw header value is not folded properly. ");
+			Assert.That (unfolded, Is.EqualTo (original), "Unfolded header does not match the original header value.");
 		}
 
 		[Test]
@@ -279,9 +363,9 @@ namespace UnitTests {
 			folded = Header.Fold (options, "Subject", original);
 			unfolded = Header.Unfold (folded);
 
-			Assert.IsTrue (folded[folded.Length - 1] == '\n', "The folded header does not end with a new line.");
-			Assert.IsTrue (GetMaxLineLength (folded) < FormatOptions.Default.MaxLineLength, "The raw header value is not folded properly. ");
-			Assert.AreEqual (original, unfolded, "Unfolded header does not match the original header value.");
+			Assert.That (folded[folded.Length - 1], Is.EqualTo ('\n'), "The folded header does not end with a new line.");
+			Assert.That (GetMaxLineLength (folded), Is.LessThan (FormatOptions.Default.MaxLineLength), "The raw header value is not folded properly. ");
+			Assert.That (unfolded, Is.EqualTo (original), "Unfolded header does not match the original header value.");
 		}
 
 		[Test]
@@ -296,9 +380,9 @@ namespace UnitTests {
 			folded = Header.Fold (options, "Subject", original);
 			unfolded = Header.Unfold (folded).Replace (" ", "");
 
-			Assert.IsTrue (folded[folded.Length - 1] == '\n', "The folded header does not end with a new line.");
-			Assert.IsTrue (GetMaxLineLength (folded) < FormatOptions.Default.MaxLineLength, "The raw header value is not folded properly.");
-			Assert.AreEqual (original, unfolded, "Unfolded header does not match the original header value.");
+			Assert.That (folded[folded.Length - 1], Is.EqualTo ('\n'), "The folded header does not end with a new line.");
+			Assert.That (GetMaxLineLength (folded), Is.LessThan (FormatOptions.Default.MaxLineLength), "The raw header value is not folded properly.");
+			Assert.That (unfolded, Is.EqualTo (original), "Unfolded header does not match the original header value.");
 		}
 
 		[Test]
@@ -311,9 +395,9 @@ namespace UnitTests {
 			folded = Header.Fold (options, "Subject", original);
 			unfolded = Header.Unfold (folded).Replace (" _", "_");
 
-			Assert.IsTrue (folded[folded.Length - 1] == '\n', "The folded header does not end with a new line.");
-			Assert.IsTrue (GetMaxLineLength (folded) <= FormatOptions.Default.MaxLineLength, "The raw header value is not folded properly.");
-			Assert.AreEqual (original, unfolded, "Unfolded header does not match the original header value.");
+			Assert.That (folded[folded.Length - 1], Is.EqualTo ('\n'), "The folded header does not end with a new line.");
+			Assert.That (GetMaxLineLength (folded), Is.LessThanOrEqualTo (FormatOptions.Default.MaxLineLength), "The raw header value is not folded properly.");
+			Assert.That (unfolded, Is.EqualTo (original), "Unfolded header does not match the original header value.");
 		}
 
 		[Test]
@@ -323,9 +407,9 @@ namespace UnitTests {
 			const string expected = "Fwd: 『ポケモン Ωルビー・αサファイア』をプレイされた皆さまへ 720種類のポケモンが勢ぞろい！3DS最新ソフトのおしらせです";
 			Header header;
 
-			Assert.IsTrue (Header.TryParse (input, out header), "Failed to parse Japanese Subject header.");
-			Assert.AreEqual (HeaderId.Subject, header.Id, "HeaderId does not match");
-			Assert.AreEqual (expected, header.Value, "Subject values do not match.");
+			Assert.That (Header.TryParse (input, out header), Is.True, "Failed to parse Japanese Subject header.");
+			Assert.That (header.Id, Is.EqualTo (HeaderId.Subject), "HeaderId does not match");
+			Assert.That (header.Value, Is.EqualTo (expected), "Subject values do not match.");
 		}
 
 		[Test]
@@ -335,9 +419,9 @@ namespace UnitTests {
 			const string expected = "日本語メールテスト (testing Japanese emails)";
 			Header header;
 
-			Assert.IsTrue (Header.TryParse (input, out header), "Failed to parse Japanese Subject header.");
-			Assert.AreEqual (HeaderId.Subject, header.Id, "HeaderId does not match");
-			Assert.AreEqual (expected, header.Value, "Subject values do not match.");
+			Assert.That (Header.TryParse (input, out header), Is.True, "Failed to parse Japanese Subject header.");
+			Assert.That (header.Id, Is.EqualTo (HeaderId.Subject), "HeaderId does not match");
+			Assert.That (header.Value, Is.EqualTo (expected), "Subject values do not match.");
 		}
 
 		[Test]
@@ -348,22 +432,32 @@ namespace UnitTests {
 			var buffer = Encoding.UTF8.GetBytes (input);
 			Header header;
 
-			Assert.IsTrue (Header.TryParse (buffer, out header), "Failed to parse raw UTF-8 Subject header.");
-			Assert.AreEqual (HeaderId.Subject, header.Id, "HeaderId does not match");
-			Assert.AreEqual (expected, header.Value, "Subject values do not match.");
+			Assert.That (Header.TryParse (buffer, out header), Is.True, "Failed to parse raw UTF-8 Subject header.");
+			Assert.That (header.Id, Is.EqualTo (HeaderId.Subject), "HeaderId does not match");
+			Assert.That (header.Value, Is.EqualTo (expected), "Subject values do not match.");
 
-			Assert.IsTrue (Header.TryParse (buffer, 0, buffer.Length, out header), "Failed to parse raw UTF-8 Subject header.");
-			Assert.AreEqual (HeaderId.Subject, header.Id, "HeaderId does not match");
-			Assert.AreEqual (expected, header.GetValue ("utf-8"), "Subject values do not match.");
+			Assert.That (Header.TryParse (buffer, 0, buffer.Length, out header), Is.True, "Failed to parse raw UTF-8 Subject header.");
+			Assert.That (header.Id, Is.EqualTo (HeaderId.Subject), "HeaderId does not match");
+			Assert.That (header.GetValue ("utf-8"), Is.EqualTo (expected), "Subject values do not match.");
 		}
 
 		[Test]
 		public void TestParserCanonicalization ()
 		{
-			Assert.IsTrue (Header.TryParse ("Content-Type: text/plain", out var header), "TryParse");
-			Assert.AreEqual ("Content-Type", header.Field, "Field");
-			Assert.AreEqual ("text/plain", header.Value, "Value");
-			Assert.IsTrue (header.RawValue[header.RawValue.Length - 1] == (byte) '\n', "RawValue should end with a new-line");
+			Assert.That (Header.TryParse ("Content-Type: text/plain", out var header), Is.True, "TryParse");
+			Assert.That (header.Field, Is.EqualTo ("Content-Type"), "Field");
+			Assert.That (header.Value, Is.EqualTo ("text/plain"), "Value");
+			Assert.That (header.RawValue[header.RawValue.Length - 1], Is.EqualTo ((byte) '\n'), "RawValue should end with a new-line");
+		}
+
+		[Test]
+		public void TestParseInvalidHeader ()
+		{
+			const string input = "This is invalid";
+			var raw = Encoding.ASCII.GetBytes (input);
+
+			Assert.That (Header.TryParse (input, out _), Is.False, "TryParse(string)");
+			Assert.That (Header.TryParse (raw, 0, raw.Length, out _), Is.False, "TryParse(byte[])");
 		}
 
 		[Test]
@@ -379,12 +473,14 @@ namespace UnitTests {
 				name = value.ToHeaderName ().ToUpperInvariant ();
 				parsed = name.ToHeaderId ();
 
-				Assert.AreEqual (value, parsed, "Failed to parse the HeaderId value for {0}", value);
+				Assert.That (parsed, Is.EqualTo (value), $"Failed to parse the HeaderId value for {value}");
 			}
 
 			parsed = "X-MadeUp-Header".ToHeaderId ();
 
-			Assert.AreEqual (HeaderId.Unknown, parsed, "Failed to parse the made-up header value");
+			Assert.That (parsed, Is.EqualTo (HeaderId.Unknown), "Failed to parse the made-up header value");
+
+			Assert.That (((HeaderId) 1025).ToHeaderName (), Is.EqualTo ("Unknown"), "Unknown HeaderId");
 		}
 
 		[Test]
@@ -398,9 +494,9 @@ namespace UnitTests {
 			header.SetRawValue (rawValue);
 
 			var value = header.GetRawValue (format);
-			Assert.AreEqual (rawValue.Length, value.Length, "Length");
+			Assert.That (value.Length, Is.EqualTo (rawValue.Length), "Length");
 			for (int i = 0; i < rawValue.Length; i++)
-				Assert.AreEqual (rawValue[i], value[i], "rawValue[{0}]", i);
+				Assert.That (value[i], Is.EqualTo (rawValue[i]), $"rawValue[{i}]");
 		}
 
 		static string EncodeMailbox (FormatOptions options, string field, MailboxAddress mailbox)
@@ -427,7 +523,7 @@ namespace UnitTests {
 			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
 			var expected = EncodeMailbox (options, "From: ", mailbox);
 
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
 		}
 
 		[Test]
@@ -530,6 +626,56 @@ namespace UnitTests {
 		}
 
 		[Test]
+		public void TestReformatAddressHeaderToInternational ()
+		{
+			var mailbox = new MailboxAddress ("點看@名がドメイン", "example@example.com");
+			var options = FormatOptions.Default.Clone ();
+			options.NewLineFormat = NewLineFormat.Dos;
+			options.International = true;
+
+			TestReformatAddressHeader (options, mailbox);
+		}
+
+		[Test]
+		public void TestReformatAddressHeaderFromInternational ()
+		{
+			var mailbox = new MailboxAddress ("點看@名がドメイン", "example@example.com");
+			var options = FormatOptions.Default.Clone ();
+			options.NewLineFormat = NewLineFormat.Dos;
+			options.International = true;
+
+			// encode the mailbox as international
+			var encoded = EncodeMailbox (options, "From: ", mailbox);
+			var rawValue = Encoding.UTF8.GetBytes (encoded);
+			var header = new Header (ParserOptions.Default, HeaderId.From, "From", rawValue);
+
+			// reformat it as non-international
+			options.International = false;
+			var result = Encoding.UTF8.GetString (Header.ReformatAddressHeader (ParserOptions.Default, options, "From", rawValue));
+			//var result = Encoding.UTF8.GetString (header.GetRawValue (options));
+			var expected = EncodeMailbox (options, "From: ", mailbox);
+
+			Assert.That (result, Is.EqualTo (expected));
+		}
+
+		[Test]
+		public void TestReformatInvalidAddressHeader ()
+		{
+			const string expected = "This is an invalid address header\r\n";
+			var options = FormatOptions.Default.Clone ();
+			options.NewLineFormat = NewLineFormat.Dos;
+			options.International = true;
+
+			var rawValue = Encoding.UTF8.GetBytes (expected);
+			var header = new Header (ParserOptions.Default, HeaderId.From, "From", rawValue);
+
+			// reformat it the way it would be reformatted by MimeMessage.WriteTo()
+			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
+
+			Assert.That (result, Is.EqualTo (expected));
+		}
+
+		[Test]
 		public void TestReformatReceived ()
 		{
 			const string received = " from Messages.8.5.N.CUILIB.3.45.SNAP.NOT.LINKED.greenbush.galaxy.sun4.41\r\n          via MS.5.6.greenbush.galaxy.sun4_41;\r\n          Fri, 12 Jun 1992 13:29:05 -0400 (EDT)";
@@ -543,7 +689,7 @@ namespace UnitTests {
 			// reformat it the way it would be reformatted by MimeMessage.WriteTo()
 			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
 
-			Assert.AreEqual (received, result);
+			Assert.That (result, Is.EqualTo (received));
 		}
 
 		[Test]
@@ -560,7 +706,7 @@ namespace UnitTests {
 			// reformat it the way it would be reformatted by MimeMessage.WriteTo()
 			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
 
-			Assert.AreEqual (contentId, result);
+			Assert.That (result, Is.EqualTo (contentId));
 		}
 
 		[Test]
@@ -577,7 +723,7 @@ namespace UnitTests {
 			// reformat it the way it would be reformatted by MimeMessage.WriteTo()
 			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
 
-			Assert.AreEqual (references, result);
+			Assert.That (result, Is.EqualTo (references));
 		}
 
 		[Test]
@@ -595,7 +741,24 @@ namespace UnitTests {
 			// reformat it the way it would be reformatted by MimeMessage.WriteTo()
 			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
 
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
+		}
+
+		[Test]
+		public void TestReformatInvalidContentDisposition ()
+		{
+			const string contentDisposition = " @!^($@*$&( @*$&@*#@OE UF Jfdfadsf adfsd\r\n";
+			var options = FormatOptions.Default.Clone ();
+			options.NewLineFormat = NewLineFormat.Dos;
+			options.International = true;
+
+			var rawValue = Encoding.UTF8.GetBytes (contentDisposition);
+			var header = new Header (ParserOptions.Default, HeaderId.ContentDisposition, "Content-Disposition", rawValue);
+
+			// reformat it the way it would be reformatted by MimeMessage.WriteTo()
+			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
+
+			Assert.That (result, Is.EqualTo (contentDisposition));
 		}
 
 		[Test]
@@ -613,7 +776,24 @@ namespace UnitTests {
 			// reformat it the way it would be reformatted by MimeMessage.WriteTo()
 			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
 
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
+		}
+
+		[Test]
+		public void TestReformatInvalidContentType ()
+		{
+			const string contentType = " @!^($@*$&( @*$&@*#@OE UF Jfdfadsf adfsd\r\n";
+			var options = FormatOptions.Default.Clone ();
+			options.NewLineFormat = NewLineFormat.Dos;
+			options.International = true;
+
+			var rawValue = Encoding.UTF8.GetBytes (contentType);
+			var header = new Header (ParserOptions.Default, HeaderId.ContentType, "Content-Type", rawValue);
+
+			// reformat it the way it would be reformatted by MimeMessage.WriteTo()
+			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
+
+			Assert.That (result, Is.EqualTo (contentType));
 		}
 
 		[Test]
@@ -631,7 +811,7 @@ namespace UnitTests {
 			// reformat it the way it would be reformatted by MimeMessage.WriteTo()
 			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
 
-			Assert.AreEqual (authenticationResults, result);
+			Assert.That (result, Is.EqualTo (authenticationResults));
 		}
 
 		[Test]
@@ -649,7 +829,7 @@ namespace UnitTests {
 			// reformat it the way it would be reformatted by MimeMessage.WriteTo()
 			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
 
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
 		}
 
 		// Note: These examples come from rfc2369
@@ -691,7 +871,7 @@ namespace UnitTests {
 
 			var result = Encoding.UTF8.GetString (header.RawValue);
 
-			Assert.AreEqual (expected.ReplaceLineEndings (), result, "RawValue");
+			Assert.That (result, Is.EqualTo (expected.ReplaceLineEndings ()), "RawValue");
 
 			var options = FormatOptions.Default.Clone ();
 			options.NewLineFormat = NewLineFormat.Dos;
@@ -699,13 +879,13 @@ namespace UnitTests {
 
 			result = Encoding.UTF8.GetString (header.GetRawValue (options));
 
-			Assert.AreEqual (expected.ReplaceLineEndings (), result, "GetRawValue");
+			Assert.That (result, Is.EqualTo (expected.ReplaceLineEndings ()), "GetRawValue");
 
 			options.International = true;
 
 			result = Encoding.UTF8.GetString (header.GetRawValue (options));
 
-			Assert.AreEqual (international ?? expected, result, "GetRawValue International");
+			Assert.That (result, Is.EqualTo (international ?? expected), "GetRawValue International");
 		}
 
 		[Test]
@@ -721,7 +901,54 @@ namespace UnitTests {
 
 			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
 
-			Assert.AreEqual (expected.ReplaceLineEndings (), result);
+			Assert.That (result, Is.EqualTo (expected.ReplaceLineEndings ()));
+		}
+
+		[Test]
+		public void TestEncodeDispositionNotificationOptions ()
+		{
+			const string value = "    signed-receipt-protocol=optional,pkcs7-signature;signed-receipt-micalg=optional,sha1,sha128,sha256";
+			const string expected = " signed-receipt-protocol=optional,pkcs7-signature;\r\n\tsigned-receipt-micalg=optional,sha1,sha128,sha256\r\n";
+			var header = new Header (HeaderId.DispositionNotificationOptions, value);
+
+			var options = FormatOptions.Default.Clone ();
+			options.NewLineFormat = NewLineFormat.Dos;
+			options.International = false;
+
+			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
+
+			Assert.That (result, Is.EqualTo (expected.ReplaceLineEndings ()));
+		}
+
+		[Test]
+		public void TestReformatDispositionNotificationOptions ()
+		{
+			const string value = " signed-receipt-protocol=optional,pkcs7-signature;signed-receipt-micalg=optional,sha1,sha128,sha256\r\n";
+			var options = FormatOptions.Default.Clone ();
+			options.NewLineFormat = NewLineFormat.Dos;
+			options.International = true;
+
+			var rawValue = Encoding.UTF8.GetBytes (value);
+			var header = new Header (ParserOptions.Default, HeaderId.DispositionNotificationOptions, "Disposition-Notification-Options", rawValue);
+
+			// reformat it the way it would be reformatted by MimeMessage.WriteTo()
+			var result = Encoding.UTF8.GetString (header.GetRawValue (options));
+
+			Assert.That (result, Is.EqualTo (value));
+		}
+
+		[Test]
+		public void TestSetValueCharset ()
+		{
+			var expected = " =?gb18030?b?suLK1M7Esb4=?=" + FormatOptions.Default.NewLine;
+			var header = new Header ("Subject", "");
+
+			header.SetValue ("GB18030", "测试文本");
+
+			var raw = ByteArrayToString (header.RawValue);
+
+			Assert.That (raw[raw.Length - 1], Is.EqualTo ('\n'), "The RawValue does not end with a new line.");
+			Assert.That (raw, Is.EqualTo (expected), $"The encoded header does not match the expected value: {raw}");
 		}
 	}
 }

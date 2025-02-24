@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -87,11 +87,11 @@ namespace UnitTests.Text {
 				int index = trie.Search (TestCases[i].ToCharArray (), out pattern);
 				string substr;
 
-				Assert.IsTrue (index != -1, "Search failed for {0}", TestCases[i]);
+				Assert.That (index != -1, Is.True, $"Search failed for {TestCases[i]}");
 
 				substr = TestCases[i].Substring (index);
 
-				Assert.IsTrue (substr.StartsWith (pattern, StringComparison.OrdinalIgnoreCase), "Search returned wrong index for {0}", TestCases[i]);
+				Assert.That (substr.StartsWith (pattern, StringComparison.OrdinalIgnoreCase), Is.True, $"Search returned wrong index for {TestCases[i]}");
 			}
 		}
 	}

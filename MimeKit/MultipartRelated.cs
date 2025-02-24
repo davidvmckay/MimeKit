@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ using System;
 using System.IO;
 using System.Linq;
 
+using MimeKit.Text;
 using MimeKit.Utils;
 
 namespace MimeKit {
@@ -41,7 +42,7 @@ namespace MimeKit {
 	/// <example>
 	/// <code language="c#" source="Examples\MimeVisitorExamples.cs" region="HtmlPreviewVisitor" />
 	/// </example>
-	public class MultipartRelated : Multipart
+	public class MultipartRelated : Multipart, IMultipartRelated
 	{
 		/// <summary>
 		/// Initialize a new instance of the <see cref="MultipartRelated"/> class.
@@ -51,7 +52,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="args">Information used by the constructor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="args"/> is <c>null</c>.
+		/// <paramref name="args"/> is <see langword="null"/>.
 		/// </exception>
 		public MultipartRelated (MimeEntityConstructorArgs args) : base (args)
 		{
@@ -65,7 +66,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="args">An array of initialization parameters: headers and MIME entities.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="args"/> is <c>null</c>.
+		/// <paramref name="args"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <paramref name="args"/> contains one or more arguments of an unknown type.
@@ -135,7 +136,7 @@ namespace MimeKit {
 		/// </example>
 		/// <value>The root MIME part.</value>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="value"/> is <c>null</c>.
+		/// <paramref name="value"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MultipartRelated"/> has been disposed.
@@ -199,7 +200,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="visitor">The visitor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="visitor"/> is <c>null</c>.
+		/// <paramref name="visitor"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MultipartRelated"/> has been disposed.
@@ -215,15 +216,48 @@ namespace MimeKit {
 		}
 
 		/// <summary>
+		/// Get the preferred message body if it exists.
+		/// </summary>
+		/// <remarks>
+		/// Gets the preferred message body if it exists.
+		/// </remarks>
+		/// <param name="format">The preferred text format.</param>
+		/// <param name="body">The MIME part containing the message body in the preferred text format.</param>
+		/// <returns><see langword="true" /> if the body part is found; otherwise, <see langword="false" />.</returns>
+		/// <exception cref="System.ObjectDisposedException">
+		/// The <see cref="Multipart"/> has been disposed.
+		/// </exception>
+		public override bool TryGetValue (TextFormat format, out TextPart body)
+		{
+			CheckDisposed ();
+
+			// Note: If the multipart/related root document is HTML, then this is the droid we are looking for.
+			var root = Root;
+
+			if (root is TextPart text) {
+				body = text.IsFormat (format) ? text : null;
+				return body != null;
+			}
+
+			// The root may be a multipart such as a multipart/alternative.
+			if (root is Multipart multipart)
+				return multipart.TryGetValue (format, out body);
+
+			body = null;
+
+			return false;
+		}
+
+		/// <summary>
 		/// Check if the <see cref="MultipartRelated"/> contains a part matching the specified URI.
 		/// </summary>
 		/// <remarks>
-		/// Determines whether or not the multipart/related entity contains a part matching the specified URI.
+		/// Determines whether the multipart/related entity contains a part matching the specified URI.
 		/// </remarks>
-		/// <returns><value>true</value> if the specified part exists; otherwise <value>false</value>.</returns>
+		/// <returns><see langword="true" /> if the specified part exists; otherwise, <see langword="false" />.</returns>
 		/// <param name="uri">The URI of the MIME part.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="uri"/> is <c>null</c>.
+		/// <paramref name="uri"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MultipartRelated"/> has been disposed.
@@ -240,7 +274,7 @@ namespace MimeKit {
 		/// <para>Finds the index of the part matching the specified URI, if it exists.</para>
 		/// <para>If the URI scheme is <c>"cid"</c>, then matching is performed based on the Content-Id header
 		/// values, otherwise the Content-Location headers are used. If the provided URI is absolute and a child
-		/// part's Content-Location is relative, then then the child part's Content-Location URI will be combined
+		/// part's Content-Location is relative, then the child part's Content-Location URI will be combined
 		/// with the value of its Content-Base header, if available, otherwise it will be combined with the
 		/// multipart/related part's Content-Base header in order to produce an absolute URI that can be
 		/// compared with the provided absolute URI.</para>
@@ -251,7 +285,7 @@ namespace MimeKit {
 		/// <returns>The index of the part matching the specified URI if found; otherwise <c>-1</c>.</returns>
 		/// <param name="uri">The URI of the MIME part.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="uri"/> is <c>null</c>.
+		/// <paramref name="uri"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MultipartRelated"/> has been disposed.
@@ -309,7 +343,7 @@ namespace MimeKit {
 		/// <param name="mimeType">The mime-type of the content.</param>
 		/// <param name="charset">The charset of the content (if the content is text-based)</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="uri"/> is <c>null</c>.
+		/// <paramref name="uri"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.IO.FileNotFoundException">
 		/// The MIME part for the specified URI could not be found.
@@ -345,7 +379,7 @@ namespace MimeKit {
 		/// <returns>A stream for reading the decoded content of the MIME part specified by the provided URI.</returns>
 		/// <param name="uri">The URI.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="uri"/> is <c>null</c>.
+		/// <paramref name="uri"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.IO.FileNotFoundException">
 		/// The MIME part for the specified URI could not be found.
@@ -363,7 +397,7 @@ namespace MimeKit {
 			if (index == -1)
 				throw new FileNotFoundException ();
 
-			if (!(this[index] is MimePart part) || part.Content is null)
+			if (this[index] is not MimePart part || part.Content is null)
 				throw new FileNotFoundException ();
 
 			return part.Content.Open ();

@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -86,23 +86,23 @@ namespace MimeKit.Text {
 		}
 
 		/// <summary>
-		/// Get or set whether or not the converter should remove HTML comments from the output.
+		/// Get or set whether the converter should remove HTML comments from the output.
 		/// </summary>
 		/// <remarks>
-		/// Gets or sets whether or not the converter should remove HTML comments from the output.
+		/// Gets or sets whether the converter should remove HTML comments from the output.
 		/// </remarks>
-		/// <value><c>true</c> if the converter should remove comments; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the converter should remove comments; otherwise, <see langword="false" />.</value>
 		public bool FilterComments {
 			get; set;
 		}
 
 		/// <summary>
-		/// Get or set whether or not executable scripts should be stripped from the output.
+		/// Get or set whether executable scripts should be stripped from the output.
 		/// </summary>
 		/// <remarks>
-		/// Gets or sets whether or not executable scripts should be stripped from the output.
+		/// Gets or sets whether executable scripts should be stripped from the output.
 		/// </remarks>
-		/// <value><c>true</c> if executable scripts should be filtered; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if executable scripts should be filtered; otherwise, <see langword="false" />.</value>
 		public bool FilterHtml {
 			get; set;
 		}
@@ -147,14 +147,14 @@ namespace MimeKit.Text {
 
 #if false
 		/// <summary>
-		/// Get or set whether or not the converter should collapse white space,
+		/// Get or set whether the converter should collapse white space,
 		/// balance tags, and fix other problems in the source HTML.
 		/// </summary>
 		/// <remarks>
-		/// Gets or sets whether or not the converter should collapse white space,
+		/// Gets or sets whether the converter should collapse white space,
 		/// balance tags, and fix other problems in the source HTML.
 		/// </remarks>
-		/// <value><c>true</c> if the output html should be normalized; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the output html should be normalized; otherwise, <see langword="false" />.</value>
 		public bool NormalizeHtml {
 			get; set;
 		}
@@ -162,12 +162,12 @@ namespace MimeKit.Text {
 
 #if false
 		/// <summary>
-		/// Get or set whether or not the converter should only output an HTML fragment.
+		/// Get or set whether the converter should only output an HTML fragment.
 		/// </summary>
 		/// <remarks>
-		/// Gets or sets whether or not the converter should only output an HTML fragment.
+		/// Gets or sets whether the converter should only output an HTML fragment.
 		/// </remarks>
-		/// <value><c>true</c> if the converter should only output an HTML fragment; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the converter should only output an HTML fragment; otherwise, <see langword="false" />.</value>
 		public bool OutputHtmlFragment {
 			get; set;
 		}
@@ -238,9 +238,9 @@ namespace MimeKit.Text {
 		/// <param name="reader">The text reader.</param>
 		/// <param name="writer">The text writer.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="reader"/> is <c>null</c>.</para>
+		/// <para><paramref name="reader"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="writer"/> is <c>null</c>.</para>
+		/// <para><paramref name="writer"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public override void Convert (TextReader reader, TextWriter writer)
 		{
@@ -268,9 +268,8 @@ namespace MimeKit.Text {
 					DecodeCharacterReferences = false
 				};
 				HtmlToHtmlTagContext ctx;
-				HtmlToken token;
 
-				while (tokenizer.ReadNextToken (out token)) {
+				while (tokenizer.ReadNextToken (out var token)) {
 					switch (token.Kind) {
 					default:
 						if (!SuppressContent (stack))

@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 //
 
 using System.Security.Cryptography;
+using System.Diagnostics.CodeAnalysis;
 
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Crypto;
@@ -49,17 +50,17 @@ namespace UnitTests.Cryptography {
 		static void AssertAreEqual (byte[] expected, byte[] actual, string paramName)
 		{
 			if (expected == null) {
-				Assert.IsNull (actual, paramName);
+				Assert.That (actual, Is.Null, paramName);
 				return;
 			}
 
-			Assert.IsNotNull (actual, paramName);
-			Assert.AreEqual (expected.Length, actual.Length, "Lengths do not match: {0}", paramName);
+			Assert.That (actual, Is.Not.Null, paramName);
+			Assert.That (actual.Length, Is.EqualTo (expected.Length), $"Lengths do not match: {paramName}");
 
 			var expectedBigInteger = new BigInteger (1, expected);
 			var actualBigInteger = new BigInteger (1, actual);
 
-			Assert.AreEqual (expectedBigInteger, actualBigInteger, "{0} are not equal", paramName);
+			Assert.That (actualBigInteger, Is.EqualTo (expectedBigInteger), $"{paramName} are not equal");
 		}
 
 		static void AssertDSA (DSA dsa)
@@ -79,7 +80,7 @@ namespace UnitTests.Cryptography {
 
 			var actual = asymmetricAlgorithm.ExportParameters (true);
 
-			Assert.AreEqual (expected.Counter, actual.Counter, "Counter");
+			Assert.That (actual.Counter, Is.EqualTo (expected.Counter), "Counter");
 			AssertAreEqual (expected.Seed, actual.Seed, "Seed");
 			AssertAreEqual (expected.G, actual.G, "G");
 			AssertAreEqual (expected.P, actual.P, "P");
@@ -92,7 +93,7 @@ namespace UnitTests.Cryptography {
 			asymmetricAlgorithm = keyPair.AsAsymmetricAlgorithm () as DSA;
 			actual = asymmetricAlgorithm.ExportParameters (true);
 
-			Assert.AreEqual (expected.Counter, actual.Counter, "Counter");
+			Assert.That (actual.Counter, Is.EqualTo (expected.Counter), "Counter");
 			AssertAreEqual (expected.Seed, actual.Seed, "Seed");
 			AssertAreEqual (expected.G, actual.G, "G");
 			AssertAreEqual (expected.P, actual.P, "P");
@@ -109,7 +110,7 @@ namespace UnitTests.Cryptography {
 			asymmetricAlgorithm = keyParameter.AsAsymmetricAlgorithm () as DSA;
 			actual = asymmetricAlgorithm.ExportParameters (false);
 
-			Assert.AreEqual (expected.Counter, actual.Counter, "Counter");
+			Assert.That (actual.Counter, Is.EqualTo (expected.Counter), "Counter");
 			AssertAreEqual (expected.Seed, actual.Seed, "Seed");
 			AssertAreEqual (expected.G, actual.G, "G");
 			AssertAreEqual (expected.P, actual.P, "P");
@@ -126,11 +127,16 @@ namespace UnitTests.Cryptography {
 		}
 
 		[Test]
+		[SuppressMessage ("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
 		public void TestDSACng ()
 		{
 #if !MONO && ENABLE_DSA_CNG
-			using (var dsa = new DSACng (1024))
-				AssertDSA (dsa);
+			if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
+				using (var dsa = new DSACng (1024))
+					AssertDSA (dsa);
+			} else {
+				Assert.Ignore ("DSACng is only supported on Windows systems.");
+			}
 #else
 			Assert.Ignore ("Mono does not implement DSACng");
 #endif
@@ -189,16 +195,21 @@ namespace UnitTests.Cryptography {
 		[Test]
 		public void TestRSACryptoServiceProvider ()
 		{
-			using (var rsa = new RSACryptoServiceProvider (1024))
+			using (var rsa = new RSACryptoServiceProvider (2048))
 				AssertRSA (rsa);
 		}
 
 		[Test]
+		[SuppressMessage ("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
 		public void TestRSACng ()
 		{
-#if !MONO && ENABLE_RSA_CNG
-			using (var rsa = new RSACng (1024))
-				AssertRSA (rsa);
+#if !MONO
+			if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
+				using (var rsa = new RSACng (2048))
+					AssertRSA (rsa);
+			} else {
+				Assert.Ignore ("RSACng is only supported on Windows systems.");
+			}
 #else
 			Assert.Ignore ("Mono does not implement RSACng");
 #endif

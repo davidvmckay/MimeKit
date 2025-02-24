@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ namespace MimeKit {
 	/// (in other words, the last entity will be in a format that, when rendered, will most closely match
 	/// what the sending client's WYSISYG editor produced).
 	/// </remarks>
-	public class MultipartAlternative : Multipart
+	public class MultipartAlternative : Multipart, IMultipartAlternative
 	{
 		/// <summary>
 		/// Initialize a new instance of the <see cref="MultipartAlternative"/> class.
@@ -49,7 +49,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="args">Information used by the constructor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="args"/> is <c>null</c>.
+		/// <paramref name="args"/> is <see langword="null"/>.
 		/// </exception>
 		public MultipartAlternative (MimeEntityConstructorArgs args) : base (args)
 		{
@@ -63,7 +63,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="args">An array of initialization parameters: headers and MIME entities.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="args"/> is <c>null</c>.
+		/// <paramref name="args"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <paramref name="args"/> contains one or more arguments of an unknown type.
@@ -93,7 +93,7 @@ namespace MimeKit {
 		/// <remarks>
 		/// Gets the text of the text/plain alternative, if it exists.
 		/// </remarks>
-		/// <value>The text if a text/plain alternative exists; otherwise, <c>null</c>.</value>
+		/// <value>The text if a text/plain alternative exists; otherwise, <see langword="null"/>.</value>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MultipartAlternative"/> has been disposed.
 		/// </exception>
@@ -107,7 +107,7 @@ namespace MimeKit {
 		/// <remarks>
 		/// Gets the HTML-formatted text of the text/html alternative, if it exists.
 		/// </remarks>
-		/// <value>The HTML if a text/html alternative exists; otherwise, <c>null</c>.</value>
+		/// <value>The HTML if a text/html alternative exists; otherwise, <see langword="null"/>.</value>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MultipartAlternative"/> has been disposed.
 		/// </exception>
@@ -128,7 +128,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="visitor">The visitor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="visitor"/> is <c>null</c>.
+		/// <paramref name="visitor"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MultipartAlternative"/> has been disposed.
@@ -163,41 +163,50 @@ namespace MimeKit {
 		/// <remarks>
 		/// Gets the text body in the specified format, if it exists.
 		/// </remarks>
-		/// <returns>The text body in the desired format if it exists; otherwise, <c>null</c>.</returns>
+		/// <returns>The text body in the desired format if it exists; otherwise, <see langword="null"/>.</returns>
 		/// <param name="format">The desired text format.</param>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MultipartAlternative"/> has been disposed.
 		/// </exception>
 		public string GetTextBody (TextFormat format)
 		{
-			CheckDisposed ();
-
-			// walk the multipart/alternative children backwards from greatest level of faithfulness to the least faithful
-			for (int i = Count - 1; i >= 0; i--) {
-				if (this[i] is MultipartAlternative alternative) {
-					// Note: nested multipart/alternative parts make no sense... yet here we are.
-					return alternative.GetTextBody (format);
-				}
-
-				TextPart text;
-
-				if (this[i] is MultipartRelated related) {
-					var root = related.Root;
-
-					alternative = root as MultipartAlternative;
-					if (alternative != null)
-						return alternative.GetTextBody (format);
-
-					text = root as TextPart;
-				} else {
-					text = this[i] as TextPart;
-				}
-
-				if (text != null && text.IsFormat (format))
-					return GetText (text);
-			}
+			if (TryGetValue (format, out var body))
+				return GetText (body);
 
 			return null;
+		}
+
+		/// <summary>
+		/// Get the preferred message body if it exists.
+		/// </summary>
+		/// <remarks>
+		/// Gets the preferred message body if it exists.
+		/// </remarks>
+		/// <param name="format">The preferred text format.</param>
+		/// <param name="body">The MIME part containing the message body in the preferred text format.</param>
+		/// <returns><see langword="true" /> if the body part is found; otherwise, <see langword="false" />.</returns>
+		/// <exception cref="System.ObjectDisposedException">
+		/// The <see cref="Multipart"/> has been disposed.
+		/// </exception>
+		public override bool TryGetValue (TextFormat format, out TextPart body)
+		{
+			CheckDisposed ();
+
+			// Walk the multipart/alternative children backwards from the greatest level of faithfulness to the least faithful.
+			for (int i = Count - 1; i >= 0; i--) {
+				// Descend into child multiparts.
+				if (this[i] is Multipart multipart && multipart.TryGetValue (format, out body))
+					return true;
+
+				if (this[i] is TextPart text && text.IsFormat (format)) {
+					body = text;
+					return true;
+				}
+			}
+
+			body = null;
+
+			return false;
 		}
 	}
 }

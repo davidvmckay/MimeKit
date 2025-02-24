@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,15 +33,16 @@ namespace MimeKit.IO.Filters {
 	/// Quoted-Printable encoding.
 	/// </summary>
 	/// <remarks>
-	/// <para>From-armoring is a workaround to prevent receiving clients (or servers)
-	/// that uses the mbox file format for local storage from munging the line
-	/// by prepending a ">", as is typical with the mbox format.</para>
+	/// <para>From-armoring is a workaround to prevent receiving clients and/or servers
+	/// that use the mbox file format for local storage from munging every line of the
+	/// message content beginning with "From " by prepending a ">" to each of those lines,
+	/// as is typical with software using the mbox format.</para>
 	/// <para>This armoring technique ensures that the receiving client will still
-	/// be able to verify S/MIME signatures.</para>
+	/// be able to verify PGP/MIME and S/MIME signatures.</para>
 	/// </remarks>
 	public class ArmoredFromFilter : MimeFilterBase
 	{
-		static readonly byte[] From = { (byte) 'F', (byte) 'r', (byte) 'o', (byte) 'm', (byte) ' ' };
+		static ReadOnlySpan<byte> From => "From "u8;
 
 		bool midline;
 
@@ -78,7 +79,7 @@ namespace MimeKit.IO.Filters {
 		/// <param name="length">The length of the input buffer, starting at <paramref name="startIndex"/>.</param>
 		/// <param name="outputIndex">The output index.</param>
 		/// <param name="outputLength">The output length.</param>
-		/// <param name="flush">If set to <c>true</c>, all internally buffered data should be flushed to the output buffer.</param>
+		/// <param name="flush">If set to <see langword="true" />, all internally buffered data should be flushed to the output buffer.</param>
 		protected override byte[] Filter (byte[] input, int startIndex, int length, out int outputIndex, out int outputLength, bool flush)
 		{
 			var fromOffsets = new List<int> ();

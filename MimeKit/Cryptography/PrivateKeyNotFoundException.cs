@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -53,8 +53,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="info">The serialization info.</param>
 		/// <param name="context">The stream context.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="info"/> is <c>null</c>.
+		/// <paramref name="info"/> is <see langword="null"/>.
 		/// </exception>
+		[Obsolete ("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.")]
 		protected PrivateKeyNotFoundException (SerializationInfo info, StreamingContext context) : base (info, context)
 		{
 			KeyId = info.GetString ("KeyId");
@@ -70,7 +71,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="mailbox">The mailbox that could not be resolved to a valid private key.</param>
 		/// <param name="message">A message explaining the error.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="mailbox"/> is <c>null</c>.
+		/// <paramref name="mailbox"/> is <see langword="null"/>.
 		/// </exception>
 		public PrivateKeyNotFoundException (MailboxAddress mailbox, string message) : base (message)
 		{
@@ -89,7 +90,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="keyid">The key id that could not be resolved to a valid certificate.</param>
 		/// <param name="message">A message explaining the error.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="keyid"/> is <c>null</c>.
+		/// <paramref name="keyid"/> is <see langword="null"/>.
 		/// </exception>
 		public PrivateKeyNotFoundException (string keyid, string message) : base (message)
 		{
@@ -108,7 +109,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="keyid">The key id that could not be resolved to a valid certificate.</param>
 		/// <param name="message">A message explaining the error.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="keyid"/> is <c>null</c>.
+		/// <paramref name="keyid"/> is <see langword="null"/>.
 		/// </exception>
 		public PrivateKeyNotFoundException (long keyid, string message) : base (message)
 		{
@@ -127,9 +128,12 @@ namespace MimeKit.Cryptography {
 		/// <param name="info">The serialization info.</param>
 		/// <param name="context">The streaming context.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="info"/> is <c>null</c>.
+		/// <paramref name="info"/> is <see langword="null"/>.
 		/// </exception>
 		[SecurityCritical]
+#if NET8_0_OR_GREATER
+		[Obsolete ("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.")]
+#endif
 		public override void GetObjectData (SerializationInfo info, StreamingContext context)
 		{
 			base.GetObjectData (info, context);

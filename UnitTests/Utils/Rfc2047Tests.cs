@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -112,17 +112,17 @@ namespace UnitTests.Utils {
 		{
 			var empty = Array.Empty<byte> ();
 
-			Assert.AreEqual (string.Empty, Rfc2047.DecodePhrase (empty));
-			Assert.AreEqual (string.Empty, Rfc2047.DecodePhrase (empty, 0, 0));
-			Assert.AreEqual (string.Empty, Rfc2047.DecodePhrase (ParserOptions.Default, empty));
-			Assert.AreEqual (string.Empty, Rfc2047.DecodePhrase (ParserOptions.Default, empty, 0, 0));
-			Assert.AreEqual (string.Empty, Rfc2047.DecodePhrase (ParserOptions.Default, empty, 0, 0, out _));
+			Assert.That (Rfc2047.DecodePhrase (empty), Is.EqualTo (string.Empty));
+			Assert.That (Rfc2047.DecodePhrase (empty, 0, 0), Is.EqualTo (string.Empty));
+			Assert.That (Rfc2047.DecodePhrase (ParserOptions.Default, empty), Is.EqualTo (string.Empty));
+			Assert.That (Rfc2047.DecodePhrase (ParserOptions.Default, empty, 0, 0), Is.EqualTo (string.Empty));
+			Assert.That (Rfc2047.DecodePhrase (ParserOptions.Default, empty, 0, 0, out _), Is.EqualTo (string.Empty));
 
-			Assert.AreEqual (string.Empty, Rfc2047.DecodeText (empty));
-			Assert.AreEqual (string.Empty, Rfc2047.DecodeText (empty, 0, 0));
-			Assert.AreEqual (string.Empty, Rfc2047.DecodeText (ParserOptions.Default, empty));
-			Assert.AreEqual (string.Empty, Rfc2047.DecodeText (ParserOptions.Default, empty, 0, 0));
-			Assert.AreEqual (string.Empty, Rfc2047.DecodeText (ParserOptions.Default, empty, 0, 0, out _));
+			Assert.That (Rfc2047.DecodeText (empty), Is.EqualTo (string.Empty));
+			Assert.That (Rfc2047.DecodeText (empty, 0, 0), Is.EqualTo (string.Empty));
+			Assert.That (Rfc2047.DecodeText (ParserOptions.Default, empty), Is.EqualTo (string.Empty));
+			Assert.That (Rfc2047.DecodeText (ParserOptions.Default, empty, 0, 0), Is.EqualTo (string.Empty));
+			Assert.That (Rfc2047.DecodeText (ParserOptions.Default, empty, 0, 0, out _), Is.EqualTo (string.Empty));
 		}
 
 		[Test]
@@ -133,10 +133,10 @@ namespace UnitTests.Utils {
 			string result;
 
 			result = Rfc2047.DecodePhrase (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 
 			result = Rfc2047.DecodeText (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 		}
 
 		[Test]
@@ -147,10 +147,10 @@ namespace UnitTests.Utils {
 			string result;
 
 			result = Rfc2047.DecodePhrase (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 
 			result = Rfc2047.DecodeText (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 		}
 
 		[Test]
@@ -162,10 +162,10 @@ namespace UnitTests.Utils {
 			string result;
 
 			result = Rfc2047.DecodePhrase (buffer);
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
 
 			result = Rfc2047.DecodeText (buffer);
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
 		}
 
 		[Test]
@@ -176,10 +176,10 @@ namespace UnitTests.Utils {
 			string result;
 
 			result = Rfc2047.DecodePhrase (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 
 			result = Rfc2047.DecodeText (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 		}
 
 		[Test]
@@ -190,10 +190,10 @@ namespace UnitTests.Utils {
 			string result;
 
 			result = Rfc2047.DecodePhrase (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 
 			result = Rfc2047.DecodeText (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 		}
 
 		[Test]
@@ -204,10 +204,10 @@ namespace UnitTests.Utils {
 			string result;
 
 			result = Rfc2047.DecodePhrase (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 
 			result = Rfc2047.DecodeText (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 		}
 
 		[Test]
@@ -218,10 +218,10 @@ namespace UnitTests.Utils {
 			string result;
 
 			result = Rfc2047.DecodePhrase (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 
 			result = Rfc2047.DecodeText (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 		}
 
 		[Test]
@@ -232,10 +232,10 @@ namespace UnitTests.Utils {
 			string result;
 
 			result = Rfc2047.DecodePhrase (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 
 			result = Rfc2047.DecodeText (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 		}
 
 		[Test]
@@ -246,10 +246,10 @@ namespace UnitTests.Utils {
 			string result;
 
 			result = Rfc2047.DecodePhrase (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 
 			result = Rfc2047.DecodeText (buffer);
-			Assert.AreEqual (text, result);
+			Assert.That (result, Is.EqualTo (text));
 		}
 
 		[Test]
@@ -261,10 +261,10 @@ namespace UnitTests.Utils {
 			string result;
 
 			result = Rfc2047.DecodePhrase (buffer);
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
 
 			result = Rfc2047.DecodeText (buffer);
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
 		}
 
 		[Test]
@@ -277,12 +277,12 @@ namespace UnitTests.Utils {
 			int codepage;
 
 			result = Rfc2047.DecodePhrase (ParserOptions.Default, buffer, 0, buffer.Length, out codepage);
-			Assert.AreEqual (expected, result, "DecodePhrase");
-			Assert.AreEqual (28591, codepage, "DecodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "DecodePhrase");
+			Assert.That (codepage, Is.EqualTo (28591), "DecodePhrase");
 
 			result = Rfc2047.DecodeText (ParserOptions.Default, buffer, 0, buffer.Length, out codepage);
-			Assert.AreEqual (expected, result, "DecodeText");
-			Assert.AreEqual (28591, codepage, "DecodeText");
+			Assert.That (result, Is.EqualTo (expected), "DecodeText");
+			Assert.That (codepage, Is.EqualTo (28591), "DecodeText");
 		}
 
 		// TODO: When no common codepage can be found, this logic should be smarter?
@@ -296,12 +296,30 @@ namespace UnitTests.Utils {
 			int codepage;
 
 			result = Rfc2047.DecodePhrase (ParserOptions.Default, buffer, 0, buffer.Length, out codepage);
-			Assert.AreEqual (expected, result, "DecodePhrase");
-			Assert.AreEqual (28591, codepage, "DecodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "DecodePhrase");
+			Assert.That (codepage, Is.EqualTo (28591), "DecodePhrase");
 
 			result = Rfc2047.DecodeText (ParserOptions.Default, buffer, 0, buffer.Length, out codepage);
-			Assert.AreEqual (expected, result, "DecodeText");
-			Assert.AreEqual (28591, codepage, "DecodeText");
+			Assert.That (result, Is.EqualTo (expected), "DecodeText");
+			Assert.That (codepage, Is.EqualTo (28591), "DecodeText");
+		}
+
+		[Test]
+		public void TestDecodeEnsuresCodePageCapacity ()
+		{
+			const string text = "=?us-ascii?q?0?= =?iso-8859-1?q?1?= =?iso-8859-2?q?2?= =?iso-8859-3?q?3?= =?iso-8859-4?q?4?= =?iso-8859-5?q?5?= =?iso-8859-6?q?6?= =?iso-8859-7?q?7?= =?iso-8859-8?q?8?= =?iso-8859-9?q?9?= =?koi8-r?q?a?= =?koi8-u?q?b?= =?big5?q?c?= =?euc-cn?q?d?= =?euc-kr?q?e?= =?utf-8?q?f?= =?gb2312?q?g?=";
+			const string expected = "0123456789abcdefg";
+			var buffer = Encoding.UTF8.GetBytes (text);
+			string result;
+			int codepage;
+
+			result = Rfc2047.DecodePhrase (ParserOptions.Default, buffer, 0, buffer.Length, out codepage);
+			Assert.That (result, Is.EqualTo (expected), "DecodePhrase");
+			Assert.That (codepage, Is.EqualTo (20127), "DecodePhrase"); // FIXME: it should not select us-ascii
+
+			result = Rfc2047.DecodeText (ParserOptions.Default, buffer, 0, buffer.Length, out codepage);
+			Assert.That (result, Is.EqualTo (expected), "DecodeText");
+			Assert.That (codepage, Is.EqualTo (20127), "DecodeText"); // FIXME: it should not select us-ascii
 		}
 
 		[Test]
@@ -312,16 +330,16 @@ namespace UnitTests.Utils {
 			string result;
 
 			result = Encoding.ASCII.GetString (Rfc2047.EncodePhrase (Encoding.UTF8, text));
-			Assert.AreEqual (expected, result, "EncodePhrase(Encoding, string)");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase(Encoding, string)");
 
 			result = Encoding.ASCII.GetString (Rfc2047.EncodePhrase (Encoding.UTF8, text, 0, text.Length));
-			Assert.AreEqual (expected, result, "EncodePhrase(Encoding, string, int, int)");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase(Encoding, string, int, int)");
 
 			result = Encoding.ASCII.GetString (Rfc2047.EncodeText (Encoding.UTF8, text));
-			Assert.AreEqual (expected, result, "EncodeText(Encoding, string)");
+			Assert.That (result, Is.EqualTo (expected), "EncodeText(Encoding, string)");
 
 			result = Encoding.ASCII.GetString (Rfc2047.EncodeText (Encoding.UTF8, text, 0, text.Length));
-			Assert.AreEqual (expected, result, "EncodeText(Encoding, string, int, int)");
+			Assert.That (result, Is.EqualTo (expected), "EncodeText(Encoding, string, int, int)");
 		}
 
 		[Test]
@@ -332,16 +350,16 @@ namespace UnitTests.Utils {
 			string result;
 
 			result = Encoding.ASCII.GetString (Rfc2047.EncodePhrase (Encoding.UTF8, text));
-			Assert.AreEqual (expected, result, "EncodePhrase(Encoding, string)");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase(Encoding, string)");
 
 			result = Encoding.ASCII.GetString (Rfc2047.EncodePhrase (Encoding.UTF8, text, 0, text.Length));
-			Assert.AreEqual (expected, result, "EncodePhrase(Encoding, string, int, int)");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase(Encoding, string, int, int)");
 
 			result = Encoding.ASCII.GetString (Rfc2047.EncodeText (Encoding.UTF8, text));
-			Assert.AreEqual (expected, result, "EncodeText(Encoding, string)");
+			Assert.That (result, Is.EqualTo (expected), "EncodeText(Encoding, string)");
 
 			result = Encoding.ASCII.GetString (Rfc2047.EncodeText (Encoding.UTF8, text, 0, text.Length));
-			Assert.AreEqual (expected, result, "EncodeText(Encoding, string, int, int)");
+			Assert.That (result, Is.EqualTo (expected), "EncodeText(Encoding, string, int, int)");
 		}
 
 		[Test]
@@ -353,16 +371,16 @@ namespace UnitTests.Utils {
 			string result;
 
 			result = Encoding.ASCII.GetString (Rfc2047.EncodePhrase (Encoding.UTF8, text));
-			Assert.AreEqual (expected, result, "EncodePhrase(Encoding, string)");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase(Encoding, string)");
 
 			result = Encoding.ASCII.GetString (Rfc2047.EncodePhrase (Encoding.UTF8, text, 0, text.Length));
-			Assert.AreEqual (expected, result, "EncodePhrase(Encoding, string, int, int)");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase(Encoding, string, int, int)");
 
 			result = Encoding.ASCII.GetString (Rfc2047.EncodeText (Encoding.UTF8, text));
-			Assert.AreEqual (expected, result, "EncodeText(Encoding, string)");
+			Assert.That (result, Is.EqualTo (expected), "EncodeText(Encoding, string)");
 
 			result = Encoding.ASCII.GetString (Rfc2047.EncodeText (Encoding.UTF8, text, 0, text.Length));
-			Assert.AreEqual (expected, result, "EncodeText(Encoding, string, int, int)");
+			Assert.That (result, Is.EqualTo (expected), "EncodeText(Encoding, string, int, int)");
 		}
 
 		[Test]
@@ -373,10 +391,10 @@ namespace UnitTests.Utils {
 
 			var encoded = Rfc2047.EncodePhrase (Encoding.UTF8, text);
 			var result = Encoding.ASCII.GetString (encoded);
-			Assert.AreEqual (expected, result, "EncodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase");
 
 			var unquoted = MimeUtils.Unquote (result);
-			Assert.AreEqual (text, unquoted, "Unquote");
+			Assert.That (unquoted, Is.EqualTo (text), "Unquote");
 		}
 
 		[Test]
@@ -387,10 +405,10 @@ namespace UnitTests.Utils {
 
 			var encoded = Rfc2047.EncodePhrase (Encoding.UTF8, text);
 			var result = Encoding.ASCII.GetString (encoded);
-			Assert.AreEqual (expected, result, "EncodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase");
 
 			var unquoted = MimeUtils.Unquote (result);
-			Assert.AreEqual (text, unquoted, "Unquote");
+			Assert.That (unquoted, Is.EqualTo (text), "Unquote");
 		}
 
 		[Test]
@@ -401,10 +419,10 @@ namespace UnitTests.Utils {
 
 			var encoded = Rfc2047.EncodePhrase (Encoding.UTF8, text);
 			var result = Encoding.ASCII.GetString (encoded);
-			Assert.AreEqual (expected, result, "EncodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase");
 
 			var decoded = Rfc2047.DecodePhrase (encoded);
-			Assert.AreEqual (text, decoded, "DecodePhrase");
+			Assert.That (decoded, Is.EqualTo (text), "DecodePhrase");
 		}
 
 		[Test]
@@ -415,10 +433,10 @@ namespace UnitTests.Utils {
 
 			var encoded = Rfc2047.EncodePhrase (Encoding.UTF8, text);
 			var result = Encoding.ASCII.GetString (encoded);
-			Assert.AreEqual (expected, result, "EncodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase");
 
 			var decoded = Rfc2047.DecodePhrase (encoded);
-			Assert.AreEqual (text, decoded, "DecodePhrase");
+			Assert.That (decoded, Is.EqualTo (text), "DecodePhrase");
 		}
 
 		[Test]
@@ -429,10 +447,10 @@ namespace UnitTests.Utils {
 
 			var encoded = Rfc2047.EncodePhrase (Encoding.UTF8, text);
 			var result = Encoding.ASCII.GetString (encoded);
-			Assert.AreEqual (expected, result, "EncodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase");
 
 			var decoded = Rfc2047.DecodePhrase (encoded);
-			Assert.AreEqual (text, decoded, "DecodePhrase");
+			Assert.That (decoded, Is.EqualTo (text), "DecodePhrase");
 		}
 
 		[Test]
@@ -443,10 +461,10 @@ namespace UnitTests.Utils {
 
 			var encoded = Rfc2047.EncodePhrase (Encoding.UTF8, text);
 			var result = Encoding.ASCII.GetString (encoded);
-			Assert.AreEqual (expected, result, "EncodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase");
 
 			var decoded = Rfc2047.DecodePhrase (encoded);
-			Assert.AreEqual (text, decoded, "DecodePhrase");
+			Assert.That (decoded, Is.EqualTo (text), "DecodePhrase");
 		}
 
 		[Test]
@@ -457,10 +475,10 @@ namespace UnitTests.Utils {
 
 			var encoded = Rfc2047.EncodePhrase (Encoding.UTF8, text);
 			var result = Encoding.ASCII.GetString (encoded);
-			Assert.AreEqual (expected, result, "EncodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase");
 
 			var unquoted = MimeUtils.Unquote (result);
-			Assert.AreEqual (text, unquoted, "Unquote");
+			Assert.That (unquoted, Is.EqualTo (text), "Unquote");
 		}
 
 		[Test]
@@ -471,10 +489,10 @@ namespace UnitTests.Utils {
 
 			var encoded = Rfc2047.EncodePhrase (Encoding.UTF8, text);
 			var result = Encoding.ASCII.GetString (encoded);
-			Assert.AreEqual (expected, result, "EncodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase");
 
 			var unquoted = MimeUtils.Unquote (result);
-			Assert.AreEqual (text, unquoted, "Unquote");
+			Assert.That (unquoted, Is.EqualTo (text), "Unquote");
 		}
 
 		[Test]
@@ -485,10 +503,10 @@ namespace UnitTests.Utils {
 
 			var encoded = Rfc2047.EncodePhrase (Encoding.UTF8, text);
 			var result = Encoding.ASCII.GetString (encoded);
-			Assert.AreEqual (expected, result, "EncodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase");
 
 			var decoded = Rfc2047.DecodePhrase (encoded);
-			Assert.AreEqual (text, decoded, "DecodePhrase");
+			Assert.That (decoded, Is.EqualTo (text), "DecodePhrase");
 		}
 
 		[Test]
@@ -499,10 +517,10 @@ namespace UnitTests.Utils {
 
 			var encoded = Rfc2047.EncodePhrase (Encoding.UTF8, text);
 			var result = Encoding.ASCII.GetString (encoded);
-			Assert.AreEqual (expected, result, "EncodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase");
 
 			var decoded = Rfc2047.DecodePhrase (encoded);
-			Assert.AreEqual (text, decoded, "DecodePhrase");
+			Assert.That (decoded, Is.EqualTo (text), "DecodePhrase");
 		}
 
 		[Test]
@@ -513,10 +531,10 @@ namespace UnitTests.Utils {
 
 			var encoded = Rfc2047.EncodePhrase (Encoding.UTF8, text);
 			var result = Encoding.ASCII.GetString (encoded);
-			Assert.AreEqual (expected, result, "EncodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase");
 
 			var decoded = Rfc2047.DecodePhrase (encoded);
-			Assert.AreEqual (text, decoded, "DecodePhrase");
+			Assert.That (decoded, Is.EqualTo (text), "DecodePhrase");
 		}
 
 		[Test]
@@ -527,10 +545,10 @@ namespace UnitTests.Utils {
 
 			var encoded = Rfc2047.EncodePhrase (Encoding.UTF8, text);
 			var result = Encoding.ASCII.GetString (encoded);
-			Assert.AreEqual (expected, result, "EncodePhrase");
+			Assert.That (result, Is.EqualTo (expected), "EncodePhrase");
 
 			var decoded = Rfc2047.DecodePhrase (encoded);
-			Assert.AreEqual (text, decoded, "DecodePhrase");
+			Assert.That (decoded, Is.EqualTo (text), "DecodePhrase");
 		}
 
 		[Test]
@@ -543,7 +561,7 @@ namespace UnitTests.Utils {
 			options.NewLineFormat = NewLineFormat.Dos;
 
 			var result = Encoding.ASCII.GetString (Rfc2047.FoldUnstructuredHeader (options, "Subject", Encoding.ASCII.GetBytes (text)));
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
 		}
 
 		[Test]
@@ -556,7 +574,7 @@ namespace UnitTests.Utils {
 			options.NewLineFormat = NewLineFormat.Dos;
 
 			var result = Encoding.ASCII.GetString (Rfc2047.FoldUnstructuredHeader (options, "Subject", Encoding.ASCII.GetBytes (text)));
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
 		}
 
 		[Test]
@@ -569,7 +587,7 @@ namespace UnitTests.Utils {
 			options.NewLineFormat = NewLineFormat.Dos;
 
 			var result = Encoding.ASCII.GetString (Rfc2047.FoldUnstructuredHeader (options, "Subject", Encoding.ASCII.GetBytes (text)));
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
 		}
 
 		[Test]
@@ -582,7 +600,7 @@ namespace UnitTests.Utils {
 			options.NewLineFormat = NewLineFormat.Dos;
 
 			var result = Encoding.ASCII.GetString (Rfc2047.FoldUnstructuredHeader (options, "Subject", Encoding.ASCII.GetBytes (text)));
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
 		}
 
 		[Test]
@@ -595,7 +613,7 @@ namespace UnitTests.Utils {
 			options.NewLineFormat = NewLineFormat.Dos;
 
 			var result = Encoding.ASCII.GetString (Rfc2047.FoldUnstructuredHeader (options, "Subject", Encoding.ASCII.GetBytes (text)));
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
 		}
 
 		[Test]
@@ -608,7 +626,20 @@ namespace UnitTests.Utils {
 			options.NewLineFormat = NewLineFormat.Dos;
 
 			var result = Encoding.ASCII.GetString (Rfc2047.FoldUnstructuredHeader (options, "Subject", Encoding.ASCII.GetBytes (text)));
-			Assert.AreEqual (expected, result);
+			Assert.That (result, Is.EqualTo (expected));
+		}
+
+		[Test]
+		public void TestFolderHeaderValueDoesNotIgnoreWhitespaceBetweenEncodedWords ()
+		{
+			const string expected = " This test should demonstrate that\r\n =?iso-8859-1*en-US?q?whitespace_between_rfc2047_encoded_word_tokens?= \t \t \r\n\t =?iso-8859-1*en-US?q?does_not_get_ignored?=\r\n";
+			const string text = "This test should demonstrate that =?iso-8859-1*en-US?q?whitespace_between_rfc2047_encoded_word_tokens?= \t \t \t =?iso-8859-1*en-US?q?does_not_get_ignored?=";
+			var options = FormatOptions.Default.Clone ();
+
+			options.NewLineFormat = NewLineFormat.Dos;
+
+			var result = Encoding.ASCII.GetString (Rfc2047.FoldUnstructuredHeader (options, "Subject", Encoding.ASCII.GetBytes (text)));
+			Assert.That (result, Is.EqualTo (expected));
 		}
 	}
 }

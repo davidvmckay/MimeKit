@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -87,7 +87,7 @@ namespace MimeKit.Text {
 		/// Gets or sets whether the encoding of the input is detected from the byte order mark or
 		/// determined by the <see cref="InputEncoding"/> property.
 		/// </remarks>
-		/// <value><c>true</c> if detect encoding from byte order mark; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if detect encoding from byte order mark; otherwise, <see langword="false" />.</value>
 		public bool DetectEncodingFromByteOrderMark {
 			get; set;
 		}
@@ -100,7 +100,7 @@ namespace MimeKit.Text {
 		/// </remarks>
 		/// <value>The input encoding.</value>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="value"/> is <c>null</c>.
+		/// <paramref name="value"/> is <see langword="null"/>.
 		/// </exception>
 		public Encoding InputEncoding {
 			get { return inputEncoding; }
@@ -131,7 +131,7 @@ namespace MimeKit.Text {
 		/// </remarks>
 		/// <value>The output encoding.</value>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="value"/> is <c>null</c>.
+		/// <paramref name="value"/> is <see langword="null"/>.
 		/// </exception>
 		public Encoding OutputEncoding {
 			get { return outputEncoding; }
@@ -239,9 +239,9 @@ namespace MimeKit.Text {
 		/// <param name="source">The source stream.</param>
 		/// <param name="destination">The destination stream.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="source"/> is <c>null</c>.</para>
+		/// <para><paramref name="source"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="destination"/> is <c>null</c>.</para>
+		/// <para><paramref name="destination"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public virtual void Convert (Stream source, Stream destination)
 		{
@@ -269,9 +269,9 @@ namespace MimeKit.Text {
 		/// <param name="source">The source stream.</param>
 		/// <param name="writer">The text writer.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="source"/> is <c>null</c>.</para>
+		/// <para><paramref name="source"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="writer"/> is <c>null</c>.</para>
+		/// <para><paramref name="writer"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public virtual void Convert (Stream source, TextWriter writer)
 		{
@@ -296,9 +296,9 @@ namespace MimeKit.Text {
 		/// <param name="reader">The text reader.</param>
 		/// <param name="destination">The destination stream.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="reader"/> is <c>null</c>.</para>
+		/// <para><paramref name="reader"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="destination"/> is <c>null</c>.</para>
+		/// <para><paramref name="destination"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public virtual void Convert (TextReader reader, Stream destination)
 		{
@@ -325,9 +325,9 @@ namespace MimeKit.Text {
 		/// <param name="reader">The text reader.</param>
 		/// <param name="writer">The text writer.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="reader"/> is <c>null</c>.</para>
+		/// <para><paramref name="reader"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="writer"/> is <c>null</c>.</para>
+		/// <para><paramref name="writer"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public abstract void Convert (TextReader reader, TextWriter writer);
 
@@ -343,7 +343,7 @@ namespace MimeKit.Text {
 		/// <returns>The converted text.</returns>
 		/// <param name="text">The text to convert.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="text"/> is <c>null</c>.
+		/// <paramref name="text"/> is <see langword="null"/>.
 		/// </exception>
 		public virtual string Convert (string text)
 		{

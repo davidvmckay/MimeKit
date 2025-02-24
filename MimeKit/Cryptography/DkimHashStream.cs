@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -116,45 +116,45 @@ namespace MimeKit.Cryptography {
 		}
 
 		/// <summary>
-		/// Checks whether or not the stream supports reading.
+		/// Checks whether the stream supports reading.
 		/// </summary>
 		/// <remarks>
 		/// A <see cref="DkimHashStream"/> is not readable.
 		/// </remarks>
-		/// <value><c>true</c> if the stream supports reading; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the stream supports reading; otherwise, <see langword="false" />.</value>
 		public override bool CanRead {
 			get { return false; }
 		}
 
 		/// <summary>
-		/// Checks whether or not the stream supports writing.
+		/// Checks whether the stream supports writing.
 		/// </summary>
 		/// <remarks>
 		/// A <see cref="DkimHashStream"/> is always writable.
 		/// </remarks>
-		/// <value><c>true</c> if the stream supports writing; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the stream supports writing; otherwise, <see langword="false" />.</value>
 		public override bool CanWrite {
 			get { return true; }
 		}
 
 		/// <summary>
-		/// Checks whether or not the stream supports seeking.
+		/// Checks whether the stream supports seeking.
 		/// </summary>
 		/// <remarks>
 		/// A <see cref="DkimHashStream"/> is not seekable.
 		/// </remarks>
-		/// <value><c>true</c> if the stream supports seeking; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the stream supports seeking; otherwise, <see langword="false" />.</value>
 		public override bool CanSeek {
 			get { return false; }
 		}
 
 		/// <summary>
-		/// Checks whether or not reading and writing to the stream can timeout.
+		/// Checks whether reading and writing to the stream can time out.
 		/// </summary>
 		/// <remarks>
 		/// Writing to a <see cref="DkimHashStream"/> cannot timeout.
 		/// </remarks>
-		/// <value><c>true</c> if reading and writing to the stream can timeout; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if reading and writing to the stream can time out; otherwise, <see langword="false" />.</value>
 		public override bool CanTimeout {
 			get { return false; }
 		}
@@ -252,7 +252,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="offset">The offset of the first byte to write.</param>
 		/// <param name="count">The number of bytes to write.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <para><paramref name="offset"/> is less than zero or greater than the length of <paramref name="buffer"/>.</para>
@@ -352,8 +352,8 @@ namespace MimeKit.Cryptography {
 		/// Releases the unmanaged resources used by the <see cref="DkimHashStream"/> and
 		/// optionally releases the managed resources.
 		/// </summary>
-		/// <param name="disposing"><c>true</c> to release both managed and unmanaged resources;
-		/// <c>false</c> to release only the unmanaged resources.</param>
+		/// <param name="disposing"><see langword="true" /> to release both managed and unmanaged resources;
+		/// <see langword="false" /> to release only the unmanaged resources.</param>
 		protected override void Dispose (bool disposing)
 		{
 			if (disposing && !disposed) {

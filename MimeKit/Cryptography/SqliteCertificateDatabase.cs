@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@ using System.Data;
 using System.Text;
 using System.Data.Common;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 using Org.BouncyCastle.Security;
 
@@ -49,6 +50,9 @@ namespace MimeKit.Cryptography {
 	/// and private keys.</para>
 	/// <para>This particular database uses SQLite to store the data.</para>
 	/// </remarks>
+#if NET8_0_OR_GREATER
+	[RequiresUnreferencedCode ("Uses Reflection to load System.Data.SQLite on Windows or Mono.Data.Sqlite on Linux / macOS.")]
+#endif
 	public class SqliteCertificateDatabase : SqlCertificateDatabase
 	{
 #if !__MOBILE__
@@ -62,6 +66,9 @@ namespace MimeKit.Cryptography {
 			public PropertyInfo DateTimeFormatProperty { get; private set; }
 			public PropertyInfo DataSourceProperty { get; private set; }
 
+#if NET8_0_OR_GREATER
+			[RequiresUnreferencedCode ("Uses Reflection to load SQLite classes dynamically from the specified assembly.")]
+#endif
 			public static SQLiteAssembly Load (string assemblyName)
 			{
 				try {
@@ -215,9 +222,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="fileName">The file name.</param>
 		/// <param name="password">The password used for encrypting and decrypting the private keys.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="fileName"/> is <c>null</c>.</para>
+		/// <para><paramref name="fileName"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="password"/> is <c>null</c>.</para>
+		/// <para><paramref name="password"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// The specified file path is empty.
@@ -247,11 +254,11 @@ namespace MimeKit.Cryptography {
 		/// <param name="password">The password used for encrypting and decrypting the private keys.</param>
 		/// <param name="random">The secure pseudo-random number generator.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="fileName"/> is <c>null</c>.</para>
+		/// <para><paramref name="fileName"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="password"/> is <c>null</c>.</para>
+		/// <para><paramref name="password"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="random"/> is <c>null</c>.</para>
+		/// <para><paramref name="random"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// The specified file path is empty.
@@ -275,9 +282,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="connection">The SQLite connection.</param>
 		/// <param name="password">The password used for encrypting and decrypting the private keys.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="connection"/> is <c>null</c>.</para>
+		/// <para><paramref name="connection"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="password"/> is <c>null</c>.</para>
+		/// <para><paramref name="password"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public SqliteCertificateDatabase (DbConnection connection, string password) : base (connection, password)
 		{
@@ -293,11 +300,11 @@ namespace MimeKit.Cryptography {
 		/// <param name="password">The password used for encrypting and decrypting the private keys.</param>
 		/// <param name="random">The secure pseudo-random number generator.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="connection"/> is <c>null</c>.</para>
+		/// <para><paramref name="connection"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="password"/> is <c>null</c>.</para>
+		/// <para><paramref name="password"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="random"/> is <c>null</c>.</para>
+		/// <para><paramref name="random"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public SqliteCertificateDatabase (DbConnection connection, string password, SecureRandom random) : base (connection, password, random)
 		{
@@ -314,7 +321,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>The list of columns.</returns>
 		protected override IList<DataColumn> GetTableColumns (DbConnection connection, string tableName)
 		{
-			using (var command = connection.CreateCommand ()) {
+			using (var command = CreateCommand ()) {
 				command.CommandText = $"PRAGMA table_info({tableName})";
 				using (var reader = command.ExecuteReader ()) {
 					var columns = new List<DataColumn> ();
@@ -415,7 +422,7 @@ namespace MimeKit.Cryptography {
 
 			statement.Append (')');
 
-			using (var command = connection.CreateCommand ()) {
+			using (var command = CreateCommand ()) {
 				command.CommandText = statement.ToString ();
 				command.CommandType = CommandType.Text;
 				command.ExecuteNonQuery ();
@@ -440,7 +447,7 @@ namespace MimeKit.Cryptography {
 			statement.Append (" ADD COLUMN ");
 			Build (statement, table, column, ref primaryKeys, false);
 
-			using (var command = connection.CreateCommand ()) {
+			using (var command = CreateCommand ()) {
 				command.CommandText = statement.ToString ();
 				command.CommandType = CommandType.Text;
 				command.ExecuteNonQuery ();

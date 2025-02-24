@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ namespace MimeKit {
 	/// A message delivery status MIME part.
 	/// </summary>
 	/// <remarks>
-	/// <para>A message delivery status MIME part is a machine readable notification denoting the
+	/// <para>A message delivery status MIME part is a machine-readable notification denoting the
 	/// delivery status of a message and has a MIME-type of message/delivery-status.</para>
 	/// <para>For more information, see <a href="https://tools.ietf.org/html/rfc3464">rfc3464</a>.</para>
 	/// <seealso cref="MultipartReport"/>
@@ -43,7 +43,7 @@ namespace MimeKit {
 	/// <example>
 	/// <code language="c#" source="Examples\MessageDeliveryStatusExamples.cs" region="ProcessDeliveryStatusNotification" />
 	/// </example>
-	public class MessageDeliveryStatus : MimePart
+	public class MessageDeliveryStatus : MimePart, IMessageDeliveryStatus
 	{
 		HeaderListCollection groups;
 
@@ -55,7 +55,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="args">Information used by the constructor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="args"/> is <c>null</c>.
+		/// <paramref name="args"/> is <see langword="null"/>.
 		/// </exception>
 		public MessageDeliveryStatus (MimeEntityConstructorArgs args) : base (args)
 		{
@@ -202,7 +202,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="visitor">The visitor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="visitor"/> is <c>null</c>.
+		/// <paramref name="visitor"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MessageDeliveryStatus"/> has been disposed.

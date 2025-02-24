@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ namespace MimeKit.Encodings {
 	/// </summary>
 	/// <remarks>
 	/// Quoted-Printable is an encoding often used in MIME to textual content outside
-	/// of the ASCII range in order to ensure that the text remains intact when sent
+	/// the ASCII range in order to ensure that the text remains intact when sent
 	/// via 7bit transports such as SMTP.
 	/// </remarks>
 	public class QuotedPrintableDecoder : IMimeDecoder
@@ -56,7 +56,7 @@ namespace MimeKit.Encodings {
 		/// <remarks>
 		/// Creates a new quoted-printable decoder.
 		/// </remarks>
-		/// <param name="rfc2047"><c>true</c> if this decoder will be used to decode rfc2047 encoded-word tokens; otherwise, <c>false</c>.</param>
+		/// <param name="rfc2047"><see langword="true" /> if this decoder will be used to decode rfc2047 encoded-word tokens; otherwise, <see langword="false" />.</param>
 		public QuotedPrintableDecoder (bool rfc2047)
 		{
 			this.rfc2047 = rfc2047;
@@ -138,7 +138,7 @@ namespace MimeKit.Encodings {
 		/// </summary>
 		/// <remarks>
 		/// <para>Decodes the specified input into the output buffer.</para>
-		/// <para>The output buffer should be large enough to hold all of the
+		/// <para>The output buffer should be large enough to hold all the
 		/// decoded input. For estimating the size needed for the output buffer,
 		/// see <see cref="EstimateOutputLength"/>.</para>
 		/// </remarks>
@@ -227,7 +227,7 @@ namespace MimeKit.Encodings {
 		/// </summary>
 		/// <remarks>
 		/// <para>Decodes the specified input into the output buffer.</para>
-		/// <para>The output buffer should be large enough to hold all of the
+		/// <para>The output buffer should be large enough to hold all the
 		/// decoded input. For estimating the size needed for the output buffer,
 		/// see <see cref="EstimateOutputLength"/>.</para>
 		/// </remarks>
@@ -237,9 +237,9 @@ namespace MimeKit.Encodings {
 		/// <param name="length">The length of the input buffer.</param>
 		/// <param name="output">The output buffer.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="input"/> is <c>null</c>.</para>
+		/// <para><paramref name="input"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="output"/> is <c>null</c>.</para>
+		/// <para><paramref name="output"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> and <paramref name="length"/> do not specify

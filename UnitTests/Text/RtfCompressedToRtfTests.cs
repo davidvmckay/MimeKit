@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -53,8 +53,8 @@ namespace UnitTests.Text {
 			var decompressed = converter.Flush (compressedRtfData, 0, compressedRtfData.Length, out outputIndex, out outputLength);
 			var text = Encoding.UTF8.GetString (decompressed, outputIndex, outputLength);
 
-			Assert.AreEqual (expected, text, "Decompressed RTF data does not match.");
-			Assert.IsTrue (converter.IsValidCrc32, "Invalid CRC32 checksum.");
+			Assert.That (text, Is.EqualTo (expected), "Decompressed RTF data does not match.");
+			Assert.That (converter.IsValidCrc32, Is.True, "Invalid CRC32 checksum.");
 		}
 
 		[Test]
@@ -76,8 +76,8 @@ namespace UnitTests.Text {
 			var decompressed = converter.Flush (compressedRtfData, 0, compressedRtfData.Length, out outputIndex, out outputLength);
 			var text = Encoding.UTF8.GetString (decompressed, outputIndex, outputLength);
 
-			Assert.AreEqual (expected, text, "Decompressed RTF data does not match.");
-			Assert.IsTrue (converter.IsValidCrc32, "Invalid CRC32 checksum.");
+			Assert.That (text, Is.EqualTo (expected), "Decompressed RTF data does not match.");
+			Assert.That (converter.IsValidCrc32, Is.True, "Invalid CRC32 checksum.");
 		}
 	}
 }

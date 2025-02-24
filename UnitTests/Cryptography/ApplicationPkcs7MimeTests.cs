@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,17 @@
 // THE SOFTWARE.
 //
 
+using System.Net;
+using System.Text;
 using System.Security.Cryptography.X509Certificates;
 
+using Org.BouncyCastle.Pkix;
 using Org.BouncyCastle.X509;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Crypto.Prng;
+
+using Moq;
+using Moq.Protected;
 
 using MimeKit;
 using MimeKit.Cryptography;
@@ -49,17 +55,17 @@ namespace UnitTests.Cryptography {
 		[Test]
 		public void TestArgumentExceptions ()
 		{
-			var path = Path.Combine (TestHelper.ProjectDir, "TestData", "smime", "smime.pfx");
+			var rsa = SecureMimeTestsBase.RsaCertificate;
 			var entity = new TextPart ("plain") { Text = "This is some text..." };
-			var mailbox = new MailboxAddress ("MimeKit UnitTests", "mimekit@example.com");
+			var mailbox = new MailboxAddress ("MimeKit UnitTests", rsa.EmailAddress);
+			var signer = new CmsSigner (rsa.FileName, "no.secret");
 			var recipients = new CmsRecipientCollection ();
-			var signer = new CmsSigner (path, "no.secret");
 			var mailboxes = new [] { mailbox };
 
 			recipients.Add (new CmsRecipient (signer.Certificate));
 
 			using (var ctx = CreateContext ()) {
-				ctx.Import (path, "no.secret");
+				ctx.Import (rsa.FileName, "no.secret");
 
 				// Compress
 				Assert.Throws<ArgumentNullException> (() => ApplicationPkcs7Mime.Compress (null, entity));
@@ -217,41 +223,90 @@ namespace UnitTests.Cryptography {
 				Assert.Throws<ArgumentOutOfRangeException> (() => new ApplicationPkcs7Mime (SecureMimeType.Unknown, stream));
 
 				pkcs7 = new ApplicationPkcs7Mime (SecureMimeType.AuthEnvelopedData, stream);
-				Assert.AreEqual ("authenveloped-data", pkcs7.ContentType.Parameters["smime-type"]);
-				Assert.AreEqual (SecureMimeType.AuthEnvelopedData, pkcs7.SecureMimeType);
+				Assert.That (pkcs7.ContentType.Parameters["smime-type"], Is.EqualTo ("authenveloped-data"));
+				Assert.That (pkcs7.SecureMimeType, Is.EqualTo (SecureMimeType.AuthEnvelopedData));
 
 				pkcs7 = new ApplicationPkcs7Mime (SecureMimeType.EnvelopedData, stream);
-				Assert.AreEqual ("enveloped-data", pkcs7.ContentType.Parameters["smime-type"]);
-				Assert.AreEqual (SecureMimeType.EnvelopedData, pkcs7.SecureMimeType);
+				Assert.That (pkcs7.ContentType.Parameters["smime-type"], Is.EqualTo ("enveloped-data"));
+				Assert.That (pkcs7.SecureMimeType, Is.EqualTo (SecureMimeType.EnvelopedData));
 
 				pkcs7 = new ApplicationPkcs7Mime (SecureMimeType.CompressedData, stream);
-				Assert.AreEqual ("compressed-data", pkcs7.ContentType.Parameters["smime-type"]);
-				Assert.AreEqual (SecureMimeType.CompressedData, pkcs7.SecureMimeType);
+				Assert.That (pkcs7.ContentType.Parameters["smime-type"], Is.EqualTo ("compressed-data"));
+				Assert.That (pkcs7.SecureMimeType, Is.EqualTo (SecureMimeType.CompressedData));
 
 				pkcs7 = new ApplicationPkcs7Mime (SecureMimeType.SignedData, stream);
-				Assert.AreEqual ("signed-data", pkcs7.ContentType.Parameters["smime-type"]);
-				Assert.AreEqual (SecureMimeType.SignedData, pkcs7.SecureMimeType);
+				Assert.That (pkcs7.ContentType.Parameters["smime-type"], Is.EqualTo ("signed-data"));
+				Assert.That (pkcs7.SecureMimeType, Is.EqualTo (SecureMimeType.SignedData));
 
 				pkcs7 = new ApplicationPkcs7Mime (SecureMimeType.CertsOnly, stream);
-				Assert.AreEqual ("certs-only", pkcs7.ContentType.Parameters["smime-type"]);
-				Assert.AreEqual (SecureMimeType.CertsOnly, pkcs7.SecureMimeType);
+				Assert.That (pkcs7.ContentType.Parameters["smime-type"], Is.EqualTo ("certs-only"));
+				Assert.That (pkcs7.SecureMimeType, Is.EqualTo (SecureMimeType.CertsOnly));
 
 				pkcs7.ContentType.Parameters["smime-type"] = "x-unknown-data";
-				Assert.AreEqual (SecureMimeType.Unknown, pkcs7.SecureMimeType);
+				Assert.That (pkcs7.SecureMimeType, Is.EqualTo (SecureMimeType.Unknown));
 
 				pkcs7.ContentType.Parameters.Remove ("smime-type");
-				Assert.AreEqual (SecureMimeType.Unknown, pkcs7.SecureMimeType);
+				Assert.That (pkcs7.SecureMimeType, Is.EqualTo (SecureMimeType.Unknown));
 			}
 		}
 
-		static void ImportAll (SecureMimeContext ctx)
+		protected static HttpResponseMessage[] RevokedCertificateResponses ()
+		{
+			return new HttpResponseMessage[] {
+				new HttpResponseMessage (HttpStatusCode.OK) {
+					Content = new ByteArrayContent (SecureMimeTestsBase.CurrentCrls[0].GetEncoded ())
+				},
+				new HttpResponseMessage (HttpStatusCode.OK) {
+					Content = new ByteArrayContent (SecureMimeTestsBase.CurrentCrls[1].GetEncoded ())
+				},
+				new HttpResponseMessage (HttpStatusCode.OK) {
+					Content = new ByteArrayContent (SecureMimeTestsBase.CurrentCrls[2].GetEncoded ())
+				}
+			};
+		}
+
+		protected static HttpResponseMessage[] RevokedNoChainCertificateResponses ()
+		{
+			return new HttpResponseMessage[] {
+				new HttpResponseMessage (HttpStatusCode.OK) {
+					Content = new ByteArrayContent (SecureMimeTestsBase.CurrentCrls[0].GetEncoded ())
+				},
+				new HttpResponseMessage (HttpStatusCode.OK) {
+					Content = new ByteArrayContent (SecureMimeTestsBase.CurrentCrls[1].GetEncoded ())
+				},
+				new HttpResponseMessage (HttpStatusCode.OK) {
+					Content = new ByteArrayContent (SecureMimeTestsBase.CurrentCrls[3].GetEncoded ())
+				}
+			};
+		}
+
+		protected static Mock<HttpMessageHandler> CreateMockHttpMessageHandler (HttpResponseMessage[] responses)
+		{
+			var mockHttpMessageHandler = new Mock<HttpMessageHandler> (MockBehavior.Strict);
+
+			for (int i = 0; i < SecureMimeTestsBase.CrlRequestUris.Length; i++) {
+				var requestUri = SecureMimeTestsBase.CrlRequestUris[i];
+				var response = responses[i];
+
+				mockHttpMessageHandler
+					.Protected ()
+					.Setup<Task<HttpResponseMessage>> (
+						"SendAsync",
+						ItExpr.Is<HttpRequestMessage> (m => m.Method == HttpMethod.Get && m.RequestUri == requestUri),
+						ItExpr.IsAny<CancellationToken> ())
+					.ReturnsAsync (response);
+			}
+
+			return mockHttpMessageHandler;
+		}
+
+		protected static void ImportAll (SecureMimeContext ctx)
 		{
 			var dataDir = Path.Combine (TestHelper.ProjectDir, "TestData", "smime");
-			string path;
+			var windows = ctx as WindowsSecureMimeContext;
 
-			var chain = SecureMimeTestsBase.LoadPkcs12CertificateChain (Path.Combine (dataDir, "smime.pfx"), "no.secret");
-
-			if (ctx is WindowsSecureMimeContext windows) {
+			// Import the StartCom certificates
+			if (windows is not null) {
 				var parser = new X509CertificateParser ();
 
 				using (var stream = File.OpenRead (Path.Combine (dataDir, "StartComCertificationAuthority.crt"))) {
@@ -263,16 +318,9 @@ namespace UnitTests.Cryptography {
 					foreach (BCX509Certificate certificate in parser.ReadCertificates (stream))
 						windows.Import (StoreName.CertificateAuthority, certificate);
 				}
-
-				// import the root & intermediate certificates from the smime.pfx file
-				var store = StoreName.AuthRoot;
-				for (int i = chain.Length - 1; i > 0; i--) {
-					windows.Import (store, chain[i]);
-					store = StoreName.CertificateAuthority;
-				}
 			} else {
 				foreach (var filename in SecureMimeTestsBase.StartComCertificates) {
-					path = Path.Combine (dataDir, filename);
+					var path = Path.Combine (dataDir, filename);
 					using (var stream = File.OpenRead (path)) {
 						if (ctx is DefaultSecureMimeContext sqlite) {
 							sqlite.Import (stream, true);
@@ -283,29 +331,40 @@ namespace UnitTests.Cryptography {
 						}
 					}
 				}
-
-				// import the root & intermediate certificates from the smime.pfx file
-				for (int i = chain.Length - 1; i > 0; i--) {
-					if (ctx is DefaultSecureMimeContext sqlite) {
-						sqlite.Import (chain[i], true);
-					} else {
-						ctx.Import (chain[i]);
-					}
-				}
 			}
 
-			path = Path.Combine (dataDir, "smime.pfx");
-			ctx.Import (path, "no.secret");
+			foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+				var chain = certificate.Chain;
+
+				// Import the root & intermediate certificates from the smime.pfx file
+				if (windows is not null) {
+					var store = StoreName.AuthRoot;
+					for (int i = chain.Length - 1; i > 0; i--) {
+						windows.Import (store, chain[i]);
+						store = StoreName.CertificateAuthority;
+					}
+				} else {
+					for (int i = chain.Length - 1; i > 0; i--) {
+						if (ctx is DefaultSecureMimeContext sqlite) {
+							sqlite.Import (chain[i], true);
+						} else {
+							ctx.Import (chain[i]);
+						}
+					}
+				}
+
+				// Import the pfx file directly in order to get the private key
+				ctx.Import (certificate.FileName, "no.secret");
+			}
 		}
 
-		static async Task ImportAllAsync (SecureMimeContext ctx)
+		protected static async Task ImportAllAsync (SecureMimeContext ctx)
 		{
 			var dataDir = Path.Combine (TestHelper.ProjectDir, "TestData", "smime");
-			string path;
+			var windows = ctx as WindowsSecureMimeContext;
 
-			var chain = SecureMimeTestsBase.LoadPkcs12CertificateChain (Path.Combine (dataDir, "smime.pfx"), "no.secret");
-
-			if (ctx is WindowsSecureMimeContext windows) {
+			// Import the StartCom certificates
+			if (windows is not null) {
 				var parser = new X509CertificateParser ();
 
 				using (var stream = File.OpenRead (Path.Combine (dataDir, "StartComCertificationAuthority.crt"))) {
@@ -317,16 +376,9 @@ namespace UnitTests.Cryptography {
 					foreach (BCX509Certificate certificate in parser.ReadCertificates (stream))
 						windows.Import (StoreName.CertificateAuthority, certificate);
 				}
-
-				// import the root & intermediate certificates from the smime.pfx file
-				var store = StoreName.AuthRoot;
-				for (int i = chain.Length - 1; i > 0; i--) {
-					windows.Import (store, chain[i]);
-					store = StoreName.CertificateAuthority;
-				}
 			} else {
 				foreach (var filename in SecureMimeTestsBase.StartComCertificates) {
-					path = Path.Combine (dataDir, filename);
+					var path = Path.Combine (dataDir, filename);
 					using (var stream = File.OpenRead (path)) {
 						if (ctx is DefaultSecureMimeContext sqlite) {
 							await sqlite.ImportAsync (stream, true).ConfigureAwait (false);
@@ -337,376 +389,660 @@ namespace UnitTests.Cryptography {
 						}
 					}
 				}
+			}
 
-				// import the root & intermediate certificates from the smime.pfx file
-				for (int i = chain.Length - 1; i > 0; i--) {
-					if (ctx is DefaultSecureMimeContext sqlite) {
-						await sqlite.ImportAsync (chain[i], true).ConfigureAwait (false);
-					} else {
-						await ctx.ImportAsync (chain[i]).ConfigureAwait (false);
+			foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+				var chain = certificate.Chain;
+
+				// Import the root & intermediate certificates from the smime.pfx file
+				if (windows is not null) {
+					var store = StoreName.AuthRoot;
+					for (int i = chain.Length - 1; i > 0; i--) {
+						windows.Import (store, chain[i]);
+						store = StoreName.CertificateAuthority;
+					}
+				} else {
+					for (int i = chain.Length - 1; i > 0; i--) {
+						if (ctx is DefaultSecureMimeContext sqlite) {
+							await sqlite.ImportAsync (chain[i], true).ConfigureAwait (false);
+						} else {
+							await ctx.ImportAsync (chain[i]).ConfigureAwait (false);
+						}
 					}
 				}
-			}
 
-			path = Path.Combine (dataDir, "smime.pfx");
-			await ctx.ImportAsync (path, "no.secret").ConfigureAwait (false);
-		}
-
-		[Test]
-		public void TestEncryptCmsRecipients ()
-		{
-			var path = Path.Combine (TestHelper.ProjectDir, "TestData", "smime", "smime.pfx");
-			var entity = new TextPart ("plain") { Text = "This is some text..." };
-			var recipients = new CmsRecipientCollection ();
-			var signer = new CmsSigner (path, "no.secret");
-
-			recipients.Add (new CmsRecipient (signer.Certificate));
-
-			var encrypted = ApplicationPkcs7Mime.Encrypt (recipients, entity);
-
-			using (var ctx = CreateContext ()) {
-				ctx.Import (path, "no.secret");
-
-				var decrypted = encrypted.Decrypt (ctx);
+				// Import the pfx file directly in order to get the private key
+				await ctx.ImportAsync (certificate.FileName, "no.secret").ConfigureAwait (false);
 			}
 		}
 
-		[Test]
-		public async Task TestEncryptCmsRecipientsAsync ()
+		[TestCase (SubjectIdentifierType.IssuerAndSerialNumber)]
+		[TestCase (SubjectIdentifierType.SubjectKeyIdentifier)]
+		public void TestEncryptCmsRecipients (SubjectIdentifierType recipientIdentifierType)
 		{
-			var path = Path.Combine (TestHelper.ProjectDir, "TestData", "smime", "smime.pfx");
-			var entity = new TextPart ("plain") { Text = "This is some text..." };
-			var recipients = new CmsRecipientCollection ();
-			var signer = new CmsSigner (path, "no.secret");
+			foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+				var entity = new TextPart ("plain") { Text = "This is some text..." };
+				var signer = new CmsSigner (certificate.FileName, "no.secret");
+				var recipients = new CmsRecipientCollection {
+					new CmsRecipient (signer.Certificate, recipientIdentifierType)
+				};
 
-			recipients.Add (new CmsRecipient (signer.Certificate));
+				var encrypted = ApplicationPkcs7Mime.Encrypt (recipients, entity);
 
-			var encrypted = await ApplicationPkcs7Mime.EncryptAsync (recipients, entity).ConfigureAwait (false);
+				using (var ctx = CreateContext ()) {
+					ctx.Import (certificate.FileName, "no.secret");
 
-			using (var ctx = CreateContext ()) {
-				await ctx.ImportAsync (path, "no.secret").ConfigureAwait (false);
+					var decrypted = encrypted.Decrypt (ctx);
+				}
+			}
+		}
 
-				var decrypted = await encrypted.DecryptAsync (ctx).ConfigureAwait (false);
+		[TestCase (SubjectIdentifierType.IssuerAndSerialNumber)]
+		[TestCase (SubjectIdentifierType.SubjectKeyIdentifier)]
+		public async Task TestEncryptCmsRecipientsAsync (SubjectIdentifierType recipientIdentifierType)
+		{
+			foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+				var entity = new TextPart ("plain") { Text = "This is some text..." };
+				var signer = new CmsSigner (certificate.FileName, "no.secret");
+				var recipients = new CmsRecipientCollection {
+					new CmsRecipient (signer.Certificate, recipientIdentifierType)
+				};
+
+				var encrypted = await ApplicationPkcs7Mime.EncryptAsync (recipients, entity).ConfigureAwait (false);
+
+				using (var ctx = CreateContext ()) {
+					await ctx.ImportAsync (certificate.FileName, "no.secret").ConfigureAwait (false);
+
+					var decrypted = await encrypted.DecryptAsync (ctx).ConfigureAwait (false);
+				}
 			}
 		}
 
 		[Test]
 		public void TestEncryptMailboxes ()
 		{
-			var path = Path.Combine (TestHelper.ProjectDir, "TestData", "smime", "smime.pfx");
-			var entity = new TextPart ("plain") { Text = "This is some text..." };
-			var mailbox = new MailboxAddress ("MimeKit UnitTests", "mimekit@example.com");
-			var mailboxes = new[] { mailbox };
+			foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+				if (string.IsNullOrEmpty (certificate.EmailAddress))
+					continue;
 
-			using (var ctx = CreateContext ()) {
-				ApplicationPkcs7Mime encrypted;
-				MimeEntity decrypted;
-				TextPart text;
+				var entity = new TextPart ("plain") { Text = "This is some text..." };
+				var mailbox = new MailboxAddress ("MimeKit UnitTests", certificate.EmailAddress);
+				var mailboxes = new[] { mailbox };
 
-				ctx.Import (path, "no.secret");
+				using (var ctx = CreateContext ()) {
+					ApplicationPkcs7Mime encrypted;
+					MimeEntity decrypted;
+					TextPart text;
 
-				encrypted = ApplicationPkcs7Mime.Encrypt (mailboxes, entity);
-				decrypted = encrypted.Decrypt (ctx);
-				Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted from Encrypt(mailboxes, entity)");
-				text = (TextPart) decrypted;
-				Assert.AreEqual (entity.Text, text.Text, "Decrypted text");
+					ctx.Import (certificate.FileName, "no.secret");
 
-				encrypted = ApplicationPkcs7Mime.Encrypt (ctx, mailboxes, entity);
-				decrypted = encrypted.Decrypt (ctx);
-				Assert.IsInstanceOf<TextPart> (decrypted, "Encrypt(ctx, mailboxes, entity)");
-				text = (TextPart) decrypted;
-				Assert.AreEqual (entity.Text, text.Text, "Decrypted text");
+					encrypted = ApplicationPkcs7Mime.Encrypt (mailboxes, entity);
+					decrypted = encrypted.Decrypt (ctx);
+					Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted from Encrypt(mailboxes, entity)");
+					text = (TextPart) decrypted;
+					Assert.That (text.Text, Is.EqualTo (entity.Text), "Decrypted text");
+
+					encrypted = ApplicationPkcs7Mime.Encrypt (ctx, mailboxes, entity);
+					decrypted = encrypted.Decrypt (ctx);
+					Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Encrypt(ctx, mailboxes, entity)");
+					text = (TextPart) decrypted;
+					Assert.That (text.Text, Is.EqualTo (entity.Text), "Decrypted text");
+				}
 			}
 		}
 
 		[Test]
 		public async Task TestEncryptMailboxesAsync ()
 		{
-			var path = Path.Combine (TestHelper.ProjectDir, "TestData", "smime", "smime.pfx");
-			var entity = new TextPart ("plain") { Text = "This is some text..." };
-			var mailbox = new MailboxAddress ("MimeKit UnitTests", "mimekit@example.com");
-			var mailboxes = new[] { mailbox };
+			foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+				if (string.IsNullOrEmpty (certificate.EmailAddress))
+					continue;
 
-			using (var ctx = CreateContext ()) {
-				ApplicationPkcs7Mime encrypted;
-				MimeEntity decrypted;
-				TextPart text;
+				var entity = new TextPart ("plain") { Text = "This is some text..." };
+				var mailbox = new MailboxAddress ("MimeKit UnitTests", certificate.EmailAddress);
+				var mailboxes = new[] { mailbox };
 
-				await ctx.ImportAsync (path, "no.secret").ConfigureAwait (false);
+				using (var ctx = CreateContext ()) {
+					ApplicationPkcs7Mime encrypted;
+					MimeEntity decrypted;
+					TextPart text;
 
-				encrypted = await ApplicationPkcs7Mime.EncryptAsync (mailboxes, entity).ConfigureAwait (false);
-				decrypted = await encrypted.DecryptAsync (ctx).ConfigureAwait (false);
-				Assert.IsInstanceOf<TextPart> (decrypted, "Decrypted from EncryptAsync(mailboxes, entity)");
-				text = (TextPart) decrypted;
-				Assert.AreEqual (entity.Text, text.Text, "Decrypted text");
+					await ctx.ImportAsync (certificate.FileName, "no.secret").ConfigureAwait (false);
 
-				encrypted = await ApplicationPkcs7Mime.EncryptAsync (ctx, mailboxes, entity).ConfigureAwait (false);
-				decrypted = await encrypted.DecryptAsync (ctx).ConfigureAwait (false);
-				Assert.IsInstanceOf<TextPart> (decrypted, "EncryptAsync(ctx, mailboxes, entity)");
-				text = (TextPart) decrypted;
-				Assert.AreEqual (entity.Text, text.Text, "Decrypted text");
+					encrypted = await ApplicationPkcs7Mime.EncryptAsync (mailboxes, entity).ConfigureAwait (false);
+					decrypted = await encrypted.DecryptAsync (ctx).ConfigureAwait (false);
+					Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted from EncryptAsync(mailboxes, entity)");
+					text = (TextPart) decrypted;
+					Assert.That (text.Text, Is.EqualTo (entity.Text), "Decrypted text");
+
+					encrypted = await ApplicationPkcs7Mime.EncryptAsync (ctx, mailboxes, entity).ConfigureAwait (false);
+					decrypted = await encrypted.DecryptAsync (ctx).ConfigureAwait (false);
+					Assert.That (decrypted, Is.InstanceOf<TextPart> (), "EncryptAsync(ctx, mailboxes, entity)");
+					text = (TextPart) decrypted;
+					Assert.That (text.Text, Is.EqualTo (entity.Text), "Decrypted text");
+				}
 			}
 		}
 
-		void AssertSignResults (SecureMimeContext ctx, ApplicationPkcs7Mime signed, TextPart entity)
+		[Test]
+		public void TestEncryptDnsNames ()
+		{
+			var certificate = SecureMimeTestsBase.DomainCertificate;
+
+			foreach (var domain in certificate.DnsNames) {
+				var entity = new TextPart ("plain") { Text = "This is some text..." };
+				var mailbox = new MailboxAddress ("MimeKit UnitTests", "mimekit@" + domain);
+				var mailboxes = new[] { mailbox };
+
+				using (var ctx = CreateContext ()) {
+					ApplicationPkcs7Mime encrypted;
+					MimeEntity decrypted;
+					TextPart text;
+
+					ctx.Import (certificate.FileName, "no.secret");
+
+					encrypted = ApplicationPkcs7Mime.Encrypt (mailboxes, entity);
+					decrypted = encrypted.Decrypt (ctx);
+					Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted from Encrypt(mailboxes, entity)");
+					text = (TextPart) decrypted;
+					Assert.That (text.Text, Is.EqualTo (entity.Text), "Decrypted text");
+
+					encrypted = ApplicationPkcs7Mime.Encrypt (ctx, mailboxes, entity);
+					decrypted = encrypted.Decrypt (ctx);
+					Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Encrypt(ctx, mailboxes, entity)");
+					text = (TextPart) decrypted;
+					Assert.That (text.Text, Is.EqualTo (entity.Text), "Decrypted text");
+				}
+			}
+		}
+
+		[Test]
+		public async Task TestEncryptDnsNamesAsync ()
+		{
+			var certificate = SecureMimeTestsBase.DomainCertificate;
+
+			foreach (var domain in certificate.DnsNames) {
+				var entity = new TextPart ("plain") { Text = "This is some text..." };
+				var mailbox = new MailboxAddress ("MimeKit UnitTests", "mimekit@" + domain);
+				var mailboxes = new[] { mailbox };
+
+				using (var ctx = CreateContext ()) {
+					ApplicationPkcs7Mime encrypted;
+					MimeEntity decrypted;
+					TextPart text;
+
+					await ctx.ImportAsync (certificate.FileName, "no.secret").ConfigureAwait (false);
+
+					encrypted = await ApplicationPkcs7Mime.EncryptAsync (mailboxes, entity).ConfigureAwait (false);
+					decrypted = await encrypted.DecryptAsync (ctx).ConfigureAwait (false);
+					Assert.That (decrypted, Is.InstanceOf<TextPart> (), "Decrypted from EncryptAsync(mailboxes, entity)");
+					text = (TextPart) decrypted;
+					Assert.That (text.Text, Is.EqualTo (entity.Text), "Decrypted text");
+
+					encrypted = await ApplicationPkcs7Mime.EncryptAsync (ctx, mailboxes, entity).ConfigureAwait (false);
+					decrypted = await encrypted.DecryptAsync (ctx).ConfigureAwait (false);
+					Assert.That (decrypted, Is.InstanceOf<TextPart> (), "EncryptAsync(ctx, mailboxes, entity)");
+					text = (TextPart) decrypted;
+					Assert.That (text.Text, Is.EqualTo (entity.Text), "Decrypted text");
+				}
+			}
+		}
+
+		static string EncodeDnsNames (string[] dnsNames)
+		{
+			if (dnsNames == null || dnsNames.Length == 0)
+				return string.Empty;
+
+			var builder = new StringBuilder ();
+
+			foreach (var name in dnsNames) {
+				if (builder.Length > 0)
+					builder.Append (", ");
+				builder.Append (name);
+			}
+
+			return builder.ToString ();
+		}
+
+		static string GetDnsNames (IDigitalCertificate certificate)
+		{
+			if (certificate is SecureMimeDigitalCertificate smime)
+				return EncodeDnsNames (smime.DnsNames);
+
+			if (certificate is WindowsSecureMimeDigitalCertificate windows)
+				return EncodeDnsNames (windows.DnsNames);
+
+			return string.Empty;
+		}
+
+		void AssertSignResults (SMimeCertificate certificate, SecureMimeContext ctx, ApplicationPkcs7Mime signed, TextPart entity)
 		{
 			var signatures = signed.Verify (ctx, out var encapsulated);
 
-			Assert.IsInstanceOf<TextPart> (encapsulated, "TextPart");
-			Assert.AreEqual (entity.Text, ((TextPart) encapsulated).Text, "Text");
+			Assert.That (encapsulated, Is.InstanceOf<TextPart> (), "TextPart");
+			Assert.That (((TextPart) encapsulated).Text, Is.EqualTo (entity.Text), "Text");
 
-			Assert.AreEqual (1, signatures.Count, "Signature count");
+			Assert.That (signatures.Count, Is.EqualTo (1), "Signature count");
 
 			var signature = signatures[0];
 
-			Assert.AreEqual ("MimeKit UnitTests", signature.SignerCertificate.Name);
-			Assert.AreEqual ("mimekit@example.com", signature.SignerCertificate.Email);
-			Assert.AreEqual (SecureMimeTestsBase.MimeKitFingerprint, signature.SignerCertificate.Fingerprint.ToLowerInvariant ());
-			Assert.AreEqual (SecureMimeTestsBase.MimeKitCreationDate, signature.SignerCertificate.CreationDate, "CreationDate");
-			Assert.AreEqual (SecureMimeTestsBase.MimeKitExpirationDate, signature.SignerCertificate.ExpirationDate, "ExpirationDate");
-			Assert.AreEqual (PublicKeyAlgorithm.RsaGeneral, signature.SignerCertificate.PublicKeyAlgorithm);
-			Assert.AreEqual (PublicKeyAlgorithm.RsaGeneral, signature.PublicKeyAlgorithm);
+			Assert.That (signature.SignerCertificate.Name, Is.EqualTo ("MimeKit UnitTests"));
+			Assert.That (signature.SignerCertificate.Email, Is.EqualTo (certificate.EmailAddress));
+			Assert.That (GetDnsNames (signature.SignerCertificate), Is.EqualTo (EncodeDnsNames (certificate.DnsNames)));
+			Assert.That (signature.SignerCertificate.Fingerprint.ToLowerInvariant (), Is.EqualTo (certificate.Fingerprint));
+			Assert.That (signature.SignerCertificate.CreationDate, Is.EqualTo (certificate.CreationDate), "CreationDate");
+			Assert.That (signature.SignerCertificate.ExpirationDate, Is.EqualTo (certificate.ExpirationDate), "ExpirationDate");
+			Assert.That (signature.SignerCertificate.PublicKeyAlgorithm, Is.EqualTo (certificate.PublicKeyAlgorithm));
+			Assert.That (signature.PublicKeyAlgorithm, Is.EqualTo (certificate.PublicKeyAlgorithm));
 
 			try {
 				bool valid = signature.Verify ();
 
-				Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+				Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 			} catch (DigitalSignatureVerifyException ex) {
 				if (ctx is WindowsSecureMimeContext) {
 					// AppVeyor gets an exception about the root certificate not being trusted
-					Assert.AreEqual (SecureMimeTestsBase.UntrustedRootCertificateMessage, ex.InnerException.Message);
+					Assert.That (ex.InnerException.Message, Is.EqualTo (SecureMimeTestsBase.UntrustedRootCertificateMessage));
 				} else {
-					Assert.Fail ("Failed to verify signature: {0}", ex);
+					Assert.Fail ($"Failed to verify signature: {ex}");
 				}
 			}
 
 			var algorithms = GetEncryptionAlgorithms (signature);
 			int i = 0;
 
-			Assert.AreEqual (EncryptionAlgorithm.Aes256, algorithms[i++], "Expected AES-256 capability");
-			Assert.AreEqual (EncryptionAlgorithm.Aes192, algorithms[i++], "Expected AES-192 capability");
-			Assert.AreEqual (EncryptionAlgorithm.Aes128, algorithms[i++], "Expected AES-128 capability");
+			Assert.That (algorithms[i++], Is.EqualTo (EncryptionAlgorithm.Aes256), "Expected AES-256 capability");
+			Assert.That (algorithms[i++], Is.EqualTo (EncryptionAlgorithm.Aes192), "Expected AES-192 capability");
+			Assert.That (algorithms[i++], Is.EqualTo (EncryptionAlgorithm.Aes128), "Expected AES-128 capability");
 		}
 
 		[Test]
 		public void TestSignCmsSigner ()
 		{
-			var path = Path.Combine (TestHelper.ProjectDir, "TestData", "smime", "smime.pfx");
-			var entity = new TextPart ("plain") { Text = "This is some text..." };
-			var signer = new CmsSigner (path, "no.secret");
-
 			using (var ctx = CreateContext ()) {
 				ImportAll (ctx);
 
-				var signed = ApplicationPkcs7Mime.Sign (ctx, signer, entity);
-				AssertSignResults (ctx, signed, entity);
+				foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+					var entity = new TextPart ("plain") { Text = "This is some text..." };
+					var signer = new CmsSigner (certificate.FileName, "no.secret");
+
+					var signed = ApplicationPkcs7Mime.Sign (ctx, signer, entity);
+					AssertSignResults (certificate, ctx, signed, entity);
+				}
 			}
 		}
 
 		[Test]
 		public async Task TestSignCmsSignerAsync ()
 		{
-			var path = Path.Combine (TestHelper.ProjectDir, "TestData", "smime", "smime.pfx");
-			var entity = new TextPart ("plain") { Text = "This is some text..." };
-			var signer = new CmsSigner (path, "no.secret");
-
 			using (var ctx = CreateContext ()) {
 				await ImportAllAsync (ctx).ConfigureAwait (false);
 
-				var signed = await ApplicationPkcs7Mime.SignAsync (ctx, signer, entity).ConfigureAwait (false);
-				AssertSignResults (ctx, signed, entity);
+				foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+					var entity = new TextPart ("plain") { Text = "This is some text..." };
+					var signer = new CmsSigner (certificate.FileName, "no.secret");
+
+					var signed = await ApplicationPkcs7Mime.SignAsync (ctx, signer, entity).ConfigureAwait (false);
+					AssertSignResults (certificate, ctx, signed, entity);
+				}
 			}
 		}
 
 		[Test]
 		public void TestSignMailbox ()
 		{
-			var mailbox = new SecureMailboxAddress ("MimeKit UnitTests", "mimekit@example.com", SecureMimeTestsBase.MimeKitFingerprint);
-			var entity = new TextPart ("plain") { Text = "This is some text..." };
-
 			using (var ctx = CreateContext ()) {
 				ImportAll (ctx);
 
-				var signed = ApplicationPkcs7Mime.Sign (ctx, mailbox, DigestAlgorithm.Sha224, entity);
-				AssertSignResults (ctx, signed, entity);
+				foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+					if (string.IsNullOrEmpty (certificate.EmailAddress))
+						continue;
+
+					var mailbox = new SecureMailboxAddress ("MimeKit UnitTests", certificate.EmailAddress, certificate.Fingerprint);
+					var entity = new TextPart ("plain") { Text = "This is some text..." };
+
+					var signed = ApplicationPkcs7Mime.Sign (ctx, mailbox, DigestAlgorithm.Sha224, entity);
+					AssertSignResults (certificate, ctx, signed, entity);
+				}
 			}
 		}
 
 		[Test]
 		public async Task TestSignMailboxAsync ()
 		{
-			var mailbox = new SecureMailboxAddress ("MimeKit UnitTests", "mimekit@example.com", SecureMimeTestsBase.MimeKitFingerprint);
-			var entity = new TextPart ("plain") { Text = "This is some text..." };
+			using (var ctx = CreateContext ()) {
+				await ImportAllAsync (ctx).ConfigureAwait (false);
+
+				foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+					if (string.IsNullOrEmpty (certificate.EmailAddress))
+						continue;
+
+					var mailbox = new SecureMailboxAddress ("MimeKit UnitTests", certificate.EmailAddress, certificate.Fingerprint);
+					var entity = new TextPart ("plain") { Text = "This is some text..." };
+
+					var signed = await ApplicationPkcs7Mime.SignAsync (ctx, mailbox, DigestAlgorithm.Sha224, entity).ConfigureAwait (false);
+					AssertSignResults (certificate, ctx, signed, entity);
+				}
+			}
+		}
+
+		[Test]
+		public void TestSignDnsNames ()
+		{
+			var certificate = SecureMimeTestsBase.DomainCertificate;
+
+			using (var ctx = CreateContext ()) {
+				ImportAll (ctx);
+
+				foreach (var domain in certificate.DnsNames) {
+					var mailbox = new MailboxAddress ("MimeKit UnitTests", "mimekit@" + domain);
+					var entity = new TextPart ("plain") { Text = "This is some text..." };
+
+					var signed = ApplicationPkcs7Mime.Sign (ctx, mailbox, DigestAlgorithm.Sha224, entity);
+					AssertSignResults (certificate, ctx, signed, entity);
+				}
+			}
+		}
+
+		[Test]
+		public async Task TestSignDnsNamesAsync ()
+		{
+			var certificate = SecureMimeTestsBase.DomainCertificate;
 
 			using (var ctx = CreateContext ()) {
 				await ImportAllAsync (ctx).ConfigureAwait (false);
 
-				var signed = await ApplicationPkcs7Mime.SignAsync (ctx, mailbox, DigestAlgorithm.Sha224, entity).ConfigureAwait (false);
-				AssertSignResults (ctx, signed, entity);
+				foreach (var domain in certificate.DnsNames) {
+					var mailbox = new MailboxAddress ("MimeKit UnitTests", "mimekit@" + domain);
+					var entity = new TextPart ("plain") { Text = "This is some text..." };
+
+					var signed = await ApplicationPkcs7Mime.SignAsync (ctx, mailbox, DigestAlgorithm.Sha224, entity).ConfigureAwait (false);
+					AssertSignResults (certificate, ctx, signed, entity);
+				}
 			}
 		}
 
-		void AssertSignAndEncryptResults (SecureMimeContext ctx, ApplicationPkcs7Mime encrypted, TextPart entity)
+		void AssertSignAndEncryptResults (SMimeCertificate certificate, SecureMimeContext ctx, ApplicationPkcs7Mime encrypted, TextPart entity)
 		{
 			var decrypted = encrypted.Decrypt (ctx);
 
-			Assert.IsInstanceOf<MultipartSigned> (decrypted, "MultipartSigned");
+			Assert.That (decrypted, Is.InstanceOf<MultipartSigned> (), "MultipartSigned");
 
 			var signed = (MultipartSigned) decrypted;
-			Assert.AreEqual (2, signed.Count, "MultipartSigned count");
+			Assert.That (signed.Count, Is.EqualTo (2), "MultipartSigned count");
 
 			var encapsulated = signed[0];
 
 			var signatures = signed.Verify (ctx);
 
-			Assert.IsInstanceOf<TextPart> (encapsulated, "TextPart");
-			Assert.AreEqual (entity.Text, ((TextPart) encapsulated).Text, "Text");
+			Assert.That (encapsulated, Is.InstanceOf<TextPart> (), "TextPart");
+			Assert.That (((TextPart) encapsulated).Text, Is.EqualTo (entity.Text), "Text");
 
-			Assert.AreEqual (1, signatures.Count, "Signature count");
+			Assert.That (signatures.Count, Is.EqualTo (1), "Signature count");
 
 			var signature = signatures[0];
 
-			Assert.AreEqual ("MimeKit UnitTests", signature.SignerCertificate.Name);
-			Assert.AreEqual ("mimekit@example.com", signature.SignerCertificate.Email);
-			Assert.AreEqual (SecureMimeTestsBase.MimeKitFingerprint, signature.SignerCertificate.Fingerprint.ToLowerInvariant ());
-			Assert.AreEqual (SecureMimeTestsBase.MimeKitCreationDate, signature.SignerCertificate.CreationDate, "CreationDate");
-			Assert.AreEqual (SecureMimeTestsBase.MimeKitExpirationDate, signature.SignerCertificate.ExpirationDate, "ExpirationDate");
-			Assert.AreEqual (PublicKeyAlgorithm.RsaGeneral, signature.SignerCertificate.PublicKeyAlgorithm);
-			Assert.AreEqual (PublicKeyAlgorithm.RsaGeneral, signature.PublicKeyAlgorithm);
+			Assert.That (signature.SignerCertificate.Name, Is.EqualTo ("MimeKit UnitTests"));
+			Assert.That (signature.SignerCertificate.Email, Is.EqualTo (certificate.EmailAddress));
+			Assert.That (GetDnsNames (signature.SignerCertificate), Is.EqualTo (EncodeDnsNames (certificate.DnsNames)));
+			Assert.That (signature.SignerCertificate.Fingerprint.ToLowerInvariant (), Is.EqualTo (certificate.Fingerprint));
+			Assert.That (signature.SignerCertificate.CreationDate, Is.EqualTo (certificate.CreationDate), "CreationDate");
+			Assert.That (signature.SignerCertificate.ExpirationDate, Is.EqualTo (certificate.ExpirationDate), "ExpirationDate");
+			Assert.That (signature.SignerCertificate.PublicKeyAlgorithm, Is.EqualTo (certificate.PublicKeyAlgorithm));
+			Assert.That (signature.PublicKeyAlgorithm, Is.EqualTo (certificate.PublicKeyAlgorithm));
 
 			try {
 				bool valid = signature.Verify ();
 
-				Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+				Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 			} catch (DigitalSignatureVerifyException ex) {
 				if (ctx is WindowsSecureMimeContext) {
 					// AppVeyor gets an exception about the root certificate not being trusted
-					Assert.AreEqual (SecureMimeTestsBase.UntrustedRootCertificateMessage, ex.InnerException.Message);
+					Assert.That (ex.InnerException.Message, Is.EqualTo (SecureMimeTestsBase.UntrustedRootCertificateMessage));
 				} else {
-					Assert.Fail ("Failed to verify signature: {0}", ex);
+					Assert.Fail ($"Failed to verify signature: {ex}");
 				}
 			}
 
 			var algorithms = GetEncryptionAlgorithms (signature);
 			int i = 0;
 
-			Assert.AreEqual (EncryptionAlgorithm.Aes256, algorithms[i++], "Expected AES-256 capability");
-			Assert.AreEqual (EncryptionAlgorithm.Aes192, algorithms[i++], "Expected AES-192 capability");
-			Assert.AreEqual (EncryptionAlgorithm.Aes128, algorithms[i++], "Expected AES-128 capability");
+			Assert.That (algorithms[i++], Is.EqualTo (EncryptionAlgorithm.Aes256), "Expected AES-256 capability");
+			Assert.That (algorithms[i++], Is.EqualTo (EncryptionAlgorithm.Aes192), "Expected AES-192 capability");
+			Assert.That (algorithms[i++], Is.EqualTo (EncryptionAlgorithm.Aes128), "Expected AES-128 capability");
 		}
 
-		async Task AssertSignAndEncryptResultsAsync (SecureMimeContext ctx, ApplicationPkcs7Mime encrypted, TextPart entity)
+		async Task AssertSignAndEncryptResultsAsync (SMimeCertificate certificate, SecureMimeContext ctx, ApplicationPkcs7Mime encrypted, TextPart entity)
 		{
 			var decrypted = await encrypted.DecryptAsync (ctx).ConfigureAwait (false);
 
-			Assert.IsInstanceOf<MultipartSigned> (decrypted, "MultipartSigned");
+			Assert.That (decrypted, Is.InstanceOf<MultipartSigned> (), "MultipartSigned");
 
 			var signed = (MultipartSigned) decrypted;
-			Assert.AreEqual (2, signed.Count, "MultipartSigned count");
+			Assert.That (signed.Count, Is.EqualTo (2), "MultipartSigned count");
 
 			var encapsulated = signed[0];
 
 			var signatures = await signed.VerifyAsync (ctx).ConfigureAwait (false);
 
-			Assert.IsInstanceOf<TextPart> (encapsulated, "TextPart");
-			Assert.AreEqual (entity.Text, ((TextPart) encapsulated).Text, "Text");
+			Assert.That (encapsulated, Is.InstanceOf<TextPart> (), "TextPart");
+			Assert.That (((TextPart) encapsulated).Text, Is.EqualTo (entity.Text), "Text");
 
-			Assert.AreEqual (1, signatures.Count, "Signature count");
+			Assert.That (signatures.Count, Is.EqualTo (1), "Signature count");
 
 			var signature = signatures[0];
 
-			Assert.AreEqual ("MimeKit UnitTests", signature.SignerCertificate.Name);
-			Assert.AreEqual ("mimekit@example.com", signature.SignerCertificate.Email);
-			Assert.AreEqual (SecureMimeTestsBase.MimeKitFingerprint, signature.SignerCertificate.Fingerprint.ToLowerInvariant ());
-			Assert.AreEqual (SecureMimeTestsBase.MimeKitCreationDate, signature.SignerCertificate.CreationDate, "CreationDate");
-			Assert.AreEqual (SecureMimeTestsBase.MimeKitExpirationDate, signature.SignerCertificate.ExpirationDate, "ExpirationDate");
-			Assert.AreEqual (PublicKeyAlgorithm.RsaGeneral, signature.SignerCertificate.PublicKeyAlgorithm);
-			Assert.AreEqual (PublicKeyAlgorithm.RsaGeneral, signature.PublicKeyAlgorithm);
+			Assert.That (signature.SignerCertificate.Name, Is.EqualTo ("MimeKit UnitTests"));
+			Assert.That (signature.SignerCertificate.Email, Is.EqualTo (certificate.EmailAddress));
+			Assert.That (GetDnsNames (signature.SignerCertificate), Is.EqualTo (EncodeDnsNames (certificate.DnsNames)));
+			Assert.That (signature.SignerCertificate.Fingerprint.ToLowerInvariant (), Is.EqualTo (certificate.Fingerprint));
+			Assert.That (signature.SignerCertificate.CreationDate, Is.EqualTo (certificate.CreationDate), "CreationDate");
+			Assert.That (signature.SignerCertificate.ExpirationDate, Is.EqualTo (certificate.ExpirationDate), "ExpirationDate");
+			Assert.That (signature.SignerCertificate.PublicKeyAlgorithm, Is.EqualTo (certificate.PublicKeyAlgorithm));
+			Assert.That (signature.PublicKeyAlgorithm, Is.EqualTo (certificate.PublicKeyAlgorithm));
 
 			try {
 				bool valid = signature.Verify ();
 
-				Assert.IsTrue (valid, "Bad signature from {0}", signature.SignerCertificate.Email);
+				Assert.That (valid, Is.True, $"Bad signature from {signature.SignerCertificate.Email}");
 			} catch (DigitalSignatureVerifyException ex) {
 				if (ctx is WindowsSecureMimeContext) {
 					// AppVeyor gets an exception about the root certificate not being trusted
-					Assert.AreEqual (SecureMimeTestsBase.UntrustedRootCertificateMessage, ex.InnerException.Message);
+					Assert.That (ex.InnerException.Message, Is.EqualTo (SecureMimeTestsBase.UntrustedRootCertificateMessage));
 				} else {
-					Assert.Fail ("Failed to verify signature: {0}", ex);
+					Assert.Fail ($"Failed to verify signature: {ex}");
 				}
 			}
 
 			var algorithms = GetEncryptionAlgorithms (signature);
 			int i = 0;
 
-			Assert.AreEqual (EncryptionAlgorithm.Aes256, algorithms[i++], "Expected AES-256 capability");
-			Assert.AreEqual (EncryptionAlgorithm.Aes192, algorithms[i++], "Expected AES-192 capability");
-			Assert.AreEqual (EncryptionAlgorithm.Aes128, algorithms[i++], "Expected AES-128 capability");
+			Assert.That (algorithms[i++], Is.EqualTo (EncryptionAlgorithm.Aes256), "Expected AES-256 capability");
+			Assert.That (algorithms[i++], Is.EqualTo (EncryptionAlgorithm.Aes192), "Expected AES-192 capability");
+			Assert.That (algorithms[i++], Is.EqualTo (EncryptionAlgorithm.Aes128), "Expected AES-128 capability");
 		}
 
 		[Test]
 		public void TestSignAndEncryptCms ()
 		{
-			var path = Path.Combine (TestHelper.ProjectDir, "TestData", "smime", "smime.pfx");
-			var entity = new TextPart ("plain") { Text = "This is some text..." };
-			var recipients = new CmsRecipientCollection ();
-			var signer = new CmsSigner (path, "no.secret");
-
-			recipients.Add (new CmsRecipient (signer.Certificate));
-
 			using (var ctx = CreateContext ()) {
 				ImportAll (ctx);
 
-				var encrypted = ApplicationPkcs7Mime.SignAndEncrypt (signer, recipients, entity);
-				AssertSignAndEncryptResults (ctx, encrypted, entity);
+				foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+					var entity = new TextPart ("plain") { Text = "This is some text..." };
+					var signer = new CmsSigner (certificate.FileName, "no.secret");
+					var recipients = new CmsRecipientCollection {
+						new CmsRecipient (signer.Certificate)
+					};
+
+					var encrypted = ApplicationPkcs7Mime.SignAndEncrypt (signer, recipients, entity);
+					AssertSignAndEncryptResults (certificate, ctx, encrypted, entity);
+				}
 			}
 		}
 
 		[Test]
 		public async Task TestSignAndEncryptCmsAsync ()
 		{
-			var path = Path.Combine (TestHelper.ProjectDir, "TestData", "smime", "smime.pfx");
-			var entity = new TextPart ("plain") { Text = "This is some text..." };
-			var recipients = new CmsRecipientCollection ();
-			var signer = new CmsSigner (path, "no.secret");
-
-			recipients.Add (new CmsRecipient (signer.Certificate));
-
 			using (var ctx = CreateContext ()) {
 				await ImportAllAsync (ctx).ConfigureAwait (false);
 
-				var encrypted = await ApplicationPkcs7Mime.SignAndEncryptAsync (signer, recipients, entity).ConfigureAwait (false);
-				await AssertSignAndEncryptResultsAsync (ctx, encrypted, entity).ConfigureAwait (false);
+				foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+					var entity = new TextPart ("plain") { Text = "This is some text..." };
+					var signer = new CmsSigner (certificate.FileName, "no.secret");
+					var recipients = new CmsRecipientCollection {
+						new CmsRecipient (signer.Certificate)
+					};
+
+					var encrypted = await ApplicationPkcs7Mime.SignAndEncryptAsync (signer, recipients, entity).ConfigureAwait (false);
+					await AssertSignAndEncryptResultsAsync (certificate, ctx, encrypted, entity).ConfigureAwait (false);
+				}
 			}
 		}
 
 		[Test]
 		public void TestSignAndEncryptMailboxes ()
 		{
-			var mailbox = new SecureMailboxAddress ("MimeKit UnitTests", "mimekit@example.com", SecureMimeTestsBase.MimeKitFingerprint);
-			var entity = new TextPart ("plain") { Text = "This is some text..." };
-			var recipients = new MailboxAddress[] { mailbox };
-
 			using (var ctx = CreateContext ()) {
 				ImportAll (ctx);
 
-				var encrypted = ApplicationPkcs7Mime.SignAndEncrypt (mailbox, DigestAlgorithm.Sha224, recipients, entity);
-				AssertSignAndEncryptResults (ctx, encrypted, entity);
+				foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+					if (string.IsNullOrEmpty (certificate.EmailAddress))
+						continue;
+
+					var mailbox = new SecureMailboxAddress ("MimeKit UnitTests", certificate.EmailAddress, certificate.Fingerprint);
+					var entity = new TextPart ("plain") { Text = "This is some text..." };
+					var recipients = new MailboxAddress[] { mailbox };
+
+					var encrypted = ApplicationPkcs7Mime.SignAndEncrypt (mailbox, DigestAlgorithm.Sha224, recipients, entity);
+					AssertSignAndEncryptResults (certificate, ctx, encrypted, entity);
+				}
 			}
 		}
 
 		[Test]
 		public async Task TestSignAndEncryptMailboxesAsync ()
 		{
-			var mailbox = new SecureMailboxAddress ("MimeKit UnitTests", "mimekit@example.com", SecureMimeTestsBase.MimeKitFingerprint);
-			var entity = new TextPart ("plain") { Text = "This is some text..." };
-			var recipients = new MailboxAddress[] { mailbox };
+			using (var ctx = CreateContext ()) {
+				await ImportAllAsync (ctx).ConfigureAwait (false);
+
+				foreach (var certificate in SecureMimeTestsBase.SupportedCertificates) {
+					if (string.IsNullOrEmpty (certificate.EmailAddress))
+						continue;
+
+					var mailbox = new SecureMailboxAddress ("MimeKit UnitTests", certificate.EmailAddress, certificate.Fingerprint);
+					var entity = new TextPart ("plain") { Text = "This is some text..." };
+					var recipients = new MailboxAddress[] { mailbox };
+
+					var encrypted = await ApplicationPkcs7Mime.SignAndEncryptAsync (mailbox, DigestAlgorithm.Sha224, recipients, entity).ConfigureAwait (false);
+					await AssertSignAndEncryptResultsAsync (certificate, ctx, encrypted, entity).ConfigureAwait (false);
+				}
+			}
+		}
+
+		[Test]
+		public void TestSignAndEncryptDnsNames ()
+		{
+			var certificate = SecureMimeTestsBase.DomainCertificate;
+
+			using (var ctx = CreateContext ()) {
+				ImportAll (ctx);
+
+				foreach (var domain in certificate.DnsNames) {
+					var mailbox = new MailboxAddress ("MimeKit UnitTests", "mimekit@" + domain);
+					var entity = new TextPart ("plain") { Text = "This is some text..." };
+					var recipients = new MailboxAddress[] { mailbox };
+
+					var encrypted = ApplicationPkcs7Mime.SignAndEncrypt (mailbox, DigestAlgorithm.Sha224, recipients, entity);
+					AssertSignAndEncryptResults (certificate, ctx, encrypted, entity);
+				}
+			}
+		}
+
+		[Test]
+		public async Task TestSignAndEncryptDnsNamesAsync ()
+		{
+			var certificate = SecureMimeTestsBase.DomainCertificate;
 
 			using (var ctx = CreateContext ()) {
 				await ImportAllAsync (ctx).ConfigureAwait (false);
 
-				var encrypted = await ApplicationPkcs7Mime.SignAndEncryptAsync (mailbox, DigestAlgorithm.Sha224, recipients, entity).ConfigureAwait (false);
-				await AssertSignAndEncryptResultsAsync (ctx, encrypted, entity).ConfigureAwait (false);
+				foreach (var domain in certificate.DnsNames) {
+					var mailbox = new MailboxAddress ("MimeKit UnitTests", "mimekit@" + domain);
+					var entity = new TextPart ("plain") { Text = "This is some text..." };
+					var recipients = new MailboxAddress[] { mailbox };
+
+					var encrypted = await ApplicationPkcs7Mime.SignAndEncryptAsync (mailbox, DigestAlgorithm.Sha224, recipients, entity).ConfigureAwait (false);
+					await AssertSignAndEncryptResultsAsync (certificate, ctx, encrypted, entity).ConfigureAwait (false);
+				}
+			}
+		}
+
+		protected static void VerifyRevokedRecipient (BouncyCastleSecureMimeContext ctx, Mock<HttpMessageHandler> mockHttpMessageHandler, SMimeCertificate certificate, bool validateEncrypt)
+		{
+			var body = new TextPart ("plain") { Text = "This is the message body that we will be encrypting..." };
+			var recipients = new CmsRecipientCollection () {
+				new CmsRecipient (certificate.Certificate)
+			};
+
+			ctx.CheckCertificateRevocation = validateEncrypt;
+
+			if (validateEncrypt) {
+				try {
+					ApplicationPkcs7Mime.Encrypt (ctx, recipients, body);
+					Assert.Fail ("Encrypt should have thrown an exception for the revoked recipient certificate.");
+				} catch (Exception ex) {
+					Assert.That (ex.Message, Is.EqualTo ("Certification path could not be validated."), "ex.Message");
+
+					Exception innerException = ex.InnerException;
+					while (innerException is not PkixCertPathValidatorException && innerException.InnerException != null)
+						innerException = innerException.InnerException;
+
+					Assert.That (innerException, Is.Not.Null);
+					Assert.That (innerException.Message, Does.StartWith ("Certificate revocation after "));
+					Assert.That (innerException.Message, Does.EndWith (", reason: keyCompromise"));
+				} finally {
+					ctx.CheckCertificateRevocation = false;
+				}
+
+				SecureMimeTestsBase.AssertCrlsRequested (mockHttpMessageHandler);
+			} else {
+				Assert.DoesNotThrow (() => ApplicationPkcs7Mime.Encrypt (ctx, recipients, body));
+				SecureMimeTestsBase.AssertCrlsNotRequested (mockHttpMessageHandler);
+			}
+		}
+
+		protected static async Task VerifyRevokedRecipientAsync (BouncyCastleSecureMimeContext ctx, Mock<HttpMessageHandler> mockHttpMessageHandler, SMimeCertificate certificate, bool validateEncrypt)
+		{
+			var body = new TextPart ("plain") { Text = "This is the message body that we will be encrypting..." };
+			var recipients = new CmsRecipientCollection () {
+				new CmsRecipient (certificate.Certificate)
+			};
+
+			ctx.CheckCertificateRevocation = validateEncrypt;
+
+			if (validateEncrypt) {
+				try {
+					await ApplicationPkcs7Mime.EncryptAsync (ctx, recipients, body);
+					Assert.Fail ("EncryptAsync should have thrown an exception for the revoked recipient certificate.");
+				} catch (Exception ex) {
+					Assert.That (ex.Message, Is.EqualTo ("Certification path could not be validated."), "ex.Message");
+
+					Exception innerException = ex.InnerException;
+					while (innerException is not PkixCertPathValidatorException && innerException.InnerException != null)
+						innerException = innerException.InnerException;
+
+					Assert.That (innerException, Is.Not.Null);
+					Assert.That (innerException.Message, Does.StartWith ("Certificate revocation after "));
+					Assert.That (innerException.Message, Does.EndWith (", reason: keyCompromise"));
+				} finally {
+					ctx.CheckCertificateRevocation = false;
+				}
+
+				SecureMimeTestsBase.AssertCrlsRequested (mockHttpMessageHandler);
+			} else {
+				Assert.DoesNotThrow (() => ApplicationPkcs7Mime.Encrypt (ctx, recipients, body));
+				SecureMimeTestsBase.AssertCrlsNotRequested (mockHttpMessageHandler);
 			}
 		}
 	}
@@ -714,7 +1050,31 @@ namespace UnitTests.Cryptography {
 	[TestFixture]
 	public class ApplicationPkcs7MimeTests : ApplicationPkcs7MimeTestsBase
 	{
-		readonly TemporarySecureMimeContext ctx = new TemporarySecureMimeContext (new SecureRandom (new CryptoApiRandomGenerator ())) { CheckCertificateRevocation = true };
+		class MyTemporarySecureMimeContext : TemporarySecureMimeContext
+		{
+			public readonly Mock<HttpMessageHandler> MockHttpMessageHandler;
+			readonly HttpClient client;
+
+			public MyTemporarySecureMimeContext (Mock<HttpMessageHandler>? mockHttpMessageHandler = null) : base (new SecureRandom (new CryptoApiRandomGenerator ()))
+			{
+				CheckCertificateRevocation = false;
+
+				MockHttpMessageHandler = mockHttpMessageHandler ?? CreateMockHttpMessageHandler (RevokedCertificateResponses ());
+				client = new HttpClient (MockHttpMessageHandler.Object);
+			}
+
+			protected override HttpClient HttpClient {
+				get { return client; }
+			}
+		}
+
+		readonly TemporarySecureMimeContext ctx = new MyTemporarySecureMimeContext ();
+
+		[OneTimeTearDown]
+		public void Cleanup ()
+		{
+			ctx.Dispose ();
+		}
 
 		public ApplicationPkcs7MimeTests ()
 		{
@@ -725,6 +1085,62 @@ namespace UnitTests.Cryptography {
 		{
 			return ctx;
 		}
+
+		[Test]
+		public void TestEncryptRevokedRecipient ()
+		{
+			using (var ctx = new MyTemporarySecureMimeContext ()) {
+				ImportAll (ctx);
+
+				VerifyRevokedRecipient (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedCertificate, false);
+			}
+
+			using (var ctx = new MyTemporarySecureMimeContext ()) {
+				ImportAll (ctx);
+
+				VerifyRevokedRecipient (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedCertificate, true);
+			}
+
+			using (var ctx = new MyTemporarySecureMimeContext (CreateMockHttpMessageHandler (RevokedNoChainCertificateResponses ()))) {
+				ImportAll (ctx);
+
+				VerifyRevokedRecipient (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedNoChainCertificate, false);
+			}
+
+			using (var ctx = new MyTemporarySecureMimeContext (CreateMockHttpMessageHandler (RevokedNoChainCertificateResponses ()))) {
+				ImportAll (ctx);
+
+				VerifyRevokedRecipient (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedNoChainCertificate, true);
+			}
+		}
+
+		[Test]
+		public async Task TestEncryptRevokedRecipientAsync ()
+		{
+			using (var ctx = new MyTemporarySecureMimeContext ()) {
+				await ImportAllAsync (ctx);
+
+				await VerifyRevokedRecipientAsync (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedCertificate, false);
+			}
+
+			using (var ctx = new MyTemporarySecureMimeContext ()) {
+				await ImportAllAsync (ctx);
+
+				await VerifyRevokedRecipientAsync (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedCertificate, true);
+			}
+
+			using (var ctx = new MyTemporarySecureMimeContext (CreateMockHttpMessageHandler (RevokedNoChainCertificateResponses ()))) {
+				await ImportAllAsync (ctx);
+
+				await VerifyRevokedRecipientAsync (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedNoChainCertificate, false);
+			}
+
+			using (var ctx = new MyTemporarySecureMimeContext (CreateMockHttpMessageHandler (RevokedNoChainCertificateResponses ()))) {
+				await ImportAllAsync (ctx);
+
+				await VerifyRevokedRecipientAsync (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedNoChainCertificate, true);
+			}
+		}
 	}
 
 	[TestFixture]
@@ -732,9 +1148,23 @@ namespace UnitTests.Cryptography {
 	{
 		class MySecureMimeContext : DefaultSecureMimeContext
 		{
-			public MySecureMimeContext () : base ("pkcs7.db", "no.secret")
+			public readonly Mock<HttpMessageHandler> MockHttpMessageHandler;
+			readonly HttpClient client;
+
+			public MySecureMimeContext () : this ("pkcs7.db", "no.secret")
 			{
-				CheckCertificateRevocation = true;
+			}
+
+			public MySecureMimeContext (string database, string password, Mock<HttpMessageHandler>? mockHttpMessageHandler = null) : base (database, password)
+			{
+				CheckCertificateRevocation = false;
+
+				MockHttpMessageHandler = mockHttpMessageHandler ?? CreateMockHttpMessageHandler (RevokedCertificateResponses ());
+				client = new HttpClient (MockHttpMessageHandler.Object);
+			}
+
+			protected override HttpClient HttpClient {
+				get { return client; }
 			}
 		}
 
@@ -752,6 +1182,88 @@ namespace UnitTests.Cryptography {
 		{
 			if (File.Exists ("pkcs7.db"))
 				File.Delete ("pkcs7.db");
+
+			if (File.Exists ("revoked-pkcs7.db"))
+				File.Delete ("revoked-pkcs7.db");
+
+			if (File.Exists ("revoked-pkcs7-async.db"))
+				File.Delete ("revoked-pkcs7-async.db");
+		}
+
+		[Test]
+		public void TestEncryptRevokedRecipient ()
+		{
+			const string fileName = "revoked-pkcs7.db";
+
+			using (var ctx = new MySecureMimeContext (fileName, "no.secret")) {
+				ImportAll (ctx);
+
+				VerifyRevokedRecipient (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedCertificate, false);
+			}
+
+			File.Delete (fileName);
+
+			using (var ctx = new MySecureMimeContext (fileName, "no.secret")) {
+				ImportAll (ctx);
+
+				VerifyRevokedRecipient (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedCertificate, true);
+			}
+
+			File.Delete (fileName);
+
+			using (var ctx = new MySecureMimeContext (fileName, "no.secret", CreateMockHttpMessageHandler (RevokedNoChainCertificateResponses ()))) {
+				ImportAll (ctx);
+
+				VerifyRevokedRecipient (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedNoChainCertificate, false);
+			}
+
+			File.Delete (fileName);
+
+			using (var ctx = new MySecureMimeContext (fileName, "no.secret", CreateMockHttpMessageHandler (RevokedNoChainCertificateResponses ()))) {
+				ImportAll (ctx);
+
+				VerifyRevokedRecipient (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedNoChainCertificate, true);
+			}
+
+			File.Delete (fileName);
+		}
+
+		[Test]
+		public async Task TestEncryptRevokedRecipientAsync ()
+		{
+			const string fileName = "revoked-pkcs7-async.db";
+
+			using (var ctx = new MySecureMimeContext (fileName, "no.secret")) {
+				await ImportAllAsync (ctx);
+
+				await VerifyRevokedRecipientAsync (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedCertificate, false);
+			}
+
+			File.Delete (fileName);
+
+			using (var ctx = new MySecureMimeContext (fileName, "no.secret")) {
+				await ImportAllAsync (ctx);
+
+				await VerifyRevokedRecipientAsync (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedCertificate, true);
+			}
+
+			File.Delete (fileName);
+
+			using (var ctx = new MySecureMimeContext (fileName, "no.secret", CreateMockHttpMessageHandler (RevokedNoChainCertificateResponses ()))) {
+				await ImportAllAsync (ctx);
+
+				await VerifyRevokedRecipientAsync (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedNoChainCertificate, false);
+			}
+
+			File.Delete (fileName);
+
+			using (var ctx = new MySecureMimeContext (fileName, "no.secret", CreateMockHttpMessageHandler (RevokedNoChainCertificateResponses ()))) {
+				await ImportAllAsync (ctx);
+
+				await VerifyRevokedRecipientAsync (ctx, ctx.MockHttpMessageHandler, SecureMimeTestsBase.RevokedNoChainCertificate, true);
+			}
+
+			File.Delete (fileName);
 		}
 	}
 }

@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="entity">The entity that is being parsed.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="entity"/> is <c>null</c>.
+		/// <paramref name="entity"/> is <see langword="null"/>.
 		/// </exception>
 		public MimeEntityBeginEventArgs (MimeEntity entity)
 		{
@@ -62,9 +62,9 @@ namespace MimeKit {
 		/// <param name="entity">The entity that is being parsed.</param>
 		/// <param name="parent">The parent multipart.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <para><paramref name="entity"/> is <c>null</c>.</para>
+		/// <para><paramref name="entity"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="parent"/> is <c>null</c>.</para>
+		/// <para><paramref name="parent"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public MimeEntityBeginEventArgs (MimeEntity entity, Multipart parent)
 		{

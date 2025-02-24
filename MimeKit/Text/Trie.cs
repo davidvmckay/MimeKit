@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -71,7 +71,7 @@ namespace MimeKit.Text {
 		/// <remarks>
 		/// Creates a new <see cref="Trie"/>.
 		/// </remarks>
-		/// <param name="ignoreCase"><c>true</c> if searching should ignore case; otherwise, <c>false</c>.</param>
+		/// <param name="ignoreCase"><see langword="true" /> if searching should ignore case; otherwise, <see langword="false" />.</param>
 		public Trie (bool ignoreCase)
 		{
 			failStates = new List<TrieState> ();
@@ -153,7 +153,7 @@ namespace MimeKit.Text {
 		/// </remarks>
 		/// <param name="pattern">The search pattern.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="pattern"/> is <c>null</c>.
+		/// <paramref name="pattern"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <paramref name="pattern"/> cannot be an empty string.
@@ -253,7 +253,7 @@ namespace MimeKit.Text {
 		/// <param name="count">The number of characters to search, starting at <paramref name="startIndex"/>.</param>
 		/// <param name="pattern">The pattern that was matched.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="text"/> is <c>null</c>.
+		/// <paramref name="text"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> and <paramref name="count"/> do not specify
@@ -317,7 +317,7 @@ namespace MimeKit.Text {
 		/// <param name="startIndex">The starting index of the text.</param>
 		/// <param name="pattern">The pattern that was matched.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="text"/> is <c>null</c>.
+		/// <paramref name="text"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> is out of range.
@@ -340,7 +340,7 @@ namespace MimeKit.Text {
 		/// <param name="text">The text to search.</param>
 		/// <param name="pattern">The pattern that was matched.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="text"/> is <c>null</c>.
+		/// <paramref name="text"/> is <see langword="null"/>.
 		/// </exception>
 		public int Search (char[] text, out string pattern)
 		{

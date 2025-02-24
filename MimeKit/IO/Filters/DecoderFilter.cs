@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -68,7 +68,7 @@ namespace MimeKit.IO.Filters {
 		/// </remarks>
 		/// <param name="decoder">A specific decoder for the filter to use.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="decoder"/> is <c>null</c>.
+		/// <paramref name="decoder"/> is <see langword="null"/>.
 		/// </exception>
 		public DecoderFilter (IMimeDecoder decoder)
 		{
@@ -105,7 +105,7 @@ namespace MimeKit.IO.Filters {
 		/// <returns>A new decoder filter.</returns>
 		/// <param name="name">The name of the encoding to create a filter for.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="name"/> is <c>null</c>.
+		/// <paramref name="name"/> is <see langword="null"/>.
 		/// </exception>
 		public static IMimeFilter Create (string name)
 		{
@@ -131,7 +131,7 @@ namespace MimeKit.IO.Filters {
 		/// <param name="length">The length of the input buffer, starting at <paramref name="startIndex"/>.</param>
 		/// <param name="outputIndex">The output index.</param>
 		/// <param name="outputLength">The output length.</param>
-		/// <param name="flush">If set to <c>true</c>, all internally buffered data should be flushed to the output buffer.</param>
+		/// <param name="flush">If set to <see langword="true" />, all internally buffered data should be flushed to the output buffer.</param>
 		protected override byte[] Filter (byte[] input, int startIndex, int length, out int outputIndex, out int outputLength, bool flush)
 		{
 			EnsureOutputSize (Decoder.EstimateOutputLength (length), false);

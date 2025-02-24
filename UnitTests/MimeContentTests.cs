@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -64,10 +64,10 @@ namespace UnitTests {
 
 				using (var dest = new MemoryStream ()) {
 					Assert.Throws<OperationCanceledException> (() => content.WriteTo (dest, source.Token));
-					Assert.AreEqual (0, dest.Length);
+					Assert.That (dest.Length, Is.EqualTo (0));
 
 					Assert.ThrowsAsync<TaskCanceledException> (async () => await content.WriteToAsync (dest, source.Token));
-					Assert.AreEqual (0, dest.Length);
+					Assert.That (dest.Length, Is.EqualTo (0));
 				}
 			}
 		}

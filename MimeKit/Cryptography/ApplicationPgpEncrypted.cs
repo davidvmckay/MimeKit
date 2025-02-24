@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ namespace MimeKit.Cryptography {
 	/// a <see cref="MultipartEncrypted"/> part and contains only a Version
 	/// header.
 	/// </remarks>
-	public class ApplicationPgpEncrypted : MimePart
+	public class ApplicationPgpEncrypted : MimePart, IApplicationPgpEncrypted
 	{
 		/// <summary>
 		/// Initialize a new instance of the <see cref="ApplicationPgpEncrypted"/>
@@ -48,7 +48,7 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <param name="args">Information used by the constructor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="args"/> is <c>null</c>.
+		/// <paramref name="args"/> is <see langword="null"/>.
 		/// </exception>
 		public ApplicationPgpEncrypted (MimeEntityConstructorArgs args) : base (args)
 		{
@@ -89,7 +89,7 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <param name="visitor">The visitor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="visitor"/> is <c>null</c>.
+		/// <paramref name="visitor"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="ApplicationPgpEncrypted"/> has been disposed.

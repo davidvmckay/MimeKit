@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,11 +48,6 @@ namespace MimeKit.Cryptography {
 		DigitalSignatureVerifyException vex;
 		bool? valid;
 
-		static DateTime ToAdjustedDateTime (Asn1UtcTime time)
-		{
-			return time.ToDateTime (2049);
-		}
-
 		/// <summary>
 		/// Initialize a new instance of the <see cref="SecureMimeDigitalSignature"/> class.
 		/// </summary>
@@ -62,7 +57,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="signerInfo">The information about the signer.</param>
 		/// <param name="certificate">The signer's certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="signerInfo"/> is <c>null</c>.
+		/// <paramref name="signerInfo"/> is <see langword="null"/>.
 		/// </exception>
 		public SecureMimeDigitalSignature (SignerInformation signerInfo, X509Certificate certificate)
 		{
@@ -76,8 +71,8 @@ namespace MimeKit.Cryptography {
 			if (signerInfo.SignedAttributes != null) {
 				Asn1EncodableVector vector = signerInfo.SignedAttributes.GetAll (CmsAttributes.SigningTime);
 				foreach (var attr in vector.OfType<Org.BouncyCastle.Asn1.Cms.Attribute> ()) {
-					var signingTime = (Asn1UtcTime) ((DerSet) attr.AttrValues)[0];
-					CreationDate = ToAdjustedDateTime (signingTime);
+					var signingTime = Org.BouncyCastle.Asn1.Cms.Time.GetInstance (attr.AttrValues[0]);
+					CreationDate = signingTime.ToDateTime ();
 					break;
 				}
 
@@ -131,7 +126,7 @@ namespace MimeKit.Cryptography {
 		/// Gets the certificate chain.
 		/// </summary>
 		/// <remarks>
-		/// If building the certificate chain failed, this value will be <c>null</c> and
+		/// If building the certificate chain failed, this value will be <see langword="null"/> and
 		/// <see cref="ChainException"/> will be set.
 		/// </remarks>
 		/// <value>The certificate chain.</value>
@@ -202,7 +197,7 @@ namespace MimeKit.Cryptography {
 		/// <remarks>
 		/// Verifies the digital signature.
 		/// </remarks>
-		/// <returns><c>true</c> if the signature is valid; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the signature is valid; otherwise, <see langword="false" />.</returns>
 		/// <exception cref="DigitalSignatureVerifyException">
 		/// An error verifying the signature has occurred.
 		/// </exception>
@@ -217,8 +212,8 @@ namespace MimeKit.Cryptography {
 		/// <remarks>
 		/// Verifies the digital signature.
 		/// </remarks>
-		/// <param name="verifySignatureOnly"><c>true</c> if only the signature itself should be verified; otherwise, both the signature and the certificate chain are validated.</param>
-		/// <returns><c>true</c> if the signature is valid; otherwise, <c>false</c>.</returns>
+		/// <param name="verifySignatureOnly"><see langword="true" /> if only the signature itself should be verified; otherwise, both the signature and the certificate chain are validated.</param>
+		/// <returns><see langword="true" /> if the signature is valid; otherwise, <see langword="false" />.</returns>
 		/// <exception cref="DigitalSignatureVerifyException">
 		/// An error verifying the signature has occurred.
 		/// </exception>

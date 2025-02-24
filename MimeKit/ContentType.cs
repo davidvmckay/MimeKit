@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -53,9 +53,9 @@ namespace MimeKit {
 		/// <param name="mediaType">Media type.</param>
 		/// <param name="mediaSubtype">Media subtype.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="mediaType"/> is <c>null</c>.</para>
+		/// <para><paramref name="mediaType"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="mediaSubtype"/> is <c>null</c>.</para>
+		/// <para><paramref name="mediaSubtype"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public ContentType (string mediaType, string mediaSubtype)
 		{
@@ -80,7 +80,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <value>The type of the media.</value>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="value"/> is <c>null</c>.
+		/// <paramref name="value"/> is <see langword="null"/>.
 		/// </exception>
 		public string MediaType {
 			get { return type; }
@@ -107,7 +107,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <value>The media subtype.</value>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="value"/> is <c>null</c>.
+		/// <paramref name="value"/> is <see langword="null"/>.
 		/// </exception>
 		public string MediaSubtype {
 			get { return subtype; }
@@ -273,21 +273,21 @@ namespace MimeKit {
 		}
 
 		/// <summary>
-		/// Check if the this instance of <see cref="ContentType"/> matches
+		/// Check if this instance of <see cref="ContentType"/> matches
 		/// the specified MIME media type and subtype.
 		/// </summary>
 		/// <remarks>
 		/// If the specified <paramref name="mediaType"/> or <paramref name="mediaSubtype"/>
 		/// are <c>"*"</c>, they match anything.
 		/// </remarks>
-		/// <returns><c>true</c> if the <see cref="ContentType"/> matches the
+		/// <returns><see langword="true" /> if the <see cref="ContentType"/> matches the
 		/// provided media type and subtype.</returns>
 		/// <param name="mediaType">The media type.</param>
 		/// <param name="mediaSubtype">The media subtype.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="mediaType"/> is <c>null</c>.</para>
+		/// <para><paramref name="mediaType"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="mediaSubtype"/> is <c>null</c>.</para>
+		/// <para><paramref name="mediaSubtype"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public bool IsMimeType (string mediaType, string mediaSubtype)
 		{
@@ -331,11 +331,11 @@ namespace MimeKit {
 		/// <returns>The serialized string.</returns>
 		/// <param name="options">The formatting options.</param>
 		/// <param name="charset">The charset to be used when encoding the parameter values.</param>
-		/// <param name="encode">If set to <c>true</c>, the parameter values will be encoded.</param>
+		/// <param name="encode">If set to <see langword="true" />, the parameter values will be encoded.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="options"/> is <c>null</c>.</para>
+		/// <para><paramref name="options"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="charset"/> is <c>null</c>.</para>
+		/// <para><paramref name="charset"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public string ToString (FormatOptions options, Encoding charset, bool encode)
 		{
@@ -371,9 +371,9 @@ namespace MimeKit {
 		/// </remarks>
 		/// <returns>The serialized string.</returns>
 		/// <param name="charset">The charset to be used when encoding the parameter values.</param>
-		/// <param name="encode">If set to <c>true</c>, the parameter values will be encoded.</param>
+		/// <param name="encode">If set to <see langword="true" />, the parameter values will be encoded.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="charset"/> is <c>null</c>.
+		/// <paramref name="charset"/> is <see langword="null"/>.
 		/// </exception>
 		public string ToString (Encoding charset, bool encode)
 		{
@@ -388,7 +388,7 @@ namespace MimeKit {
 		/// the parameters as they would be encoded for transport.
 		/// </remarks>
 		/// <returns>The serialized string.</returns>
-		/// <param name="encode">If set to <c>true</c>, the parameter values will be encoded.</param>
+		/// <param name="encode">If set to <see langword="true" />, the parameter values will be encoded.</param>
 		public string ToString (bool encode)
 		{
 			return ToString (FormatOptions.Default, Encoding.UTF8, encode);
@@ -523,16 +523,16 @@ namespace MimeKit {
 		/// Parses a Content-Type value from the supplied buffer starting at the given index
 		/// and spanning across the specified number of bytes.
 		/// </remarks>
-		/// <returns><c>true</c> if the content type was successfully parsed; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the content type was successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="options">The parser options.</param>
 		/// <param name="buffer">The input buffer.</param>
 		/// <param name="startIndex">The starting index of the input buffer.</param>
 		/// <param name="length">The number of bytes in the input buffer to parse.</param>
 		/// <param name="type">The parsed content type.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="options"/> is <c>null</c>.</para>
+		/// <para><paramref name="options"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="buffer"/> is <c>null</c>.</para>
+		/// <para><paramref name="buffer"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> and <paramref name="length"/> do not specify
@@ -554,13 +554,13 @@ namespace MimeKit {
 		/// Parses a Content-Type value from the supplied buffer starting at the given index
 		/// and spanning across the specified number of bytes.
 		/// </remarks>
-		/// <returns><c>true</c> if the content type was successfully parsed; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the content type was successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="buffer">The input buffer.</param>
 		/// <param name="startIndex">The starting index of the input buffer.</param>
 		/// <param name="length">The number of bytes in the input buffer to parse.</param>
 		/// <param name="type">The parsed content type.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> and <paramref name="length"/> do not specify
@@ -577,15 +577,15 @@ namespace MimeKit {
 		/// <remarks>
 		/// Parses a Content-Type value from the supplied buffer starting at the specified index.
 		/// </remarks>
-		/// <returns><c>true</c> if the content type was successfully parsed; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the content type was successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="options">The parser options.</param>
 		/// <param name="buffer">The input buffer.</param>
 		/// <param name="startIndex">The starting index of the input buffer.</param>
 		/// <param name="type">The parsed content type.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="options"/> is <c>null</c>.</para>
+		/// <para><paramref name="options"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="buffer"/> is <c>null</c>.</para>
+		/// <para><paramref name="buffer"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> is out of range.
@@ -605,12 +605,12 @@ namespace MimeKit {
 		/// <remarks>
 		/// Parses a Content-Type value from the supplied buffer starting at the specified index.
 		/// </remarks>
-		/// <returns><c>true</c> if the content type was successfully parsed; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the content type was successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="buffer">The input buffer.</param>
 		/// <param name="startIndex">The starting index of the input buffer.</param>
 		/// <param name="type">The parsed content type.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> is out of range.
@@ -626,14 +626,14 @@ namespace MimeKit {
 		/// <remarks>
 		/// Parses a Content-Type value from the specified buffer.
 		/// </remarks>
-		/// <returns><c>true</c> if the content type was successfully parsed; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the content type was successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="options">The parser options.</param>
 		/// <param name="buffer">The input buffer.</param>
 		/// <param name="type">The parsed content type.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="options"/> is <c>null</c>.</para>
+		/// <para><paramref name="options"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="buffer"/> is <c>null</c>.</para>
+		/// <para><paramref name="buffer"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public static bool TryParse (ParserOptions options, byte[] buffer, out ContentType type)
 		{
@@ -650,11 +650,11 @@ namespace MimeKit {
 		/// <remarks>
 		/// Parses a Content-Type value from the specified buffer.
 		/// </remarks>
-		/// <returns><c>true</c> if the content type was successfully parsed; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the content type was successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="buffer">The input buffer.</param>
 		/// <param name="type">The parsed content type.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		public static bool TryParse (byte[] buffer, out ContentType type)
 		{
@@ -667,14 +667,14 @@ namespace MimeKit {
 		/// <remarks>
 		/// Parses a Content-Type value from the specified text.
 		/// </remarks>
-		/// <returns><c>true</c> if the content type was successfully parsed; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the content type was successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="options">The parser options.</param>
 		/// <param name="text">The text to parse.</param>
 		/// <param name="type">The parsed content type.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="options"/> is <c>null</c>.</para>
+		/// <para><paramref name="options"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="text"/> is <c>null</c>.</para>
+		/// <para><paramref name="text"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public static bool TryParse (ParserOptions options, string text, out ContentType type)
 		{
@@ -692,11 +692,11 @@ namespace MimeKit {
 		/// <remarks>
 		/// Parses a Content-Type value from the specified text.
 		/// </remarks>
-		/// <returns><c>true</c> if the content type was successfully parsed; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the content type was successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="text">The text to parse.</param>
 		/// <param name="type">The parsed content type.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="text"/> is <c>null</c>.
+		/// <paramref name="text"/> is <see langword="null"/>.
 		/// </exception>
 		public static bool TryParse (string text, out ContentType type)
 		{
@@ -716,9 +716,9 @@ namespace MimeKit {
 		/// <param name="startIndex">The start index of the buffer.</param>
 		/// <param name="length">The length of the buffer.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="options"/> is <c>null</c>.</para>
+		/// <para><paramref name="options"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="buffer"/> is <c>null</c>.</para>
+		/// <para><paramref name="buffer"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> and <paramref name="length"/> do not specify
@@ -750,7 +750,7 @@ namespace MimeKit {
 		/// <param name="startIndex">The start index of the buffer.</param>
 		/// <param name="length">The length of the buffer.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> and <paramref name="length"/> do not specify
@@ -775,9 +775,9 @@ namespace MimeKit {
 		/// <param name="buffer">The input buffer.</param>
 		/// <param name="startIndex">The start index of the buffer.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="options"/> is <c>null</c>.</para>
+		/// <para><paramref name="options"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="buffer"/> is <c>null</c>.</para>
+		/// <para><paramref name="buffer"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> is out of range.
@@ -806,7 +806,7 @@ namespace MimeKit {
 		/// <param name="buffer">The input buffer.</param>
 		/// <param name="startIndex">The start index of the buffer.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> is out of range.
@@ -829,9 +829,9 @@ namespace MimeKit {
 		/// <param name="options">The parser options.</param>
 		/// <param name="buffer">The input buffer.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="options"/> is <c>null</c>.</para>
+		/// <para><paramref name="options"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="buffer"/> is <c>null</c>.</para>
+		/// <para><paramref name="buffer"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="MimeKit.ParseException">
 		/// The <paramref name="buffer"/> could not be parsed.
@@ -856,7 +856,7 @@ namespace MimeKit {
 		/// <returns>The parsed <see cref="ContentType"/>.</returns>
 		/// <param name="buffer">The input buffer.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="MimeKit.ParseException">
 		/// The <paramref name="buffer"/> could not be parsed.
@@ -876,9 +876,9 @@ namespace MimeKit {
 		/// <param name="options">The parser options.</param>
 		/// <param name="text">The text.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="options"/> is <c>null</c>.</para>
+		/// <para><paramref name="options"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="text"/> is <c>null</c>.</para>
+		/// <para><paramref name="text"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="MimeKit.ParseException">
 		/// The <paramref name="text"/> could not be parsed.
@@ -904,7 +904,7 @@ namespace MimeKit {
 		/// <returns>The parsed <see cref="ContentType"/>.</returns>
 		/// <param name="text">The text.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="text"/> is <c>null</c>.
+		/// <paramref name="text"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="MimeKit.ParseException">
 		/// The <paramref name="text"/> could not be parsed.

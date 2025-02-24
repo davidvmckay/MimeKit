@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,10 @@ namespace MimeKit {
 	/// A message feedback report MIME part.
 	/// </summary>
 	/// <remarks>
-	/// A <c>message/feedback-report</c> MIME part is a machine readable feedback report.
+	/// A <c>message/feedback-report</c> MIME part is a machine-readable feedback report.
 	/// <seealso cref="MimeKit.MultipartReport"/>
 	/// </remarks>
-	public class MessageFeedbackReport : MimePart
+	public class MessageFeedbackReport : MimePart, IMessageFeedbackReport
 	{
 		HeaderList fields;
 
@@ -48,7 +48,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="args">Information used by the constructor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="args"/> is <c>null</c>.
+		/// <paramref name="args"/> is <see langword="null"/>.
 		/// </exception>
 		public MessageFeedbackReport (MimeEntityConstructorArgs args) : base (args)
 		{
@@ -124,7 +124,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="visitor">The visitor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="visitor"/> is <c>null</c>.
+		/// <paramref name="visitor"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MessageFeedbackReport"/> has been disposed.

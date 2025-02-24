@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -57,10 +57,10 @@ namespace MimeKit {
 		/// </summary>
 		/// <remarks>
 		/// <para>Creates a new <see cref="AttachmentCollection"/>.</para>
-		/// <para>If <paramref name="linkedResources"/> is <c>true</c>, then the attachments
+		/// <para>If <paramref name="linkedResources"/> is <see langword="true" />, then the attachments
 		/// are treated as if they are linked to another <see cref="MimePart"/>.</para>
 		/// </remarks>
-		/// <param name="linkedResources">If set to <c>true</c>; the attachments are treated as linked resources.</param>
+		/// <param name="linkedResources">If set to <see langword="true" />; the attachments are treated as linked resources.</param>
 		public AttachmentCollection (bool linkedResources)
 		{
 			attachments = new List<MimeEntity> ();
@@ -96,7 +96,7 @@ namespace MimeKit {
 		/// <remarks>
 		/// A <see cref="AttachmentCollection"/> is never read-only.
 		/// </remarks>
-		/// <value><c>true</c> if the collection is read only; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the collection is read only; otherwise, <see langword="false" />.</value>
 		public bool IsReadOnly {
 			get { return false; }
 		}
@@ -111,7 +111,7 @@ namespace MimeKit {
 		/// <value>The attachment at the specified index.</value>
 		/// <param name="index">The index.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="value"/> is <c>null</c>.
+		/// <paramref name="value"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="index"/> is out of range.
@@ -238,19 +238,33 @@ namespace MimeKit {
 			return index > 0 ? path.Substring (index + 1) : path;
 		}
 
-		MimeEntity CreateAttachment (ContentType contentType, string path, Stream stream, bool copyStream, CancellationToken cancellationToken)
+		MimeEntity CreateAttachment (ContentType contentType, bool autoDetected, string path, Stream stream, bool copyStream, CancellationToken cancellationToken)
 		{
 			var fileName = GetFileName (path);
-			MimeEntity attachment;
+			MimeEntity attachment = null;
 
 			if (contentType.IsMimeType ("message", "rfc822")) {
-				var message = MimeMessage.Load (stream, cancellationToken);
+				long position = stream.CanSeek ? stream.Position : 0;
 
-				if (!copyStream)
-					stream.Dispose ();
+				try {
+					var message = MimeMessage.Load (stream, cancellationToken);
 
-				attachment = new MessagePart { Message = message };
-			} else {
+					if (!copyStream)
+						stream.Dispose ();
+
+					attachment = new MessagePart { Message = message };
+				} catch (FormatException) {
+					if (autoDetected && stream.CanSeek) {
+						// If the contentType was auto-detected and the stream is seekable, fall back to attaching this content as a generic stream
+						contentType = new ContentType ("application", "octet-stream");
+						stream.Position = position;
+					} else {
+						throw;
+					}
+				}
+			}
+
+			if (attachment is null) {
 				MimePart part;
 
 				if (contentType.IsMimeType ("text", "*")) {
@@ -275,19 +289,33 @@ namespace MimeKit {
 			return attachment;
 		}
 
-		async Task<MimeEntity> CreateAttachmentAsync (ContentType contentType, string path, Stream stream, bool copyStream, CancellationToken cancellationToken)
+		async Task<MimeEntity> CreateAttachmentAsync (ContentType contentType, bool autoDetected, string path, Stream stream, bool copyStream, CancellationToken cancellationToken)
 		{
 			var fileName = GetFileName (path);
-			MimeEntity attachment;
+			MimeEntity attachment = null;
 
 			if (contentType.IsMimeType ("message", "rfc822")) {
-				var message = await MimeMessage.LoadAsync (stream, cancellationToken).ConfigureAwait (false);
+				long position = stream.CanSeek ? stream.Position : 0;
 
-				if (!copyStream)
-					stream.Dispose ();
+				try {
+					var message = await MimeMessage.LoadAsync (stream, cancellationToken).ConfigureAwait (false);
 
-				attachment = new MessagePart { Message = message };
-			} else {
+					if (!copyStream)
+						stream.Dispose ();
+
+					attachment = new MessagePart { Message = message };
+				} catch (FormatException) {
+					if (autoDetected && stream.CanSeek) {
+						// If the contentType was auto-detected and the stream is seekable, fall back to attaching this content as a generic stream
+						contentType = new ContentType ("application", "octet-stream");
+						stream.Position = position;
+					} else {
+						throw;
+					}
+				}
+			}
+
+			if (attachment is null) {
 				MimePart part;
 
 				if (contentType.IsMimeType ("text", "*")) {
@@ -326,11 +354,11 @@ namespace MimeKit {
 		/// <param name="data">The file data.</param>
 		/// <param name="contentType">The mime-type of the file.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="fileName"/> is <c>null</c>.</para>
+		/// <para><paramref name="fileName"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="data"/> is <c>null</c>.</para>
+		/// <para><paramref name="data"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="contentType"/> is <c>null</c>.</para>
+		/// <para><paramref name="contentType"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// The specified file path is empty.
@@ -350,7 +378,7 @@ namespace MimeKit {
 				throw new ArgumentNullException (nameof (contentType));
 
 			var stream = new MemoryStream (data, false);
-			var attachment = CreateAttachment (contentType, fileName, stream, false, CancellationToken.None);
+			var attachment = CreateAttachment (contentType, false, fileName, stream, false, CancellationToken.None);
 
 			attachments.Add (attachment);
 
@@ -372,11 +400,11 @@ namespace MimeKit {
 		/// <param name="contentType">The mime-type of the file.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="fileName"/> is <c>null</c>.</para>
+		/// <para><paramref name="fileName"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="stream"/> is <c>null</c>.</para>
+		/// <para><paramref name="stream"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="contentType"/> is <c>null</c>.</para>
+		/// <para><paramref name="contentType"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// The specified file path is empty.
@@ -401,7 +429,7 @@ namespace MimeKit {
 			if (contentType is null)
 				throw new ArgumentNullException (nameof (contentType));
 
-			var attachment = CreateAttachment (contentType, fileName, stream, true, cancellationToken);
+			var attachment = CreateAttachment (contentType, false, fileName, stream, true, cancellationToken);
 
 			attachments.Add (attachment);
 
@@ -423,11 +451,11 @@ namespace MimeKit {
 		/// <param name="contentType">The mime-type of the file.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="fileName"/> is <c>null</c>.</para>
+		/// <para><paramref name="fileName"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="stream"/> is <c>null</c>.</para>
+		/// <para><paramref name="stream"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="contentType"/> is <c>null</c>.</para>
+		/// <para><paramref name="contentType"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// The specified file path is empty.
@@ -452,7 +480,7 @@ namespace MimeKit {
 			if (contentType is null)
 				throw new ArgumentNullException (nameof (contentType));
 
-			var attachment = await CreateAttachmentAsync (contentType, fileName, stream, true, cancellationToken).ConfigureAwait (false);
+			var attachment = await CreateAttachmentAsync (contentType, false, fileName, stream, true, cancellationToken).ConfigureAwait (false);
 
 			attachments.Add (attachment);
 
@@ -470,9 +498,9 @@ namespace MimeKit {
 		/// <param name="fileName">The name of the file.</param>
 		/// <param name="data">The file data to attach.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="fileName"/> is <c>null</c>.</para>
+		/// <para><paramref name="fileName"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="data"/> is <c>null</c>.</para>
+		/// <para><paramref name="data"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// The specified file path is empty.
@@ -489,7 +517,7 @@ namespace MimeKit {
 				throw new ArgumentNullException (nameof (data));
 
 			var stream = new MemoryStream (data, false);
-			var attachment = CreateAttachment (GetMimeType (fileName), fileName, stream, false, CancellationToken.None);
+			var attachment = CreateAttachment (GetMimeType (fileName), true, fileName, stream, false, CancellationToken.None);
 
 			attachments.Add (attachment);
 
@@ -508,9 +536,9 @@ namespace MimeKit {
 		/// <param name="stream">The content stream.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="fileName"/> is <c>null</c>.</para>
+		/// <para><paramref name="fileName"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="stream"/> is <c>null</c>.</para>
+		/// <para><paramref name="stream"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// The specified file path is empty.
@@ -532,7 +560,7 @@ namespace MimeKit {
 			if (stream is null)
 				throw new ArgumentNullException (nameof (stream));
 
-			var attachment = CreateAttachment (GetMimeType (fileName), fileName, stream, true, cancellationToken);
+			var attachment = CreateAttachment (GetMimeType (fileName), true, fileName, stream, true, cancellationToken);
 
 			attachments.Add (attachment);
 
@@ -551,9 +579,9 @@ namespace MimeKit {
 		/// <param name="stream">The content stream.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="fileName"/> is <c>null</c>.</para>
+		/// <para><paramref name="fileName"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="stream"/> is <c>null</c>.</para>
+		/// <para><paramref name="stream"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// The specified file path is empty.
@@ -575,7 +603,7 @@ namespace MimeKit {
 			if (stream is null)
 				throw new ArgumentNullException (nameof (stream));
 
-			var attachment = await CreateAttachmentAsync (GetMimeType (fileName), fileName, stream, true, cancellationToken).ConfigureAwait (false);
+			var attachment = await CreateAttachmentAsync (GetMimeType (fileName), true, fileName, stream, true, cancellationToken).ConfigureAwait (false);
 
 			attachments.Add (attachment);
 
@@ -595,9 +623,9 @@ namespace MimeKit {
 		/// <param name="contentType">The mime-type of the file.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="fileName"/> is <c>null</c>.</para>
+		/// <para><paramref name="fileName"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="contentType"/> is <c>null</c>.</para>
+		/// <para><paramref name="contentType"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// The specified file path is empty.
@@ -626,7 +654,7 @@ namespace MimeKit {
 				throw new ArgumentNullException (nameof (contentType));
 
 			using (var stream = File.OpenRead (fileName)) {
-				var attachment = CreateAttachment (contentType, fileName, stream, true, cancellationToken);
+				var attachment = CreateAttachment (contentType, false, fileName, stream, true, cancellationToken);
 
 				attachments.Add (attachment);
 
@@ -647,9 +675,9 @@ namespace MimeKit {
 		/// <param name="contentType">The mime-type of the file.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="fileName"/> is <c>null</c>.</para>
+		/// <para><paramref name="fileName"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="contentType"/> is <c>null</c>.</para>
+		/// <para><paramref name="contentType"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// The specified file path is empty.
@@ -678,7 +706,7 @@ namespace MimeKit {
 				throw new ArgumentNullException (nameof (contentType));
 
 			using (var stream = File.OpenRead (fileName)) {
-				var attachment = await CreateAttachmentAsync (contentType, fileName, stream, true, cancellationToken).ConfigureAwait (false);
+				var attachment = await CreateAttachmentAsync (contentType, false, fileName, stream, true, cancellationToken).ConfigureAwait (false);
 
 				attachments.Add (attachment);
 
@@ -699,7 +727,7 @@ namespace MimeKit {
 		/// <param name="fileName">The name of the file.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="fileName"/> is <c>null</c>.
+		/// <paramref name="fileName"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <paramref name="fileName"/> is a zero-length string, contains only white space, or
@@ -729,7 +757,7 @@ namespace MimeKit {
 				throw new ArgumentException ("The specified file path is empty.", nameof (fileName));
 
 			using (var stream = File.OpenRead (fileName)) {
-				var attachment = CreateAttachment (GetMimeType (fileName), fileName, stream, true, cancellationToken);
+				var attachment = CreateAttachment (GetMimeType (fileName), true, fileName, stream, true, cancellationToken);
 
 				attachments.Add (attachment);
 
@@ -747,7 +775,7 @@ namespace MimeKit {
 		/// <param name="fileName">The name of the file.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="fileName"/> is <c>null</c>.
+		/// <paramref name="fileName"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <paramref name="fileName"/> is a zero-length string, contains only white space, or
@@ -777,7 +805,7 @@ namespace MimeKit {
 				throw new ArgumentException ("The specified file path is empty.", nameof (fileName));
 
 			using (var stream = File.OpenRead (fileName)) {
-				var attachment = await CreateAttachmentAsync (GetMimeType (fileName), fileName, stream, true, cancellationToken).ConfigureAwait (false);
+				var attachment = await CreateAttachmentAsync (GetMimeType (fileName), true, fileName, stream, true, cancellationToken).ConfigureAwait (false);
 
 				attachments.Add (attachment);
 
@@ -793,7 +821,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="attachment">The attachment.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="attachment"/> is <c>null</c>.
+		/// <paramref name="attachment"/> is <see langword="null"/>.
 		/// </exception>
 		public void Add (MimeEntity attachment)
 		{
@@ -820,7 +848,7 @@ namespace MimeKit {
 		/// <remarks>
 		/// Removes all attachments from the collection, optionally disposing them in the process.
 		/// </remarks>
-		/// <param name="dispose"><c>true</c> if all of the attachments should be disposed; otherwise, <c>false</c>.</param>
+		/// <param name="dispose"><see langword="true" /> if all the attachments should be disposed; otherwise, <see langword="false" />.</param>
 		public void Clear (bool dispose)
 		{
 			if (dispose) {
@@ -835,13 +863,13 @@ namespace MimeKit {
 		/// Check if the collection contains the specified attachment.
 		/// </summary>
 		/// <remarks>
-		/// Determines whether or not the collection contains the specified attachment.
+		/// Determines whether the collection contains the specified attachment.
 		/// </remarks>
-		/// <returns><value>true</value> if the specified attachment exists;
-		/// otherwise <value>false</value>.</returns>
+		/// <returns><see langword="true" /> if the specified attachment exists;
+		/// otherwise, <see langword="false" />.</returns>
 		/// <param name="attachment">The attachment.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="attachment"/> is <c>null</c>.
+		/// <paramref name="attachment"/> is <see langword="null"/>.
 		/// </exception>
 		public bool Contains (MimeEntity attachment)
 		{
@@ -852,16 +880,16 @@ namespace MimeKit {
 		}
 
 		/// <summary>
-		/// Copy all of the attachments in the collection to an array.
+		/// Copy all the attachments in the collection to an array.
 		/// </summary>
 		/// <remarks>
-		/// Copies all of the attachments within the <see cref="AttachmentCollection"/> into the array,
+		/// Copies all the attachments within the <see cref="AttachmentCollection"/> into the array,
 		/// starting at the specified array index.
 		/// </remarks>
 		/// <param name="array">The array to copy the attachments to.</param>
 		/// <param name="arrayIndex">The index into the array.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="array"/> is <c>null</c>.
+		/// <paramref name="array"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="arrayIndex"/> is out of range.
@@ -886,7 +914,7 @@ namespace MimeKit {
 		/// <returns>The index of the requested attachment; otherwise <value>-1</value>.</returns>
 		/// <param name="attachment">The attachment.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="attachment"/> is <c>null</c>.
+		/// <paramref name="attachment"/> is <see langword="null"/>.
 		/// </exception>
 		public int IndexOf (MimeEntity attachment)
 		{
@@ -905,7 +933,7 @@ namespace MimeKit {
 		/// <param name="index">The index to insert the attachment.</param>
 		/// <param name="attachment">The attachment.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="attachment"/> is <c>null</c>.
+		/// <paramref name="attachment"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="index"/> is out of range.
@@ -927,10 +955,10 @@ namespace MimeKit {
 		/// <remarks>
 		/// Removes the specified attachment.
 		/// </remarks>
-		/// <returns><value>true</value> if the attachment was removed; otherwise <value>false</value>.</returns>
+		/// <returns><see langword="true" /> if the attachment was removed; otherwise, <see langword="false" />.</returns>
 		/// <param name="attachment">The attachment.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="attachment"/> is <c>null</c>.
+		/// <paramref name="attachment"/> is <see langword="null"/>.
 		/// </exception>
 		public bool Remove (MimeEntity attachment)
 		{

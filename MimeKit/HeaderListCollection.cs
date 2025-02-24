@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -64,12 +64,12 @@ namespace MimeKit {
 		}
 
 		/// <summary>
-		/// Gets whether or not the header list collection is read only.
+		/// Gets whether the header list collection is read only.
 		/// </summary>
 		/// <remarks>
 		/// A <see cref="HeaderListCollection"/> is never read-only.
 		/// </remarks>
-		/// <value><c>true</c> if this instance is read only; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if this instance is read only; otherwise, <see langword="false" />.</value>
 		public bool IsReadOnly {
 			get { return false; }
 		}
@@ -83,7 +83,7 @@ namespace MimeKit {
 		/// <value>The group of headers at the specified index.</value>
 		/// <param name="index">The index.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="value"/> is <c>null</c>.
+		/// <paramref name="value"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="index"/> is out of range.
@@ -119,7 +119,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="group">The group of headers.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="group"/> is <c>null</c>.
+		/// <paramref name="group"/> is <see langword="null"/>.
 		/// </exception>
 		public void Add (HeaderList group)
 		{
@@ -135,7 +135,7 @@ namespace MimeKit {
 		/// Clears the header list collection.
 		/// </summary>
 		/// <remarks>
-		/// Removes all of the groups from the collection.
+		/// Removes all the groups from the collection.
 		/// </remarks>
 		public void Clear ()
 		{
@@ -150,13 +150,13 @@ namespace MimeKit {
 		/// Checks if the collection contains the specified group of headers.
 		/// </summary>
 		/// <remarks>
-		/// Determines whether or not the collection contains the specified group of headers.
+		/// Determines whether the collection contains the specified group of headers.
 		/// </remarks>
-		/// <returns><value>true</value> if the specified group of headers is contained;
-		/// otherwise, <value>false</value>.</returns>
+		/// <returns><see langword="true" /> if the specified group of headers is contained;
+		/// otherwise, <see langword="false" />.</returns>
 		/// <param name="group">The group of headers.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="group"/> is <c>null</c>.
+		/// <paramref name="group"/> is <see langword="null"/>.
 		/// </exception>
 		public bool Contains (HeaderList group)
 		{
@@ -167,16 +167,16 @@ namespace MimeKit {
 		}
 
 		/// <summary>
-		/// Copies all of the header groups in the <see cref="HeaderListCollection"/> to the specified array.
+		/// Copies all the header groups in the <see cref="HeaderListCollection"/> to the specified array.
 		/// </summary>
 		/// <remarks>
-		/// Copies all of the header groups within the <see cref="HeaderListCollection"/> into the array,
+		/// Copies all the header groups within the <see cref="HeaderListCollection"/> into the array,
 		/// starting at the specified array index.
 		/// </remarks>
 		/// <param name="array">The array to copy the headers to.</param>
 		/// <param name="arrayIndex">The index into the array.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="array"/> is <c>null</c>.
+		/// <paramref name="array"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="arrayIndex"/> is out of range.
@@ -192,11 +192,11 @@ namespace MimeKit {
 		/// <remarks>
 		/// Removes the specified header group from the collection, if it exists.
 		/// </remarks>
-		/// <returns><c>true</c> if the specified header group was removed;
-		/// otherwise <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the specified header group was removed;
+		/// otherwise, <see langword="false" />.</returns>
 		/// <param name="group">The group of headers.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="group"/> is <c>null</c>.
+		/// <paramref name="group"/> is <see langword="null"/>.
 		/// </exception>
 		public bool Remove (HeaderList group)
 		{

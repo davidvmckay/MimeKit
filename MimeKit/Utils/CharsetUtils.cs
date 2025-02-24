@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ using System.Collections.Generic;
 namespace MimeKit.Utils {
 	static class CharsetUtils
 	{
+		static readonly char[] DashUnderscore = new[] { '-', '_' };
 		static readonly Dictionary<string, int> aliases;
 		public static readonly Encoding Latin1;
 		public static readonly Encoding UTF8;
@@ -182,7 +183,7 @@ namespace MimeKit.Utils {
 			if ((charset.Length - startIndex) < 5)
 				return -1;
 
-			int dash = charset.IndexOfAny (new [] { '-', '_' }, startIndex);
+			int dash = charset.IndexOfAny (DashUnderscore, startIndex);
 			if (dash == -1)
 				dash = charset.Length;
 
@@ -378,6 +379,15 @@ namespace MimeKit.Utils {
 			return Encoding.GetEncoding (codepage);
 		}
 
+		public static Encoding GetEncodingOrDefault (int codepage, Encoding defaultEncoding)
+		{
+			try {
+				return Encoding.GetEncoding (codepage);
+			} catch {
+				return defaultEncoding;
+			}
+		}
+
 		class InvalidByteCountFallback : DecoderFallback
 		{
 			class InvalidByteCountFallbackBuffer : DecoderFallbackBuffer
@@ -479,7 +489,7 @@ namespace MimeKit.Utils {
 
 			for (int i = 0; i < codepages.Length; i++) {
 				encoding = Encoding.GetEncoding (codepages[i], new EncoderReplacementFallback ("?"), invalid);
-				decoder = (Decoder) encoding.GetDecoder ();
+				decoder = encoding.GetDecoder ();
 
 				count = decoder.GetCharCount (input, startIndex, length, true);
 				if (invalid.InvalidByteCount < min) {
@@ -495,7 +505,7 @@ namespace MimeKit.Utils {
 			}
 
 			encoding = GetEncoding (best, "?");
-			decoder = (Decoder) encoding.GetDecoder ();
+			decoder = encoding.GetDecoder ();
 
 			var output = new char[bestCharCount];
 

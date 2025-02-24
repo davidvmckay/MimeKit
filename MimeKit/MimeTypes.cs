@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -1017,7 +1017,7 @@ namespace MimeKit {
 		/// <returns>The MIME-type.</returns>
 		/// <param name="fileName">The file name.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="fileName"/> is <c>null</c>.
+		/// <paramref name="fileName"/> is <see langword="null"/>.
 		/// </exception>
 		public static string GetMimeType (string fileName)
 		{
@@ -1037,11 +1037,11 @@ namespace MimeKit {
 		/// <remarks>
 		/// Gets the standard file extension for a MIME-type.
 		/// </remarks>
-		/// <returns><c>true</c> if the extension is known for the specified MIME-type; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the extension is known for the specified MIME-type; otherwise, <see langword="false" />.</returns>
 		/// <param name="mimeType">The MIME-type.</param>
 		/// <param name="extension">The file name extension for the specified MIME-type.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="mimeType"/> is <c>null</c>.
+		/// <paramref name="mimeType"/> is <see langword="null"/>.
 		/// </exception>
 		public static bool TryGetExtension (string mimeType, out string extension)
 		{
@@ -1062,9 +1062,9 @@ namespace MimeKit {
 		/// <param name="mimeType">The MIME-type to register.</param>
 		/// <param name="extension">The file extension to register.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="mimeType"/> is <c>null</c>.</para>
+		/// <para><paramref name="mimeType"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="extension"/> is <c>null</c>.</para>
+		/// <para><paramref name="extension"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <para><paramref name="mimeType"/> is empty.</para>

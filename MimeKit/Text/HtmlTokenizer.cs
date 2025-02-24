@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -122,7 +122,7 @@ namespace MimeKit.Text {
 		/// </remarks>
 		/// <param name="stream">The input stream.</param>
 		/// <param name="encoding">The charset encoding of the stream.</param>
-		/// <param name="detectEncodingFromByteOrderMarks"><c>true</c> if byte order marks should be detected and used to override the <paramref name="encoding"/>; otherwise, <c>false</c>.</param>
+		/// <param name="detectEncodingFromByteOrderMarks"><see langword="true" /> if byte order marks should be detected and used to override the <paramref name="encoding"/>; otherwise, <see langword="false" />.</param>
 		/// <param name="bufferSize">The minimum buffer size to use for reading.</param>
 		public HtmlTokenizer (Stream stream, Encoding encoding, bool detectEncodingFromByteOrderMarks, int bufferSize = 4096) : this ()
 		{
@@ -161,14 +161,14 @@ namespace MimeKit.Text {
 		}
 
 		/// <summary>
-		/// Get or set whether or not the tokenizer should decode character references.
+		/// Get or set whether the tokenizer should decode character references.
 		/// </summary>
 		/// <remarks>
-		/// <para>Gets or sets whether or not the tokenizer should decode character references.</para>
+		/// <para>Gets or sets whether the tokenizer should decode character references.</para>
 		/// <note type="warning">Character references in attribute values will still be decoded
-		/// even if this value is set to <c>false</c>.</note>
+		/// even if this value is set to <see langword="false" />.</note>
 		/// </remarks>
-		/// <value><c>true</c> if character references should be decoded; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if character references should be decoded; otherwise, <see langword="false" />.</value>
 		public bool DecodeCharacterReferences {
 			get; set;
 		}
@@ -185,14 +185,14 @@ namespace MimeKit.Text {
 		}
 
 		/// <summary>
-		/// Get or set whether or not the tokenizer should ignore truncated tags.
+		/// Get or set whether the tokenizer should ignore truncated tags.
 		/// </summary>
 		/// <remarks>
-		/// <para>Gets or sets whether or not the tokenizer should ignore truncated tags.</para>
-		/// <para>If <c>false</c> and the stream abruptly ends in the middle of an HTML tag, it will be
+		/// <para>Gets or sets whether the tokenizer should ignore truncated tags.</para>
+		/// <para>If <see langword="false" /> and the stream abruptly ends in the middle of an HTML tag, it will be
 		/// treated as an <see cref="HtmlDataToken"/> instead.</para>
 		/// </remarks>
-		/// <value><c>true</c> if truncated tags should be ignored; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if truncated tags should be ignored; otherwise, <see langword="false" />.</value>
 		public bool IgnoreTruncatedTags {
 			get; set;
 		}
@@ -263,7 +263,7 @@ namespace MimeKit.Text {
 		/// </remarks>
 		/// <returns>The HTML comment token.</returns>
 		/// <param name="comment">The comment.</param>
-		/// <param name="bogus"><c>true</c> if the comment is bogus; otherwise, <c>false</c>.</param>
+		/// <param name="bogus"><see langword="true" /> if the comment is bogus; otherwise, <see langword="false" />.</param>
 		protected virtual HtmlCommentToken CreateCommentToken (string comment, bool bogus = false)
 		{
 			return new HtmlCommentToken (comment, bogus);
@@ -316,7 +316,7 @@ namespace MimeKit.Text {
 		/// </remarks>
 		/// <returns>The HTML tag token.</returns>
 		/// <param name="name">The tag name.</param>
-		/// <param name="isEndTag"><c>true</c> if the tag is an end tag; otherwise, <c>false</c>.</param>
+		/// <param name="isEndTag"><see langword="true" /> if the tag is an end tag; otherwise, <see langword="false" />.</param>
 		protected virtual HtmlTagToken CreateTagToken (string name, bool isEndTag = false)
 		{
 			return new HtmlTagToken (name, isEndTag);
@@ -359,16 +359,12 @@ namespace MimeKit.Text {
 
 		int SkipByteOrderMark (ReadOnlySpan<byte> preamble)
 		{
-			bool detected = true;
-
 			for (int i = 0; i < preamble.Length; i++) {
-				if (input[i] != preamble[i]) {
-					detected = false;
-					break;
-				}
+				if (input[i] != preamble[i])
+					return 0;
 			}
 
-			return detected ? preamble.Length : 0;
+			return preamble.Length;
 		}
 
 		int DetectByteOrderMark ()
@@ -2719,7 +2715,7 @@ namespace MimeKit.Text {
 		/// <remarks>
 		/// Reads the next token.
 		/// </remarks>
-		/// <returns><c>true</c> if the next token was read; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the next token was read; otherwise, <see langword="false" />.</returns>
 		/// <param name="token">The token that was read.</param>
 		public bool ReadNextToken (out HtmlToken token)
 		{

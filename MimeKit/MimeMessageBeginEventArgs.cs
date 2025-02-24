@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="message">The message that was parsed.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="message"/> is <c>null</c>.
+		/// <paramref name="message"/> is <see langword="null"/>.
 		/// </exception>
 		public MimeMessageBeginEventArgs (MimeMessage message)
 		{
@@ -62,9 +62,9 @@ namespace MimeKit {
 		/// <param name="message">The message that was parsed.</param>
 		/// <param name="parent">The parent message part.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <para><paramref name="message"/> is <c>null</c>.</para>
+		/// <para><paramref name="message"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="parent"/> is <c>null</c>.</para>
+		/// <para><paramref name="parent"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public MimeMessageBeginEventArgs (MimeMessage message, MessagePart parent)
 		{

@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -97,9 +97,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="key">The signer's private key.</param>
 		/// <param name="signerIdentifierType">The scheme used for identifying the signer certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="chain"/> is <c>null</c>.</para>
+		/// <para><paramref name="chain"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="key"/> is <c>null</c>.</para>
+		/// <para><paramref name="key"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <para><paramref name="chain"/> did not contain any certificates.</para>
@@ -148,9 +148,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="key">The signer's private key.</param>
 		/// <param name="signerIdentifierType">The scheme used for identifying the signer certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="certificate"/> is <c>null</c>.</para>
+		/// <para><paramref name="certificate"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="key"/> is <c>null</c>.</para>
+		/// <para><paramref name="key"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <para><paramref name="certificate"/> cannot be used for signing.</para>
@@ -239,9 +239,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="password">The password to unlock the stream.</param>
 		/// <param name="signerIdentifierType">The scheme used for identifying the signer certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="stream"/> is <c>null</c>.</para>
+		/// <para><paramref name="stream"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="password"/> is <c>null</c>.</para>
+		/// <para><paramref name="password"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <para><paramref name="stream"/> does not contain a private key.</para>
@@ -277,9 +277,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="password">The password to unlock the stream.</param>
 		/// <param name="signerIdentifierType">The scheme used for identifying the signer certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="fileName"/> is <c>null</c>.</para>
+		/// <para><paramref name="fileName"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="password"/> is <c>null</c>.</para>
+		/// <para><paramref name="password"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <para><paramref name="fileName"/> is a zero-length string, contains only white space, or
@@ -325,7 +325,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="certificate">The signer's certificate.</param>
 		/// <param name="signerIdentifierType">The scheme used for identifying the signer certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <paramref name="certificate"/> cannot be used for signing.

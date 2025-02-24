@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="domains">A domain list.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="domains"/> is <c>null</c>.
+		/// <paramref name="domains"/> is <see langword="null"/>.
 		/// </exception>
 		public DomainList (IEnumerable<string> domains)
 		{
@@ -90,7 +90,7 @@ namespace MimeKit {
 		/// <returns>The index of the requested domain; otherwise <value>-1</value>.</returns>
 		/// <param name="domain">The domain.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="domain"/> is <c>null</c>.
+		/// <paramref name="domain"/> is <see langword="null"/>.
 		/// </exception>
 		public int IndexOf (string domain)
 		{
@@ -109,7 +109,7 @@ namespace MimeKit {
 		/// <param name="index">The index to insert the domain.</param>
 		/// <param name="domain">The domain to insert.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="domain"/> is <c>null</c>.
+		/// <paramref name="domain"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="index"/> is out of range.
@@ -149,7 +149,7 @@ namespace MimeKit {
 		/// <value>The domain at the specified index.</value>
 		/// <param name="index">The index.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="value"/> is <c>null</c>.
+		/// <paramref name="value"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="index"/> is out of range.
@@ -180,7 +180,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="domain">The domain.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="domain"/> is <c>null</c>.
+		/// <paramref name="domain"/> is <see langword="null"/>.
 		/// </exception>
 		public void Add (string domain)
 		{
@@ -196,7 +196,7 @@ namespace MimeKit {
 		/// Clear the domain list.
 		/// </summary>
 		/// <remarks>
-		/// Removes all of the domains in the list.
+		/// Removes all the domains in the list.
 		/// </remarks>
 		public void Clear ()
 		{
@@ -208,13 +208,13 @@ namespace MimeKit {
 		/// Check if the <see cref="DomainList"/> contains the specified domain.
 		/// </summary>
 		/// <remarks>
-		/// Determines whether or not the domain list contains the specified domain.
+		/// Determines whether the domain list contains the specified domain.
 		/// </remarks>
-		/// <returns><value>true</value> if the specified domain is contained;
-		/// otherwise <value>false</value>.</returns>
+		/// <returns><see langword="true" /> if the specified domain is contained;
+		/// otherwise, <see langword="false" />.</returns>
 		/// <param name="domain">The domain.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="domain"/> is <c>null</c>.
+		/// <paramref name="domain"/> is <see langword="null"/>.
 		/// </exception>
 		public bool Contains (string domain)
 		{
@@ -225,16 +225,16 @@ namespace MimeKit {
 		}
 
 		/// <summary>
-		/// Copy all of the domains in the <see cref="DomainList"/> to an array.
+		/// Copy all the domains in the <see cref="DomainList"/> to an array.
 		/// </summary>
 		/// <remarks>
-		/// Copies all of the domains within the <see cref="DomainList"/> into the array,
+		/// Copies all the domains within the <see cref="DomainList"/> into the array,
 		/// starting at the specified array index.
 		/// </remarks>
 		/// <param name="array">The array to copy the domains to.</param>
 		/// <param name="arrayIndex">The index into the array.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="array"/> is <c>null</c>.
+		/// <paramref name="array"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="arrayIndex"/> is out of range.
@@ -250,10 +250,10 @@ namespace MimeKit {
 		/// <remarks>
 		/// Removes the first instance of the specified domain from the list if it exists.
 		/// </remarks>
-		/// <returns><value>true</value> if the domain was removed; otherwise <value>false</value>.</returns>
+		/// <returns><see langword="true" /> if the domain was removed; otherwise, <see langword="false" />.</returns>
 		/// <param name="domain">The domain.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="domain"/> is <c>null</c>.
+		/// <paramref name="domain"/> is <see langword="null"/>.
 		/// </exception>
 		public bool Remove (string domain)
 		{
@@ -285,7 +285,7 @@ namespace MimeKit {
 		/// <remarks>
 		/// A <see cref="DomainList"/> is never read-only.
 		/// </remarks>
-		/// <value><c>true</c> if this instance is read only; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if this instance is read only; otherwise, <see langword="false" />.</value>
 		public bool IsReadOnly {
 			get { return false; }
 		}
@@ -391,12 +391,12 @@ namespace MimeKit {
 		/// specified index. The index will only be updated if a <see cref="DomainList"/> was
 		/// successfully parsed.
 		/// </remarks>
-		/// <returns><c>true</c> if a <see cref="DomainList"/> was successfully parsed;
-		/// <c>false</c> otherwise.</returns>
+		/// <returns><see langword="true" /> if a <see cref="DomainList"/> was successfully parsed;
+		/// otherwise, <see langword="false" />.</returns>
 		/// <param name="buffer">The buffer to parse.</param>
 		/// <param name="index">The index to start parsing.</param>
 		/// <param name="endIndex">An index of the end of the input.</param>
-		/// <param name="throwOnError">A flag indicating whether or not an
+		/// <param name="throwOnError">A flag indicating whether an
 		/// exception should be thrown on error.</param>
 		/// <param name="route">The parsed DomainList.</param>
 		internal static bool TryParse (byte[] buffer, ref int index, int endIndex, bool throwOnError, out DomainList route)
@@ -449,12 +449,12 @@ namespace MimeKit {
 		/// Attempts to parse a <see cref="DomainList"/> from the supplied text. The index
 		/// will only be updated if a <see cref="DomainList"/> was successfully parsed.
 		/// </remarks>
-		/// <returns><c>true</c> if a <see cref="DomainList"/> was successfully parsed;
-		/// <c>false</c> otherwise.</returns>
+		/// <returns><see langword="true" /> if a <see cref="DomainList"/> was successfully parsed;
+		/// otherwise, <see langword="false" />.</returns>
 		/// <param name="text">The text to parse.</param>
 		/// <param name="route">The parsed DomainList.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="text"/> is <c>null</c>.
+		/// <paramref name="text"/> is <see langword="null"/>.
 		/// </exception>
 		public static bool TryParse (string text, out DomainList route)
 		{

@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -520,13 +520,13 @@ namespace MimeKit.Utils {
 		/// Parses an rfc822 date and time from the supplied buffer starting at the given index
 		/// and spanning across the specified number of bytes.
 		/// </remarks>
-		/// <returns><c>true</c>, if the date was successfully parsed, <c>false</c> otherwise.</returns>
+		/// <returns><see langword="true" /> if the date was successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="buffer">The input buffer.</param>
 		/// <param name="startIndex">The starting index of the input buffer.</param>
 		/// <param name="length">The number of bytes in the input buffer to parse.</param>
 		/// <param name="date">The parsed date.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> and <paramref name="length"/> do not specify
@@ -562,12 +562,12 @@ namespace MimeKit.Utils {
 		/// <remarks>
 		/// Parses an rfc822 date and time from the supplied buffer starting at the specified index.
 		/// </remarks>
-		/// <returns><c>true</c>, if the date was successfully parsed, <c>false</c> otherwise.</returns>
+		/// <returns><see langword="true" /> if the date was successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="buffer">The input buffer.</param>
 		/// <param name="startIndex">The starting index of the input buffer.</param>
 		/// <param name="date">The parsed date.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> is not within the range of the byte array.
@@ -589,11 +589,11 @@ namespace MimeKit.Utils {
 		/// <remarks>
 		/// Parses an rfc822 date and time from the specified buffer.
 		/// </remarks>
-		/// <returns><c>true</c>, if the date was successfully parsed, <c>false</c> otherwise.</returns>
+		/// <returns><see langword="true" /> if the date was successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="buffer">The input buffer.</param>
 		/// <param name="date">The parsed date.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		public static bool TryParse (byte[] buffer, out DateTimeOffset date)
 		{
@@ -609,11 +609,11 @@ namespace MimeKit.Utils {
 		/// <remarks>
 		/// Parses an rfc822 date and time from the specified text.
 		/// </remarks>
-		/// <returns><c>true</c>, if the date was successfully parsed, <c>false</c> otherwise.</returns>
+		/// <returns><see langword="true" /> if the date was successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="text">The input text.</param>
 		/// <param name="date">The parsed date.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="text"/> is <c>null</c>.
+		/// <paramref name="text"/> is <see langword="null"/>.
 		/// </exception>
 		public static bool TryParse (string text, out DateTimeOffset date)
 		{
@@ -623,48 +623,6 @@ namespace MimeKit.Utils {
 			var buffer = Encoding.UTF8.GetBytes (text);
 
 			return TryParse (buffer, 0, buffer.Length, out date);
-		}
-
-		// Note: this method exists because BouncyCastle's DerUtcTime.ParseDateString() fails
-		// to parse date strings where the seconds value is not in the range 0 -> 59.
-		// See https://github.com/jstedfast/MimeKit/issues/103 for details.
-		internal static DateTime Parse (string text, string format)
-		{
-			int hour = 0, minute = 0, second = 0;
-			int year = 0, month = 0, day = 0;
-			TimeSpan offset;
-			int i = 0;
-
-			while (i < text.Length && i < format.Length && format[i] != 'z') {
-				if (text[i] < '0' || text[i] > '9')
-					throw new FormatException ();
-
-				int digit = text[i] - '0';
-
-				switch (format[i]) {
-				case 'y': year = (year * 10) + digit; break;
-				case 'M': month = (month * 10) + digit; break;
-				case 'd': day = (day * 10) + digit; break;
-				case 'H': hour = (hour * 10) + digit; break;
-				case 'm': minute = (minute * 10) + digit; break;
-				case 's': second = (second * 10) + digit; break;
-				}
-
-				i++;
-			}
-
-			minute += second / 60;
-			second %= 60;
-
-			hour += minute / 60;
-			minute %= 60;
-
-			if (!timezones.TryGetValue (text.Substring (i), out int timezone))
-				timezone = 0;
-
-			offset = new TimeSpan (timezone / 100, timezone % 100, 0);
-
-			return new DateTime (year, month, day, hour, minute, second, DateTimeKind.Utc).Add (offset);
 		}
 
 		/// <summary>

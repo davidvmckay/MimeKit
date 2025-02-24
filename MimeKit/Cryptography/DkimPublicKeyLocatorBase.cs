@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,16 @@ namespace MimeKit.Cryptography {
 	public abstract class DkimPublicKeyLocatorBase : IDkimPublicKeyLocator
 	{
 		/// <summary>
+		/// Initialize a new instance of the <see cref="DkimPublicKeyLocatorBase"/> class.
+		/// </summary>
+		/// <remarks>
+		/// Creates a new <see cref="DkimPublicKeyLocatorBase"/>.
+		/// </remarks>
+		protected DkimPublicKeyLocatorBase ()
+		{
+		}
+
+		/// <summary>
 		/// Get the public key from a DNS TXT record.
 		/// </summary>
 		/// <remarks>
@@ -59,7 +69,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="txt">The DNS TXT record.</param>
 		/// <returns>The public key.</returns>
 		/// <exception cref="System.ArgumentNullException">
-		/// The <paramref name="txt"/> is <c>null</c>.
+		/// The <paramref name="txt"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="ParseException">
 		/// There was an error parsing the DNS TXT record.

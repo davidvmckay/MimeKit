@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,33 +39,6 @@ namespace MimeKit.Tnef {
 	{
 		static readonly Encoding DefaultEncoding = Encoding.GetEncoding (1252);
 
-		// Note: these constants taken from Microsoft's Reference Source in DateTime.cs
-		const long TicksPerMillisecond = 10000;
-		const long TicksPerSecond = TicksPerMillisecond * 1000;
-		const long TicksPerMinute = TicksPerSecond * 60;
-		const long TicksPerHour = TicksPerMinute * 60;
-		const long TicksPerDay = TicksPerHour * 24;
-
-		const int MillisPerSecond = 1000;
-		const int MillisPerMinute = MillisPerSecond * 60;
-		const int MillisPerHour = MillisPerMinute * 60;
-		const int MillisPerDay = MillisPerHour * 24;
-
-		const int DaysPerYear = 365;
-		const int DaysPer4Years = DaysPerYear * 4 + 1;
-		const int DaysPer100Years = DaysPer4Years * 25 - 1;
-		const int DaysPer400Years = DaysPer100Years * 4 + 1;
-		const int DaysTo1899 = DaysPer400Years * 4 + DaysPer100Years * 3 - 367;
-
-		const int DaysTo10000 = DaysPer400Years * 25 - 366;
-
-		const long MaxMillis = (long) DaysTo10000 * MillisPerDay;
-
-		const long DoubleDateOffset = DaysTo1899 * TicksPerDay;
-		const long OADateMinAsTicks = (DaysPer100Years - DaysPerYear) * TicksPerDay;
-		const double OADateMinAsDouble = -657435.0;
-		const double OADateMaxAsDouble = 2958466.0;
-
 		TnefPropertyTag propertyTag;
 		readonly TnefReader reader;
 		TnefNameId propertyName;
@@ -90,7 +63,7 @@ namespace MimeKit.Tnef {
 		/// <remarks>
 		/// Gets a value indicating whether the current property is a computed property.
 		/// </remarks>
-		/// <value><c>true</c> if the current property is a computed property; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the current property is a computed property; otherwise, <see langword="false" />.</value>
 		public bool IsComputedProperty {
 			get { throw new NotImplementedException (); }
 		}
@@ -102,7 +75,7 @@ namespace MimeKit.Tnef {
 		/// <remarks>
 		/// Gets a value indicating whether the current property is an embedded TNEF message.
 		/// </remarks>
-		/// <value><c>true</c> if the current property is an embedded TNEF message; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the current property is an embedded TNEF message; otherwise, <see langword="false" />.</value>
 		public bool IsEmbeddedMessage {
 			get { return propertyTag.Id == TnefPropertyId.AttachData && AttachMethod == TnefAttachMethod.EmbeddedMessage; }
 		}
@@ -114,30 +87,30 @@ namespace MimeKit.Tnef {
 		/// <remarks>
 		/// Gets a value indicating whether the current property has a large value.
 		/// </remarks>
-		/// <value><c>true</c> if the current property has a large value; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the current property has a large value; otherwise, <see langword="false" />.</value>
 		public bool IsLargeValue {
 			get { throw new NotImplementedException (); }
 		}
 #endif
 
 		/// <summary>
-		/// Get a value indicating whether or not the current property has multiple values.
+		/// Get a value indicating whether the current property has multiple values.
 		/// </summary>
 		/// <remarks>
-		/// Gets a value indicating whether or not the current property has multiple values.
+		/// Gets a value indicating whether the current property has multiple values.
 		/// </remarks>
-		/// <value><c>true</c> if the current property has multiple values; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the current property has multiple values; otherwise, <see langword="false" />.</value>
 		public bool IsMultiValuedProperty {
 			get { return propertyTag.IsMultiValued; }
 		}
 
 		/// <summary>
-		/// Get a value indicating whether or not the current property is a named property.
+		/// Get a value indicating whether the current property is a named property.
 		/// </summary>
 		/// <remarks>
-		/// Gets a value indicating whether or not the current property is a named property.
+		/// Gets a value indicating whether the current property is a named property.
 		/// </remarks>
-		/// <value><c>true</c> if the current property is a named property; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the current property is a named property; otherwise, <see langword="false" />.</value>
 		public bool IsNamedProperty {
 			get { return propertyTag.IsNamed; }
 		}
@@ -148,7 +121,7 @@ namespace MimeKit.Tnef {
 		/// <remarks>
 		/// Gets a value indicating whether the current property contains object values.
 		/// </remarks>
-		/// <value><c>true</c> if the current property contains object values; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the current property contains object values; otherwise, <see langword="false" />.</value>
 		public bool IsObjectProperty {
 			get { return propertyTag.ValueTnefType == TnefPropertyType.Object; }
 		}
@@ -400,33 +373,11 @@ namespace MimeKit.Tnef {
 			return reader.ReadDouble ();
 		}
 
-		// Note: this method taken from Microsoft's Reference Source in DateTime.cs
-		static long DoubleDateToTicks (double value)
-		{
-			// The check done this way will take care of NaN
-			if (!(value < OADateMaxAsDouble) || !(value > OADateMinAsDouble))
-				throw new ArgumentException ("Invalid OLE Automation Date.", nameof (value));
-
-			long millis = (long) (value * MillisPerDay + (value >= 0 ? 0.5 : -0.5));
-
-			if (millis < 0)
-				millis -= (millis % MillisPerDay) * 2;
-
-			millis += DoubleDateOffset / TicksPerMillisecond;
-
-			if (millis < 0 || millis >= MaxMillis)
-				throw new ArgumentException ("Invalid OLE Automation Date.", nameof (value));
-
-			return millis * TicksPerMillisecond;
-		}
-
 		DateTime ReadAppTime ()
 		{
 			var appTime = ReadDouble ();
 
-			// Note: equivalent to DateTime.FromOADate(). Unfortunately, FromOADate() is
-			// not available in some PCL profiles.
-			return new DateTime (DoubleDateToTicks (appTime), DateTimeKind.Unspecified);
+			return DateTime.FromOADate (appTime);
 		}
 
 		DateTime ReadSysTime ()
@@ -450,7 +401,7 @@ namespace MimeKit.Tnef {
 				// remaining bytes are padding
 				int padding = 4 - (length % 4);
 
-				reader.Seek (reader.StreamOffset + padding);
+				reader.Skip (padding);
 			}
 
 			return bytes;
@@ -533,9 +484,9 @@ namespace MimeKit.Tnef {
 			int hour = ReadInt16 ();
 			int minute = ReadInt16 ();
 			int second = ReadInt16 ();
-			#pragma warning disable 219
+			#pragma warning disable IDE0059
 			int dow = ReadInt16 ();
-			#pragma warning restore 219
+			#pragma warning restore IDE0059
 
 			try {
 				return new DateTime (year, month, day, hour, minute, second);
@@ -570,7 +521,7 @@ namespace MimeKit.Tnef {
 		/// <remarks>
 		/// Advances to the next MAPI property.
 		/// </remarks>
-		/// <returns><c>true</c> if there is another property available to be read; otherwise <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if there is another property available to be read; otherwise, <see langword="false" />.</returns>
 		/// <exception cref="TnefException">
 		/// The TNEF data is corrupt or invalid.
 		/// </exception>
@@ -618,7 +569,7 @@ namespace MimeKit.Tnef {
 		/// <remarks>
 		/// Advances to the next table row of properties.
 		/// </remarks>
-		/// <returns><c>true</c> if there is another row available to be read; otherwise <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if there is another row available to be read; otherwise, <see langword="false" />.</returns>
 		/// <exception cref="TnefException">
 		/// The TNEF data is corrupt or invalid.
 		/// </exception>
@@ -648,7 +599,7 @@ namespace MimeKit.Tnef {
 		/// <remarks>
 		/// Advances to the next value in the TNEF stream.
 		/// </remarks>
-		/// <returns><c>true</c> if there is another value available to be read; otherwise <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if there is another value available to be read; otherwise, <see langword="false" />.</returns>
 		/// <exception cref="TnefException">
 		/// The TNEF data is corrupt or invalid.
 		/// </exception>
@@ -659,7 +610,7 @@ namespace MimeKit.Tnef {
 
 			int offset = RawValueStreamOffset + RawValueLength;
 
-			if (reader.StreamOffset < offset && !reader.Seek (offset))
+			if (reader.StreamOffset < offset && !reader.Skip (offset - reader.StreamOffset))
 				return false;
 
 			try {
@@ -687,7 +638,7 @@ namespace MimeKit.Tnef {
 		/// <param name="offset">The offset into the buffer to start reading data.</param>
 		/// <param name="count">The number of bytes to read.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <para><paramref name="offset"/> is less than zero or greater than the length of <paramref name="buffer"/>.</para>
@@ -740,7 +691,7 @@ namespace MimeKit.Tnef {
 		/// <param name="offset">The offset into the buffer to start reading data.</param>
 		/// <param name="count">The number of characters to read.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <para><paramref name="offset"/> is less than zero or greater than the length of <paramref name="buffer"/>.</para>
@@ -769,13 +720,13 @@ namespace MimeKit.Tnef {
 				switch (propertyTag.ValueTnefType) {
 				case TnefPropertyType.Unicode:
 					ReadInt32 ();
-					decoder = (Decoder) Encoding.Unicode.GetDecoder ();
+					decoder = Encoding.Unicode.GetDecoder ();
 					break;
 				case TnefPropertyType.String8:
 				case TnefPropertyType.Binary:
 				case TnefPropertyType.Object:
 					ReadInt32 ();
-					decoder = (Decoder) GetMessageEncoding ().GetDecoder ();
+					decoder = GetMessageEncoding ().GetDecoder ();
 					break;
 				}
 			}
@@ -1555,8 +1506,8 @@ namespace MimeKit.Tnef {
 		/// Determines whether the specified <see cref="System.Object"/> is equal to the current <see cref="TnefPropertyReader"/>.
 		/// </remarks>
 		/// <param name="obj">The <see cref="System.Object"/> to compare with the current <see cref="TnefPropertyReader"/>.</param>
-		/// <returns><c>true</c> if the specified <see cref="System.Object"/> is equal to the current
-		/// <see cref="TnefPropertyReader"/>; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the specified <see cref="System.Object"/> is equal to the current
+		/// <see cref="TnefPropertyReader"/>; otherwise, <see langword="false" />.</returns>
 		public override bool Equals (object obj)
 		{
 			return obj is TnefPropertyReader prop && prop.reader == reader;

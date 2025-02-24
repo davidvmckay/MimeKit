@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -72,7 +72,7 @@ namespace MimeKit {
 		/// </example>
 		/// <param name="message">The message.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="message"/> is <c>null</c>.
+		/// <paramref name="message"/> is <see langword="null"/>.
 		/// </exception>
 		public MimeIterator (MimeMessage message)
 		{
@@ -117,7 +117,7 @@ namespace MimeKit {
 		/// also throws a <see cref="System.InvalidOperationException"/> if the last call to
 		/// <see cref="MoveNext()"/> returned false, which indicates the end of the message.</para>
 		/// <para>If the current entity is the top-level entity of the message, then the parent
-		/// will be <c>null</c>; otherwise the parent will be either be a
+		/// will be <see langword="null"/>; otherwise the parent will be either be a
 		/// <see cref="MessagePart"/> or a <see cref="Multipart"/>.</para>
 		/// </remarks>
 		/// <example>
@@ -284,7 +284,7 @@ namespace MimeKit {
 		/// <example>
 		/// <code language="c#" source="Examples\MimeIterator.cs" />
 		/// </example>
-		/// <returns><c>true</c> if the iterator was successfully advanced to the next entity; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the iterator was successfully advanced to the next entity; otherwise, <see langword="false" />.</returns>
 		public bool MoveNext ()
 		{
 			if (moveFirst) {
@@ -361,10 +361,10 @@ namespace MimeKit {
 		/// <para>If the iterator has already advanced beyond the entity at the specified
 		/// path, the iterator will <see cref="Reset()"/> and advance as normal.</para>
 		/// </remarks>
-		/// <returns><c>true</c> if advancing to the specified entity was successful; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if advancing to the specified entity was successful; otherwise, <see langword="false" />.</returns>
 		/// <param name="pathSpecifier">The path specifier.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="pathSpecifier"/> is <c>null</c>.
+		/// <paramref name="pathSpecifier"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <paramref name="pathSpecifier"/> is empty.
@@ -435,8 +435,8 @@ namespace MimeKit {
 		/// Releases the unmanaged resources used by the <see cref="MimeIterator"/> and
 		/// optionally releases the managed resources.
 		/// </remarks>
-		/// <param name="disposing"><c>true</c> to release both managed and unmanaged resources;
-		/// <c>false</c> to release only the unmanaged resources.</param>
+		/// <param name="disposing"><see langword="true" /> to release both managed and unmanaged resources;
+		/// <see langword="false" /> to release only the unmanaged resources.</param>
 		protected virtual void Dispose (bool disposing)
 		{
 		}

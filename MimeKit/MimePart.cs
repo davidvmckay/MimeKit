@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ namespace MimeKit {
 	/// <example>
 	/// <code language="c#" source="Examples\AttachmentExamples.cs" region="SaveAttachments" />
 	/// </example>
-	public class MimePart : MimeEntity
+	public class MimePart : MimeEntity, IMimePart
 	{
 		static readonly string[] ContentTransferEncodings = {
 			null, "7bit", "8bit", "binary", "base64", "quoted-printable", "x-uuencode"
@@ -71,7 +71,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="args">Information used by the constructor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="args"/> is <c>null</c>.
+		/// <paramref name="args"/> is <see langword="null"/>.
 		/// </exception>
 		public MimePart (MimeEntityConstructorArgs args) : base (args)
 		{
@@ -88,11 +88,11 @@ namespace MimeKit {
 		/// <param name="mediaSubtype">The media subtype.</param>
 		/// <param name="args">An array of initialization parameters: headers and part content.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="mediaType"/> is <c>null</c>.</para>
+		/// <para><paramref name="mediaType"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="mediaSubtype"/> is <c>null</c>.</para>
+		/// <para><paramref name="mediaSubtype"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="args"/> is <c>null</c>.</para>
+		/// <para><paramref name="args"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <para><paramref name="args"/> contains more than one <see cref="IMimeContent"/> or
@@ -145,9 +145,9 @@ namespace MimeKit {
 		/// <param name="mediaType">The media type.</param>
 		/// <param name="mediaSubtype">The media subtype.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="mediaType"/> is <c>null</c>.</para>
+		/// <para><paramref name="mediaType"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="mediaSubtype"/> is <c>null</c>.</para>
+		/// <para><paramref name="mediaSubtype"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public MimePart (string mediaType, string mediaSubtype) : base (mediaType, mediaSubtype)
 		{
@@ -162,7 +162,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="contentType">The content type.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="contentType"/> is <c>null</c>.
+		/// <paramref name="contentType"/> is <see langword="null"/>.
 		/// </exception>
 		public MimePart (ContentType contentType) : base (contentType)
 		{
@@ -177,7 +177,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="contentType">The content type.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="contentType"/> is <c>null</c>.
+		/// <paramref name="contentType"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="MimeKit.ParseException">
 		/// <paramref name="contentType"/> could not be parsed.
@@ -347,7 +347,7 @@ namespace MimeKit {
 		/// that was applied to the content in order to allow it to pass through
 		/// mail transport mechanisms (such as SMTP) which may have limitations
 		/// in the byte ranges that it accepts. For example, many SMTP servers
-		/// do not accept data outside of the 7-bit ASCII range and so sending
+		/// do not accept data outside the 7-bit ASCII range and so sending
 		/// binary attachments or even non-English text is not possible without
 		/// applying an encoding such as base64 or quoted-printable.
 		/// </remarks>
@@ -419,15 +419,13 @@ namespace MimeKit {
 				if (ContentDisposition != null)
 					filename = ContentDisposition.FileName;
 
-				if (filename is null)
-					filename = ContentType.Name;
+				filename ??= ContentType.Name;
 
 				return filename?.Trim ();
 			}
 			set {
 				if (value != null) {
-					if (ContentDisposition is null)
-						ContentDisposition = new ContentDisposition (ContentDisposition.Attachment);
+					ContentDisposition ??= new ContentDisposition (ContentDisposition.Attachment);
 					ContentDisposition.FileName = value;
 				} else if (ContentDisposition != null) {
 					ContentDisposition.FileName = value;
@@ -464,7 +462,7 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="visitor">The visitor.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="visitor"/> is <c>null</c>.
+		/// <paramref name="visitor"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MimePart"/> has been disposed.
@@ -565,7 +563,7 @@ namespace MimeKit {
 		/// The <see cref="MimePart"/> has been disposed.
 		/// </exception>
 		/// <exception cref="System.InvalidOperationException">
-		/// The <see cref="Content"/> is <c>null</c>.
+		/// The <see cref="Content"/> is <see langword="null"/>.
 		/// </exception>
 		public string ComputeContentMd5 ()
 		{
@@ -598,10 +596,10 @@ namespace MimeKit {
 		/// </summary>
 		/// <remarks>
 		/// Computes the MD5 checksum of the MIME content and compares it with the
-		/// value in the Content-MD5 header, returning <c>true</c> if and only if
+		/// value in the Content-MD5 header, returning <see langword="true" /> if and only if
 		/// the values match.
 		/// </remarks>
-		/// <returns><c>true</c>, if content MD5 checksum was verified, <c>false</c> otherwise.</returns>
+		/// <returns><see langword="true" /> if content MD5 checksum was verified; otherwise, <see langword="false" />.</returns>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MimePart"/> has been disposed.
 		/// </exception>
@@ -669,12 +667,12 @@ namespace MimeKit {
 		/// </remarks>
 		/// <param name="options">The formatting options.</param>
 		/// <param name="stream">The output stream.</param>
-		/// <param name="contentOnly"><c>true</c> if only the content should be written; otherwise, <c>false</c>.</param>
+		/// <param name="contentOnly"><see langword="true" /> if only the content should be written; otherwise, <see langword="false" />.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="options"/> is <c>null</c>.</para>
+		/// <para><paramref name="options"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="stream"/> is <c>null</c>.</para>
+		/// <para><paramref name="stream"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MimePart"/> has been disposed.
@@ -721,7 +719,7 @@ namespace MimeKit {
 				}
 
 				if (ContentTransferEncoding == ContentEncoding.UUEncode) {
-					var buffer = Encoding.ASCII.GetBytes ("end");
+					var buffer = "end"u8.ToArray ();
 
 					if (cancellable != null) {
 						cancellable.Write (buffer, 0, buffer.Length, cancellationToken);
@@ -761,12 +759,12 @@ namespace MimeKit {
 		/// <returns>An awaitable task.</returns>
 		/// <param name="options">The formatting options.</param>
 		/// <param name="stream">The output stream.</param>
-		/// <param name="contentOnly"><c>true</c> if only the content should be written; otherwise, <c>false</c>.</param>
+		/// <param name="contentOnly"><see langword="true" /> if only the content should be written; otherwise, <see langword="false" />.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="options"/> is <c>null</c>.</para>
+		/// <para><paramref name="options"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="stream"/> is <c>null</c>.</para>
+		/// <para><paramref name="stream"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ObjectDisposedException">
 		/// The <see cref="MimePart"/> has been disposed.
@@ -805,7 +803,7 @@ namespace MimeKit {
 				}
 
 				if (ContentTransferEncoding == ContentEncoding.UUEncode) {
-					var buffer = Encoding.ASCII.GetBytes ("end");
+					var buffer = "end"u8.ToArray();
 
 					await stream.WriteAsync (buffer, 0, buffer.Length, cancellationToken).ConfigureAwait (false);
 					await stream.WriteAsync (options.NewLineBytes, 0, options.NewLineBytes.Length, cancellationToken).ConfigureAwait (false);
@@ -884,8 +882,8 @@ namespace MimeKit {
 		/// Releases the unmanaged resources used by the <see cref="MimePart"/> and
 		/// optionally releases the managed resources.
 		/// </remarks>
-		/// <param name="disposing"><c>true</c> to release both managed and unmanaged resources;
-		/// <c>false</c> to release only the unmanaged resources.</param>
+		/// <param name="disposing"><see langword="true" /> to release both managed and unmanaged resources;
+		/// <see langword="false" /> to release only the unmanaged resources.</param>
 		protected override void Dispose (bool disposing)
 		{
 			if (disposing && Content != null)

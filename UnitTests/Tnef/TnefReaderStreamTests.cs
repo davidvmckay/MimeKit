@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,10 +40,10 @@ namespace UnitTests.Tnef {
 					var buffer = new byte[1024];
 
 					using (var tnef = new TnefReaderStream (reader, 0, 0)) {
-						Assert.IsTrue (tnef.CanRead);
-						Assert.IsFalse (tnef.CanWrite);
-						Assert.IsFalse (tnef.CanSeek);
-						Assert.IsFalse (tnef.CanTimeout);
+						Assert.That (tnef.CanRead, Is.True);
+						Assert.That (tnef.CanWrite, Is.False);
+						Assert.That (tnef.CanSeek, Is.False);
+						Assert.That (tnef.CanTimeout, Is.False);
 
 						Assert.Throws<ArgumentNullException> (() => tnef.Read (null, 0, buffer.Length));
 						Assert.Throws<ArgumentOutOfRangeException> (() => tnef.Read (buffer, -1, buffer.Length));

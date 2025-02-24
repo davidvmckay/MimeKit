@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ namespace UnitTests.Text {
 			char[] text = "This is some text with nothing to match...".ToCharArray ();
 			UrlMatch match;
 
-			Assert.IsFalse (scanner.Scan (text, 0, text.Length, out match), "Should not have found a match");
+			Assert.That (scanner.Scan (text, 0, text.Length, out match), Is.False, "Should not have found a match");
 		}
 
 		void TestUrlScanner (string input, string expected)
@@ -56,15 +56,15 @@ namespace UnitTests.Text {
 			string url;
 
 			if (expected == null) {
-				Assert.IsFalse (scanner.Scan (text, 0, text.Length, out match), "Should not have found a match.");
+				Assert.That (scanner.Scan (text, 0, text.Length, out match), Is.False, "Should not have found a match.");
 				return;
 			}
 
-			Assert.IsTrue (scanner.Scan (text, 0, text.Length, out match), "Failed to find match.");
+			Assert.That (scanner.Scan (text, 0, text.Length, out match), Is.True, "Failed to find match.");
 
 			url = new string (text, match.StartIndex, match.EndIndex - match.StartIndex);
 
-			Assert.AreEqual (expected, url, "Did not match the expected substring.");
+			Assert.That (url, Is.EqualTo (expected), "Did not match the expected substring.");
 		}
 
 		[Test]

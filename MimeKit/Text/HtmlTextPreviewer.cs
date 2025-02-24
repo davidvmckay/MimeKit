@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -167,7 +167,7 @@ namespace MimeKit.Text {
 		/// <param name="reader">The original text stream.</param>
 		/// <returns>A string representing a shortened preview of the original text.</returns>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="reader"/> is <c>null</c>.
+		/// <paramref name="reader"/> is <see langword="null"/>.
 		/// </exception>
 		public override string GetPreviewText (TextReader reader)
 		{
@@ -184,9 +184,8 @@ namespace MimeKit.Text {
 			bool body = false;
 			bool full = false;
 			bool lwsp = true;
-			HtmlToken token;
 
-			while (!full && tokenizer.ReadNextToken (out token)) {
+			while (!full && tokenizer.ReadNextToken (out var token)) {
 				switch (token.Kind) {
 				case HtmlTokenKind.Tag:
 					var tag = (HtmlTagToken) token;

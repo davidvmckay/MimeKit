@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,7 +49,7 @@ using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Asn1.Smime;
 using Org.BouncyCastle.X509.Store;
-using Org.BouncyCastle.Utilities.Date;
+using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Utilities.Collections;
 
@@ -66,9 +67,9 @@ namespace MimeKit.Cryptography {
 	/// </remarks>
 	public abstract class BouncyCastleSecureMimeContext : SecureMimeContext
 	{
+		static readonly X509CertStoreSelector MatchAllCertificates = new X509CertStoreSelector ();
 		static readonly string RsassaPssOid = PkcsObjectIdentifiers.IdRsassaPss.Id;
-
-		HttpClient client;
+		static readonly HttpClient SharedHttpClient = new HttpClient ();
 
 		/// <summary>
 		/// Initialize a new instance of the <see cref="SecureMimeContext"/> class.
@@ -88,7 +89,7 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <param name="random">A secure pseudo-random number generator.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="random"/> is <c>null</c>.
+		/// <paramref name="random"/> is <see langword="null"/>.
 		/// </exception>
 		protected BouncyCastleSecureMimeContext (SecureRandom random)
 		{
@@ -96,7 +97,6 @@ namespace MimeKit.Cryptography {
 				throw new ArgumentNullException (nameof (random));
 
 			RandomNumberGenerator = random;
-			client = new HttpClient ();
 		}
 
 		/// <summary>
@@ -111,10 +111,10 @@ namespace MimeKit.Cryptography {
 		}
 
 		/// <summary>
-		/// Get or set whether or not certificate revocation lists should be downloaded when verifying signatures.
+		/// Get or set whether certificate revocation lists should be downloaded when verifying signatures.
 		/// </summary>
 		/// <remarks>
-		/// <para>Gets or sets whether or not certificate revocation lists should be downloaded when verifying
+		/// <para>Gets or sets whether certificate revocation lists should be downloaded when verifying
 		/// signatures.</para>
 		/// <para>If enabled, the <see cref="BouncyCastleSecureMimeContext"/> will attempt to automatically download
 		/// Certificate Revocation Lists (CRLs) from the internet based on the CRL Distribution Point extension on
@@ -124,9 +124,20 @@ namespace MimeKit.Cryptography {
 		/// attacker-controlled server, thereby getting a notification when the user decrypts the message or verifies
 		/// its digital signature.</note>
 		/// </remarks>
-		/// <value><c>true</c> if CRLs should be downloaded automatically; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if CRLs should be downloaded automatically; otherwise, <see langword="false" />.</value>
 		public bool CheckCertificateRevocation {
 			get; set;
+		}
+
+		/// <summary>
+		/// Get the HTTP client to use for downloading CRLs.
+		/// </summary>
+		/// <remarks>
+		/// Gets the HTTP client to use for downloading CRLs.
+		/// </remarks>
+		/// <value>The HTTP client used for downloading CRLs.</value>
+		protected virtual HttpClient HttpClient {
+			get { return SharedHttpClient; }
 		}
 
 		/// <summary>
@@ -137,7 +148,7 @@ namespace MimeKit.Cryptography {
 		/// <para>This method is used when constructing a certificate chain if the S/MIME
 		/// signature does not include a signer's certificate.</para>
 		/// </remarks>
-		/// <returns>The certificate on success; otherwise <c>null</c>.</returns>
+		/// <returns>The certificate on success; otherwise <see langword="null"/>.</returns>
 		/// <param name="selector">The search criteria for the certificate.</param>
 		protected abstract X509Certificate GetCertificate (ISelector<X509Certificate> selector);
 
@@ -148,7 +159,7 @@ namespace MimeKit.Cryptography {
 		/// <para>Gets the private key for the first certificate that matches the specified selector.</para>
 		/// <para>This method is used when signing or decrypting content.</para>
 		/// </remarks>
-		/// <returns>The private key on success; otherwise, <c>null</c>.</returns>
+		/// <returns>The private key on success; otherwise, <see langword="null"/>.</returns>
 		/// <param name="selector">The search criteria for the private key.</param>
 		protected abstract AsymmetricKeyParameter GetPrivateKey (ISelector<X509Certificate> selector);
 
@@ -160,6 +171,9 @@ namespace MimeKit.Cryptography {
 		/// generally issued by a certificate authority (CA).</para>
 		/// <para>This method is used to build a certificate chain while verifying
 		/// signed content.</para>
+		/// <para>It is critical to always load the designated trust anchors,
+		/// and not the anchor in the end certificate, when building a certificate chain
+		/// when validating trust.</para>
 		/// </remarks>
 		/// <returns>The trusted anchors.</returns>
 		protected abstract ISet<TrustAnchor> GetTrustedAnchors ();
@@ -224,7 +238,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>A <see cref="CmsRecipientCollection"/>.</returns>
 		/// <param name="mailboxes">The mailboxes.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="mailboxes"/> is <c>null</c>.
+		/// <paramref name="mailboxes"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="CertificateNotFoundException">
 		/// A certificate for one or more of the specified <paramref name="mailboxes"/> could not be found.
@@ -282,7 +296,7 @@ namespace MimeKit.Cryptography {
 			return new DefaultSignedAttributeTableGenerator (signedAttributes.Add (attr.AttrType, attr.AttrValues[0]));
 		}
 
-		async Task<Stream> SignAsync (CmsSigner signer, Stream content, bool encapsulate, bool doAsync, CancellationToken cancellationToken)
+		CmsSignedDataStreamGenerator CreateSignedDataGenerator (CmsSigner signer)
 		{
 			var unsignedAttributes = new SimpleAttributeTableGenerator (signer.UnsignedAttributes);
 			var signedAttributes = AddSecureMimeCapabilities (signer.SignedAttributes);
@@ -311,14 +325,29 @@ namespace MimeKit.Cryptography {
 
 			signedData.AddCertificates (signer.CertificateChain);
 
+			return signedData;
+		}
+
+		Stream Sign (CmsSigner signer, Stream content, bool encapsulate, CancellationToken cancellationToken)
+		{
+			var signedData = CreateSignedDataGenerator (signer);
 			var memory = new MemoryBlockStream ();
 
-			using (var stream = signedData.Open (memory, encapsulate)) {
-				if (doAsync)
-					await content.CopyToAsync (stream, 4096, cancellationToken).ConfigureAwait (false);
-				else
-					content.CopyTo (stream, 4096);
-			}
+			using (var stream = signedData.Open (memory, encapsulate))
+				content.CopyTo (stream, 4096);
+
+			memory.Position = 0;
+
+			return memory;
+		}
+
+		async Task<Stream> SignAsync (CmsSigner signer, Stream content, bool encapsulate, CancellationToken cancellationToken)
+		{
+			var signedData = CreateSignedDataGenerator (signer);
+			var memory = new MemoryBlockStream ();
+
+			using (var stream = signedData.Open (memory, encapsulate))
+				await content.CopyToAsync (stream, 4096, cancellationToken).ConfigureAwait (false);
 
 			memory.Position = 0;
 
@@ -337,9 +366,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="content">The content.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="signer"/> is <c>null</c>.</para>
+		/// <para><paramref name="signer"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.OperationCanceledException">
 		/// The operation was canceled via the cancellation token.
@@ -355,7 +384,7 @@ namespace MimeKit.Cryptography {
 			if (content == null)
 				throw new ArgumentNullException (nameof (content));
 
-			var signature = SignAsync (signer, content, true, false, cancellationToken).GetAwaiter ().GetResult ();
+			var signature = Sign (signer, content, true, cancellationToken);
 
 			return new ApplicationPkcs7Mime (SecureMimeType.SignedData, signature);
 		}
@@ -372,9 +401,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="content">The content.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="signer"/> is <c>null</c>.</para>
+		/// <para><paramref name="signer"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.OperationCanceledException">
 		/// The operation was canceled via the cancellation token.
@@ -390,7 +419,7 @@ namespace MimeKit.Cryptography {
 			if (content == null)
 				throw new ArgumentNullException (nameof (content));
 
-			var signature = await SignAsync (signer, content, true, true, cancellationToken).ConfigureAwait (false);
+			var signature = await SignAsync (signer, content, true, cancellationToken).ConfigureAwait (false);
 
 			return new ApplicationPkcs7Mime (SecureMimeType.SignedData, signature);
 		}
@@ -408,9 +437,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="content">The content.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="signer"/> is <c>null</c>.</para>
+		/// <para><paramref name="signer"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="digestAlgo"/> is out of range.
@@ -453,9 +482,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="content">The content.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="signer"/> is <c>null</c>.</para>
+		/// <para><paramref name="signer"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="digestAlgo"/> is out of range.
@@ -497,9 +526,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="content">The content.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="signer"/> is <c>null</c>.</para>
+		/// <para><paramref name="signer"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.OperationCanceledException">
 		/// The operation was canceled via the cancellation token.
@@ -515,7 +544,7 @@ namespace MimeKit.Cryptography {
 			if (content == null)
 				throw new ArgumentNullException (nameof (content));
 
-			var signature = SignAsync (signer, content, false, false, cancellationToken).GetAwaiter ().GetResult ();
+			var signature = Sign (signer, content, false, cancellationToken);
 
 			return new ApplicationPkcs7Signature (signature);
 		}
@@ -532,9 +561,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="content">The content.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="signer"/> is <c>null</c>.</para>
+		/// <para><paramref name="signer"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.OperationCanceledException">
 		/// The operation was canceled via the cancellation token.
@@ -550,7 +579,7 @@ namespace MimeKit.Cryptography {
 			if (content == null)
 				throw new ArgumentNullException (nameof (content));
 
-			var signature = await SignAsync (signer, content, false, true, cancellationToken).ConfigureAwait (false);
+			var signature = await SignAsync (signer, content, false, cancellationToken).ConfigureAwait (false);
 
 			return new ApplicationPkcs7Signature (signature);
 		}
@@ -568,9 +597,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="content">The content.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="signer"/> is <c>null</c>.</para>
+		/// <para><paramref name="signer"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="digestAlgo"/> is out of range.
@@ -613,9 +642,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="content">The content.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="signer"/> is <c>null</c>.</para>
+		/// <para><paramref name="signer"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="digestAlgo"/> is out of range.
@@ -668,20 +697,30 @@ namespace MimeKit.Cryptography {
 		/// <returns>The certificate chain, including the specified certificate.</returns>
 		protected IList<X509Certificate> BuildCertificateChain (X509Certificate certificate)
 		{
-			var selector = new X509CertStoreSelector {
-				Certificate = certificate
-			};
+			var selector = new X509CertStoreSelector ();
 
-			var intermediates = new X509CertificateStore ();
-			intermediates.Add (certificate);
+			var userCertificateStore = new X509CertificateStore ();
+			userCertificateStore.Add (certificate);
 
-			var parameters = new PkixBuilderParameters (GetTrustedAnchors (), selector) {
+			var issuerStore = GetTrustedAnchors ();
+			var anchorStore = new X509CertificateStore ();
+			
+			foreach (var anchor in issuerStore)
+				anchorStore.Add (anchor.TrustedCert);
+
+			var parameters = new PkixBuilderParameters (issuerStore, selector) {
 				ValidityModel = PkixParameters.PkixValidityModel,
 				IsRevocationEnabled = false,
 				Date = DateTime.UtcNow
 			};
-			parameters.AddStoreCert (intermediates);
-			parameters.AddStoreCert (GetIntermediateCertificates ());
+			parameters.AddStoreCert (userCertificateStore);
+			
+			var intermediateStore = GetIntermediateCertificates ();
+
+			foreach (var intermediate in intermediateStore.EnumerateMatches (MatchAllCertificates))
+				anchorStore.Add (intermediate);
+
+			parameters.AddStoreCert (anchorStore);
 
 			var builder = new PkixCertPathBuilder ();
 			var result = builder.Build (parameters);
@@ -708,13 +747,15 @@ namespace MimeKit.Cryptography {
 
 			var parameters = new PkixBuilderParameters (anchors, selector) {
 				ValidityModel = PkixParameters.PkixValidityModel,
-				IsRevocationEnabled = false
+				IsRevocationEnabled = CheckCertificateRevocation
 			};
 			parameters.AddStoreCert (intermediates);
 			parameters.AddStoreCrl (crls);
 
 			parameters.AddStoreCert (GetIntermediateCertificates ());
-			parameters.AddStoreCrl (GetCertificateRevocationLists ());
+
+			if (CheckCertificateRevocation)
+				parameters.AddStoreCrl (GetCertificateRevocationLists ());
 
 			if (signingTime != default (DateTime))
 				parameters.Date = signingTime;
@@ -733,11 +774,11 @@ namespace MimeKit.Cryptography {
 		/// Attempts to map a <see cref="Org.BouncyCastle.Asn1.X509.AlgorithmIdentifier"/>
 		/// to a <see cref="DigestAlgorithm"/>.
 		/// </remarks>
-		/// <returns><c>true</c> if the algorithm identifier was successfully mapped; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the algorithm identifier was successfully mapped; otherwise, <see langword="false" />.</returns>
 		/// <param name="identifier">The algorithm identifier.</param>
 		/// <param name="algorithm">The encryption algorithm.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="identifier"/> is <c>null</c>.
+		/// <paramref name="identifier"/> is <see langword="null"/>.
 		/// </exception>
 		internal protected static bool TryGetDigestAlgorithm (AlgorithmIdentifier identifier, out DigestAlgorithm algorithm)
 		{
@@ -755,11 +796,11 @@ namespace MimeKit.Cryptography {
 		/// Attempts to map a <see cref="Org.BouncyCastle.Asn1.X509.AlgorithmIdentifier"/>
 		/// to a <see cref="EncryptionAlgorithm"/>.
 		/// </remarks>
-		/// <returns><c>true</c> if the algorithm identifier was successfully mapped; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the algorithm identifier was successfully mapped; otherwise, <see langword="false" />.</returns>
 		/// <param name="identifier">The algorithm identifier.</param>
 		/// <param name="algorithm">The encryption algorithm.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="identifier"/> is <c>null</c>.
+		/// <paramref name="identifier"/> is <see langword="null"/>.
 		/// </exception>
 		internal protected static bool TryGetEncryptionAlgorithm (AlgorithmIdentifier identifier, out EncryptionAlgorithm algorithm)
 		{
@@ -857,29 +898,36 @@ namespace MimeKit.Cryptography {
 			return false;
 		}
 
-		async Task<bool> DownloadCrlsOverHttpAsync (string location, Stream stream, bool doAsync, CancellationToken cancellationToken)
+		bool DownloadCrlOverHttp (string location, Stream stream, CancellationToken cancellationToken)
 		{
 			try {
-				if (doAsync) {
-					using (var response = await client.GetAsync (location, cancellationToken).ConfigureAwait (false)) {
 #if NET6_0_OR_GREATER
-						await response.Content.CopyToAsync (stream, cancellationToken).ConfigureAwait (false);
+				using (var response = HttpClient.GetAsync (location, cancellationToken).GetAwaiter ().GetResult ())
+					response.Content.CopyToAsync (stream, cancellationToken).GetAwaiter ().GetResult ();
 #else
-						await response.Content.CopyToAsync (stream).ConfigureAwait (false);
-#endif
-					}
-				} else {
-#if NET6_0_OR_GREATER
-					using (var response = client.GetAsync (location, cancellationToken).GetAwaiter ().GetResult ())
-						response.Content.CopyToAsync (stream, cancellationToken).GetAwaiter ().GetResult ();
-#else
-					cancellationToken.ThrowIfCancellationRequested ();
+				cancellationToken.ThrowIfCancellationRequested ();
 
-					var request = (HttpWebRequest) WebRequest.Create (location);
-					using (var response = request.GetResponse ()) {
-						var content = response.GetResponseStream ();
-						content.CopyTo (stream, 4096);
-					}
+				var request = (HttpWebRequest) WebRequest.Create (location);
+				using (var response = request.GetResponse ()) {
+					var content = response.GetResponseStream ();
+					content.CopyTo (stream, 4096);
+				}
+#endif
+
+				return true;
+			} catch {
+				return false;
+			}
+		}
+
+		async Task<bool> DownloadCrlOverHttpAsync (string location, Stream stream, CancellationToken cancellationToken)
+		{
+			try {
+				using (var response = await HttpClient.GetAsync (location, cancellationToken).ConfigureAwait (false)) {
+#if NET6_0_OR_GREATER
+					await response.Content.CopyToAsync (stream, cancellationToken).ConfigureAwait (false);
+#else
+					await response.Content.CopyToAsync (stream).ConfigureAwait (false);
 #endif
 				}
 
@@ -891,7 +939,7 @@ namespace MimeKit.Cryptography {
 
 #if ENABLE_LDAP
 		// https://msdn.microsoft.com/en-us/library/bb332056.aspx#sdspintro_topic3_lpadconn
-		bool DownloadCrlsOverLdap (string location, Stream stream, CancellationToken cancellationToken)
+		bool DownloadCrlOverLdap (string location, Stream stream, CancellationToken cancellationToken)
 		{
 			LdapUri uri;
 
@@ -938,21 +986,35 @@ namespace MimeKit.Cryptography {
 		}
 #endif
 
-		async Task DownloadCrlsAsync (X509Certificate certificate, bool doAsync, CancellationToken cancellationToken)
+		static IEnumerable<string> EnumerateCrlDistributionPointUrls (X509Certificate certificate)
 		{
-			var nextUpdate = GetNextCertificateRevocationListUpdate (certificate.IssuerDN);
-			var now = DateTime.UtcNow;
 			Asn1OctetString cdp;
 
-			if (nextUpdate > now)
-				return;
-
 			if ((cdp = certificate.GetExtensionValue (X509Extensions.CrlDistributionPoints)) == null)
-				return;
+				yield break;
 
 			var asn1 = Asn1Object.FromByteArray (cdp.GetOctets ());
 			var crlDistributionPoint = CrlDistPoint.GetInstance (asn1);
 			var points = crlDistributionPoint.GetDistributionPoints ();
+
+			for (int i = 0; i < points.Length; i++) {
+				var generalNames = GeneralNames.GetInstance (points[i].DistributionPointName.Name).GetNames ();
+				for (int j = 0; j < generalNames.Length; j++) {
+					if (generalNames[j].TagNo != GeneralName.UniformResourceIdentifier)
+						continue;
+
+					yield return DerIA5String.GetInstance (generalNames[j].Name).GetString ();
+				}
+			}
+		}
+
+		void DownloadCrls (X509Certificate certificate, CancellationToken cancellationToken)
+		{
+			var nextUpdate = GetNextCertificateRevocationListUpdate (certificate.IssuerDN);
+			var now = DateTime.UtcNow;
+
+			if (nextUpdate > now)
+				return;
 
 			using (var stream = new MemoryBlockStream ()) {
 #if ENABLE_LDAP
@@ -960,38 +1022,26 @@ namespace MimeKit.Cryptography {
 #endif
 				bool downloaded = false;
 
-				for (int i = 0; i < points.Length; i++) {
-					var generalNames = GeneralNames.GetInstance (points[i].DistributionPointName.Name).GetNames ();
-					for (int j = 0; j < generalNames.Length && !downloaded; j++) {
-						if (generalNames[j].TagNo != GeneralName.UniformResourceIdentifier)
-							continue;
-
-						var location = DerIA5String.GetInstance (generalNames[j].Name).GetString ();
-						var colon = location.IndexOf (':');
-
-						if (colon == -1)
-							continue;
-
-						var protocol = location.Substring (0, colon).ToLowerInvariant ();
-
-						switch (protocol) {
-						case "https": case "http":
-							downloaded = await DownloadCrlsOverHttpAsync (location, stream, doAsync, cancellationToken).ConfigureAwait (false);
+				foreach (var location in EnumerateCrlDistributionPointUrls (certificate)) {
+					if (location.StartsWith ("https://", StringComparison.OrdinalIgnoreCase) ||
+						location.StartsWith ("http://", StringComparison.OrdinalIgnoreCase)) {
+						if (DownloadCrlOverHttp (location, stream, cancellationToken)) {
+							downloaded = true;
 							break;
-#if ENABLE_LDAP
-						case "ldaps": case "ldap":
-							// Note: delay downloading from LDAP urls in case we find an HTTP url instead since LDAP
-							// won't be as reliable on Mono systems which do not implement the LDAP functionality.
-							ldapLocations.Add (location);
-							break;
-#endif
 						}
+#if ENABLE_LDAP
+					} else if (location.StartsWith ("ldaps://", StringComparison.OrdinalIgnoreCase) ||
+						location.StartsWith ("ldap://", StringComparison.OrdinalIgnoreCase)) {
+						// Note: delay downloading from LDAP urls in case we find an HTTP url instead since LDAP
+						// won't be as reliable on Mono systems which do not implement the LDAP functionality.
+						ldapLocations.Add (location);
+#endif
 					}
 				}
 
 #if ENABLE_LDAP
 				for (int i = 0; i < ldapLocations.Count && !downloaded; i++)
-					downloaded = DownloadCrlsOverLdap (ldapLocations[i], stream, cancellationToken);
+					downloaded = DownloadCrlOverLdap (ldapLocations[i], stream, cancellationToken);
 #endif
 
 				if (!downloaded)
@@ -1002,6 +1052,53 @@ namespace MimeKit.Cryptography {
 				var parser = new X509CrlParser ();
 				foreach (X509Crl crl in parser.ReadCrls (stream))
 					Import (crl, cancellationToken);
+			}
+		}
+
+		async Task DownloadCrlsAsync (X509Certificate certificate, CancellationToken cancellationToken)
+		{
+			var nextUpdate = GetNextCertificateRevocationListUpdate (certificate.IssuerDN);
+			var now = DateTime.UtcNow;
+
+			if (nextUpdate > now)
+				return;
+
+			using (var stream = new MemoryBlockStream ()) {
+#if ENABLE_LDAP
+				var ldapLocations = new List<string> ();
+#endif
+				bool downloaded = false;
+
+				foreach (var location in EnumerateCrlDistributionPointUrls (certificate)) {
+					if (location.StartsWith ("https://", StringComparison.OrdinalIgnoreCase) ||
+						location.StartsWith ("http://", StringComparison.OrdinalIgnoreCase)) {
+						if (await DownloadCrlOverHttpAsync (location, stream, cancellationToken).ConfigureAwait (false)) {
+							downloaded = true;
+							break;
+						}
+#if ENABLE_LDAP
+					} else if (location.StartsWith ("ldaps://", StringComparison.OrdinalIgnoreCase) ||
+						location.StartsWith ("ldap://", StringComparison.OrdinalIgnoreCase)) {
+						// Note: delay downloading from LDAP urls in case we find an HTTP url instead since LDAP
+						// won't be as reliable on Mono systems which do not implement the LDAP functionality.
+						ldapLocations.Add (location);
+#endif
+					}
+				}
+
+#if ENABLE_LDAP
+				for (int i = 0; i < ldapLocations.Count && !downloaded; i++)
+					downloaded = DownloadCrlOverLdap (ldapLocations[i], stream, cancellationToken);
+#endif
+
+				if (!downloaded)
+					return;
+
+				stream.Position = 0;
+
+				var parser = new X509CrlParser ();
+				foreach (X509Crl crl in parser.ReadCrls (stream))
+					await ImportAsync (crl, cancellationToken).ConfigureAwait (false);
 			}
 		}
 
@@ -1016,21 +1113,22 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <returns>The digital signatures.</returns>
 		/// <param name="parser">The CMS signed data parser.</param>
-		/// <param name="doAsync">Whether or not the operation should be done asynchronously.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
-		async Task<DigitalSignatureCollection> GetDigitalSignaturesAsync (CmsSignedDataParser parser, bool doAsync, CancellationToken cancellationToken)
+		DigitalSignatureCollection GetDigitalSignatures (CmsSignedDataParser parser, CancellationToken cancellationToken)
 		{
 			var certificates = parser.GetCertificates ();
 			var signatures = new List<IDigitalSignature> ();
 			var crls = parser.GetCrls ();
 			var store = parser.GetSignerInfos ();
 
-			foreach (SignerInformation signerInfo in store.GetSigners ()) {
+			foreach (var signerInfo in store.GetSigners ()) {
 				var certificate = GetCertificate (certificates, signerInfo.SignerID);
 				var signature = new SecureMimeDigitalSignature (signerInfo, certificate);
 
-				if (CheckCertificateRevocation && certificate != null)
-					await DownloadCrlsAsync (certificate, doAsync, cancellationToken).ConfigureAwait (false);
+				if (CheckCertificateRevocation) {
+					foreach (var cert in certificates.EnumerateMatches (null))
+						DownloadCrls (cert, cancellationToken);
+				}
 
 				if (certificate != null) {
 					Import (certificate, cancellationToken);
@@ -1040,6 +1138,73 @@ namespace MimeKit.Cryptography {
 				}
 
 				var anchors = GetTrustedAnchors ();
+				var intermediates = GetIntermediateCertificates ();
+
+				if (CheckCertificateRevocation) {
+					foreach (var anchor in anchors)
+						DownloadCrls (anchor.TrustedCert, cancellationToken);
+
+					foreach (var intermediate in intermediates.EnumerateMatches (MatchAllCertificates))
+						DownloadCrls (intermediate, cancellationToken);
+				}
+
+				try {
+					signature.Chain = BuildCertPath (anchors, certificates, crls, certificate, signature.CreationDate);
+				} catch (Exception ex) {
+					signature.ChainException = ex;
+				}
+
+				signatures.Add (signature);
+			}
+
+			return new DigitalSignatureCollection (signatures);
+		}
+
+		/// <summary>
+		/// Asynchronously get the list of digital signatures.
+		/// </summary>
+		/// <remarks>
+		/// <para>Asynchronously gets the list of digital signatures.</para>
+		/// <para>This method is useful to call from within any custom
+		/// <a href="Overload_MimeKit_Cryptography_SecureMimeContext_VerifyAsync.htm">VerifyAsync</a>
+		/// method that you may implement in your own class.</para>
+		/// </remarks>
+		/// <returns>The digital signatures.</returns>
+		/// <param name="parser">The CMS signed data parser.</param>
+		/// <param name="cancellationToken">The cancellation token.</param>
+		async Task<DigitalSignatureCollection> GetDigitalSignaturesAsync (CmsSignedDataParser parser, CancellationToken cancellationToken)
+		{
+			var certificates = parser.GetCertificates ();
+			var signatures = new List<IDigitalSignature> ();
+			var crls = parser.GetCrls ();
+			var store = parser.GetSignerInfos ();
+
+			foreach (var signerInfo in store.GetSigners ()) {
+				var certificate = GetCertificate (certificates, signerInfo.SignerID);
+				var signature = new SecureMimeDigitalSignature (signerInfo, certificate);
+
+				if (CheckCertificateRevocation) {
+					foreach (var cert in certificates.EnumerateMatches (null))
+						await DownloadCrlsAsync (cert, cancellationToken).ConfigureAwait (false);
+				}
+
+				if (certificate != null) {
+					await ImportAsync (certificate, cancellationToken).ConfigureAwait (false);
+
+					if (signature.EncryptionAlgorithms.Length > 0 && signature.CreationDate != default (DateTime))
+						UpdateSecureMimeCapabilities (certificate, signature.EncryptionAlgorithms, signature.CreationDate);
+				}
+
+				var anchors = GetTrustedAnchors ();
+				var intermediates = GetIntermediateCertificates ();
+
+				if (CheckCertificateRevocation) {
+					foreach (var anchor in anchors)
+						await DownloadCrlsAsync (anchor.TrustedCert, cancellationToken).ConfigureAwait (false);
+
+					foreach (var intermediate in intermediates.EnumerateMatches (MatchAllCertificates))
+						await DownloadCrlsAsync (intermediate, cancellationToken).ConfigureAwait (false);
+				}
 
 				try {
 					signature.Chain = BuildCertPath (anchors, certificates, crls, certificate, signature.CreationDate);
@@ -1064,9 +1229,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="signatureData">The detached signature data.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="signatureData"/> is <c>null</c>.</para>
+		/// <para><paramref name="signatureData"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="Org.BouncyCastle.Cms.CmsException">
 		/// An error occurred in the cryptographic message syntax subsystem.
@@ -1091,7 +1256,7 @@ namespace MimeKit.Cryptography {
 					signed.ContentStream.Dispose ();
 				}
 
-				return GetDigitalSignaturesAsync (parser, false, cancellationToken).GetAwaiter ().GetResult ();
+				return GetDigitalSignatures (parser, cancellationToken);
 			}
 		}
 
@@ -1106,9 +1271,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="signatureData">The detached signature data.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="signatureData"/> is <c>null</c>.</para>
+		/// <para><paramref name="signatureData"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="Org.BouncyCastle.Cms.CmsException">
 		/// An error occurred in the cryptographic message syntax subsystem.
@@ -1137,7 +1302,7 @@ namespace MimeKit.Cryptography {
 					signed.ContentStream.Dispose ();
 				}
 
-				return await GetDigitalSignaturesAsync (parser, true, cancellationToken).ConfigureAwait (false);
+				return await GetDigitalSignaturesAsync (parser, cancellationToken).ConfigureAwait (false);
 			}
 		}
 
@@ -1152,7 +1317,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="entity">The extracted MIME entity.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="signedData"/> is <c>null</c>.
+		/// <paramref name="signedData"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.FormatException">
 		/// The extracted content could not be parsed as a MIME entity.
@@ -1178,7 +1343,7 @@ namespace MimeKit.Cryptography {
 					signed.ContentStream.Dispose ();
 				}
 
-				return GetDigitalSignaturesAsync (parser, false, cancellationToken).GetAwaiter ().GetResult ();
+				return GetDigitalSignatures (parser, cancellationToken);
 			}
 		}
 
@@ -1193,7 +1358,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="signatures">The digital signatures.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="signedData"/> is <c>null</c>.
+		/// <paramref name="signedData"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="Org.BouncyCastle.Cms.CmsException">
 		/// An error occurred in the cryptographic message syntax subsystem.
@@ -1219,17 +1384,20 @@ namespace MimeKit.Cryptography {
 					signed.ContentStream.Dispose ();
 				}
 
-				signatures = GetDigitalSignaturesAsync (parser, false, cancellationToken).GetAwaiter ().GetResult ();
+				signatures = GetDigitalSignatures (parser, cancellationToken);
 
 				return content;
 			}
 		}
 
-		class CmsRecipientInfoGenerator : RecipientInfoGenerator
+		/// <summary>
+		/// An RSA-OAEP aware recipient info generator.
+		/// </summary>
+		class RsaOaepAwareRecipientInfoGenerator : RecipientInfoGenerator
 		{
 			readonly CmsRecipient recipient;
 
-			public CmsRecipientInfoGenerator (CmsRecipient recipient)
+			public RsaOaepAwareRecipientInfoGenerator (CmsRecipient recipient)
 			{
 				this.recipient = recipient;
 			}
@@ -1238,10 +1406,10 @@ namespace MimeKit.Cryptography {
 			{
 				string name;
 
-				if (PkcsObjectIdentifiers.IdRsaesOaep.Id.Equals (keyExchangeAlgorithm.Algorithm.Id, StringComparison.Ordinal)) {
+				if (keyExchangeAlgorithm.Algorithm.Id.Equals (PkcsObjectIdentifiers.IdRsaesOaep.Id, StringComparison.Ordinal)) {
 					var oaepParameters = RsaesOaepParameters.GetInstance (keyExchangeAlgorithm.Parameters);
 					name = "RSA//OAEPWITH" + DigestUtilities.GetAlgorithmName (oaepParameters.HashAlgorithm.Algorithm) + "ANDMGF1Padding";
-				} else if (PkcsObjectIdentifiers.RsaEncryption.Id.Equals (keyExchangeAlgorithm.Algorithm.Id, StringComparison.Ordinal)) {
+				} else if (keyExchangeAlgorithm.Algorithm.Id.Equals (PkcsObjectIdentifiers.RsaEncryption.Id, StringComparison.Ordinal)) {
 					name = "RSA//PKCS1Padding";
 				} else {
 					name = keyExchangeAlgorithm.Algorithm.Id;
@@ -1262,27 +1430,25 @@ namespace MimeKit.Cryptography {
 
 			public RecipientInfo Generate (KeyParameter contentEncryptionKey, SecureRandom random)
 			{
-				var tbs = Asn1Object.FromByteArray (recipient.Certificate.GetTbsCertificate ());
-				var certificate = TbsCertificateStructure.GetInstance (tbs);
+				var certificate = recipient.Certificate.TbsCertificate;
 				var publicKey = recipient.Certificate.GetPublicKey ();
 				var publicKeyInfo = certificate.SubjectPublicKeyInfo;
 				AlgorithmIdentifier keyEncryptionAlgorithm;
 
+				// Note: If the recipient explicitly opts in to OAEP encryption (even if the underlying certificate is not tagged with an OAEP OID), choose OAEP instead.
 				if (publicKey is RsaKeyParameters && recipient.RsaEncryptionPadding?.Scheme == RsaEncryptionPaddingScheme.Oaep) {
 					keyEncryptionAlgorithm = recipient.RsaEncryptionPadding.GetAlgorithmIdentifier ();
 				} else {
-					keyEncryptionAlgorithm = publicKeyInfo.AlgorithmID;
+					keyEncryptionAlgorithm = publicKeyInfo.Algorithm;
 				}
 
 				var encryptedKeyBytes = GenerateWrappedKey (contentEncryptionKey, keyEncryptionAlgorithm, publicKey, random);
-				RecipientIdentifier recipientIdentifier = null;
+				RecipientIdentifier recipientIdentifier;
 
 				if (recipient.RecipientIdentifierType == SubjectIdentifierType.SubjectKeyIdentifier) {
-					var subjectKeyIdentifier = recipient.Certificate.GetExtensionValue (X509Extensions.SubjectKeyIdentifier);
+					var subjectKeyIdentifier = (Asn1OctetString) recipient.Certificate.GetExtensionParsedValue (X509Extensions.SubjectKeyIdentifier);
 					recipientIdentifier = new RecipientIdentifier (subjectKeyIdentifier);
-				}
-
-				if (recipientIdentifier == null) {
+				} else {
 					var issuerAndSerial = new IssuerAndSerialNumber (certificate.Issuer, certificate.SerialNumber.Value);
 					recipientIdentifier = new RecipientIdentifier (issuerAndSerial);
 				}
@@ -1292,23 +1458,138 @@ namespace MimeKit.Cryptography {
 			}
 		}
 
-		Stream Envelope (CmsRecipientCollection recipients, Stream content, CancellationToken cancellationToken)
+		void CmsEnvelopeAddEllipticCurve (CmsEnvelopedDataGenerator cms, CmsRecipient recipient, X509Certificate certificate, ECKeyParameters publicKey)
 		{
-			var cms = new CmsEnvelopedDataGenerator (RandomNumberGenerator);
-			var unique = new HashSet<X509Certificate> ();
-			int count = 0;
+			var keyGenerator = new ECKeyPairGenerator ();
 
-			foreach (var recipient in recipients) {
-				if (unique.Add (recipient.Certificate)) {
-					cms.AddRecipientInfoGenerator (new CmsRecipientInfoGenerator (recipient));
-					count++;
-				}
+			keyGenerator.Init (new ECKeyGenerationParameters (publicKey.Parameters, RandomNumberGenerator));
+
+			var keyPair = keyGenerator.GenerateKeyPair ();
+
+			// TODO: better handle algorithm selection.
+			if (recipient.RecipientIdentifierType == SubjectIdentifierType.SubjectKeyIdentifier) {
+				var subjectKeyIdentifier = (Asn1OctetString) recipient.Certificate.GetExtensionParsedValue (X509Extensions.SubjectKeyIdentifier);
+				cms.AddKeyAgreementRecipient (
+					CmsEnvelopedGenerator.ECDHSha1Kdf,
+					keyPair.Private,
+					keyPair.Public,
+					subjectKeyIdentifier.GetOctets (),
+					publicKey,
+					CmsEnvelopedGenerator.Aes128Wrap
+				);
+			} else {
+				cms.AddKeyAgreementRecipient (
+					CmsEnvelopedGenerator.ECDHSha1Kdf,
+					keyPair.Private,
+					keyPair.Public,
+					certificate,
+					CmsEnvelopedGenerator.Aes128Wrap
+				);
+			}
+		}
+
+		void AddRecipient (CmsEnvelopedDataGenerator cms, CmsRecipient recipient)
+		{
+			var certificate = recipient.Certificate;
+			var pub = certificate.GetPublicKey ();
+
+			if (pub is RsaKeyParameters) {
+				// Bouncy Castle dispatches OAEP based on the certificate type. However, MimeKit users
+				// expect to be able to specify the use of OAEP in S/MIME with certificates that have
+				// PKCS#1v1.5 OIDs as these tend to be more broadly compatible across the ecosystem.
+				// Thus, build our own RecipientInfoGenerator and register that for this key.
+				cms.AddRecipientInfoGenerator (new RsaOaepAwareRecipientInfoGenerator (recipient));
+			} else if (pub is ECKeyParameters ellipticCurve) {
+				CmsEnvelopeAddEllipticCurve (cms, recipient, certificate, ellipticCurve);
+			} else {
+				var oid = certificate.SubjectPublicKeyInfo.Algorithm.Algorithm.ToString ();
+
+				throw new NotSupportedException ($"Unsupported type of recipient certificate: {pub.GetType ().Name} (SubjectPublicKeyInfo OID = {oid})");
+			}
+		}
+
+		void ValidateRecipientCertificate (X509Certificate certificate, CancellationToken cancellationToken = default)
+		{
+			DownloadCrls (certificate, cancellationToken);
+
+			var selector = new X509CertStoreSelector () {
+				Certificate = certificate
+			};
+
+			var userCertificateStore = new X509CertificateStore ();
+			userCertificateStore.Add (certificate);
+
+			var trustedAnchors = GetTrustedAnchors ();
+			var anchorStore = new X509CertificateStore ();
+
+			foreach (var anchor in trustedAnchors) {
+				DownloadCrls (anchor.TrustedCert, cancellationToken);
+				anchorStore.Add (anchor.TrustedCert);
 			}
 
-			if (count == 0)
-				throw new ArgumentException ("No recipients specified.", nameof (recipients));
+			var intermediateStore = GetIntermediateCertificates ();
 
-			var algorithm = GetPreferredEncryptionAlgorithm (recipients);
+			foreach (var intermediate in intermediateStore.EnumerateMatches (MatchAllCertificates))
+				DownloadCrls (intermediate, cancellationToken);
+
+			var parameters = new PkixBuilderParameters (trustedAnchors, selector) {
+				ValidityModel = PkixParameters.PkixValidityModel,
+				IsRevocationEnabled = true,
+				Date = DateTime.UtcNow
+			};
+
+			parameters.AddStoreCert (userCertificateStore);
+			parameters.AddStoreCert (intermediateStore);
+			parameters.AddStoreCert (anchorStore);
+
+			parameters.AddStoreCrl (GetCertificateRevocationLists ());
+
+			var builder = new PkixCertPathBuilder ();
+			builder.Build (parameters);
+		}
+
+		async Task ValidateRecipientCertificateAsync (X509Certificate certificate, CancellationToken cancellationToken = default)
+		{
+			await DownloadCrlsAsync (certificate, cancellationToken).ConfigureAwait (false);
+
+			var selector = new X509CertStoreSelector () {
+				Certificate = certificate
+			};
+
+			var userCertificateStore = new X509CertificateStore ();
+			userCertificateStore.Add (certificate);
+
+			var trustedAnchors = GetTrustedAnchors ();
+			var anchorStore = new X509CertificateStore ();
+
+			foreach (var anchor in trustedAnchors) {
+				await DownloadCrlsAsync (anchor.TrustedCert, cancellationToken).ConfigureAwait (false);
+				anchorStore.Add (anchor.TrustedCert);
+			}
+
+			var intermediateStore = GetIntermediateCertificates ();
+
+			foreach (var intermediate in intermediateStore.EnumerateMatches (MatchAllCertificates))
+				await DownloadCrlsAsync (intermediate, cancellationToken).ConfigureAwait (false);
+
+			var parameters = new PkixBuilderParameters (trustedAnchors, selector) {
+				ValidityModel = PkixParameters.PkixValidityModel,
+				IsRevocationEnabled = true,
+				Date = DateTime.UtcNow
+			};
+
+			parameters.AddStoreCert (userCertificateStore);
+			parameters.AddStoreCert (intermediateStore);
+			parameters.AddStoreCert (anchorStore);
+
+			parameters.AddStoreCrl (GetCertificateRevocationLists ());
+
+			var builder = new PkixCertPathBuilder ();
+			builder.Build (parameters);
+		}
+
+		Stream Envelope (CmsEnvelopedDataGenerator cms, EncryptionAlgorithm algorithm, Stream content, CancellationToken cancellationToken)
+		{
 			var input = new CmsProcessableInputStream (content);
 			CmsEnvelopedData envelopedData;
 
@@ -1368,6 +1649,57 @@ namespace MimeKit.Cryptography {
 			return new MemoryStream (envelopedData.GetEncoded (), false);
 		}
 
+		Stream Envelope (CmsRecipientCollection recipients, Stream content, CancellationToken cancellationToken)
+		{
+			var cms = new CmsEnvelopedDataGenerator (RandomNumberGenerator);
+			var unique = new HashSet<X509Certificate> ();
+
+			foreach (var recipient in recipients) {
+				if (unique.Add (recipient.Certificate)) {
+					if (CheckCertificateRevocation)
+						ValidateRecipientCertificate (recipient.Certificate, cancellationToken);
+
+					AddRecipient (cms, recipient);
+				}
+			}
+
+			var algorithm = GetPreferredEncryptionAlgorithm (recipients);
+
+			return Envelope (cms, algorithm, content, cancellationToken);
+		}
+
+		async Task<Stream> EnvelopeAsync (CmsRecipientCollection recipients, Stream content, CancellationToken cancellationToken)
+		{
+			var cms = new CmsEnvelopedDataGenerator (RandomNumberGenerator);
+			var unique = new HashSet<X509Certificate> ();
+
+			foreach (var recipient in recipients) {
+				if (unique.Add (recipient.Certificate)) {
+					if (CheckCertificateRevocation)
+						await ValidateRecipientCertificateAsync (recipient.Certificate, cancellationToken).ConfigureAwait (false);
+
+					AddRecipient (cms, recipient);
+				}
+			}
+
+			var algorithm = GetPreferredEncryptionAlgorithm (recipients);
+
+			// Note: BouncyCastle's CmsEnvelopedDataGenerator does not support async operations.
+			//
+			// If the content isn't already a memory stream of some sort, we clone it into a memory stream
+			// in order to provide asynchronous reading from the source content stream.
+			if (content is MemoryBlockStream or MemoryStream)
+				return Envelope (cms, algorithm, content, cancellationToken);
+
+			using (var memory = new MemoryBlockStream ()) {
+				await content.CopyToAsync (memory, 4096, cancellationToken).ConfigureAwait (false);
+
+				memory.Position = 0;
+
+				return Envelope (cms, algorithm, memory, cancellationToken);
+			}
+		}
+
 		/// <summary>
 		/// Encrypt the specified content for the specified recipients.
 		/// </summary>
@@ -1380,9 +1712,12 @@ namespace MimeKit.Cryptography {
 		/// <param name="content">The content.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="recipients"/> is <c>null</c>.</para>
+		/// <para><paramref name="recipients"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
+		/// </exception>
+		/// <exception cref="System.ArgumentException">
+		/// <paramref name="recipients"/> is empty.
 		/// </exception>
 		/// <exception cref="System.OperationCanceledException">
 		/// The operation was canceled via the cancellation token.
@@ -1394,6 +1729,9 @@ namespace MimeKit.Cryptography {
 		{
 			if (recipients == null)
 				throw new ArgumentNullException (nameof (recipients));
+
+			if (recipients.Count == 0)
+				throw new ArgumentException ("No recipients specified.", nameof (recipients));
 
 			if (content == null)
 				throw new ArgumentNullException (nameof (content));
@@ -1415,9 +1753,12 @@ namespace MimeKit.Cryptography {
 		/// <param name="content">The content.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="recipients"/> is <c>null</c>.</para>
+		/// <para><paramref name="recipients"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
+		/// </exception>
+		/// <exception cref="System.ArgumentException">
+		/// <paramref name="recipients"/> is empty.
 		/// </exception>
 		/// <exception cref="System.OperationCanceledException">
 		/// The operation was canceled via the cancellation token.
@@ -1430,18 +1771,13 @@ namespace MimeKit.Cryptography {
 			if (recipients == null)
 				throw new ArgumentNullException (nameof (recipients));
 
+			if (recipients.Count == 0)
+				throw new ArgumentException ("No recipients specified.", nameof (recipients));
+
 			if (content == null)
 				throw new ArgumentNullException (nameof (content));
 
-			Stream envelopedData;
-
-			using (var memory = new MemoryBlockStream ()) {
-				await content.CopyToAsync (memory, 4096, cancellationToken).ConfigureAwait (false);
-
-				memory.Position = 0;
-
-				envelopedData = Envelope (recipients, memory, cancellationToken);
-			}
+			var envelopedData = await EnvelopeAsync (recipients, content, cancellationToken).ConfigureAwait (false);
 
 			return new ApplicationPkcs7Mime (SecureMimeType.EnvelopedData, envelopedData);
 		}
@@ -1458,9 +1794,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="content">The content.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="recipients"/> is <c>null</c>.</para>
+		/// <para><paramref name="recipients"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// A certificate for one or more of the <paramref name="recipients"/> could not be found.
@@ -1497,9 +1833,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="content">The content.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="recipients"/> is <c>null</c>.</para>
+		/// <para><paramref name="recipients"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="content"/> is <c>null</c>.</para>
+		/// <para><paramref name="content"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// A certificate for one or more of the <paramref name="recipients"/> could not be found.
@@ -1524,31 +1860,16 @@ namespace MimeKit.Cryptography {
 			return await EncryptAsync (GetCmsRecipients (recipients), content, cancellationToken).ConfigureAwait (false);
 		}
 
-		async Task<MimeEntity> DecryptAsync (Stream encryptedData, bool doAsync, CancellationToken cancellationToken)
+		CmsTypedStream GetDecryptedContent (CmsEnvelopedDataParser parser)
 		{
-			if (encryptedData == null)
-				throw new ArgumentNullException (nameof (encryptedData));
+			var recipients = parser.GetRecipientInfos ();
+			AsymmetricKeyParameter key;
 
-			using (var parser = new CmsEnvelopedDataParser (encryptedData)) {
-				var recipients = parser.GetRecipientInfos ();
-				var algorithm = parser.EncryptionAlgorithmID;
-				AsymmetricKeyParameter key;
+			foreach (var recipient in recipients.GetRecipients ()) {
+				if ((key = GetPrivateKey (recipient.RecipientID)) == null)
+					continue;
 
-				foreach (RecipientInformation recipient in recipients.GetRecipients ()) {
-					if ((key = GetPrivateKey (recipient.RecipientID)) == null)
-						continue;
-
-					var content = recipient.GetContentStream (key);
-
-					try {
-						if (doAsync)
-							return await MimeEntity.LoadAsync (content.ContentStream, false, cancellationToken).ConfigureAwait (false);
-
-						return MimeEntity.Load (content.ContentStream, false, cancellationToken);
-					} finally {
-						content.ContentStream.Dispose ();
-					}
-				}
+				return recipient.GetContentStream (key);
 			}
 
 			throw new CmsException ("A suitable private key could not be found for decrypting.");
@@ -1564,7 +1885,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="encryptedData">The encrypted data.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="encryptedData"/> is <c>null</c>.
+		/// <paramref name="encryptedData"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.OperationCanceledException">
 		/// The operation was canceled via the cancellation token.
@@ -1574,7 +1895,18 @@ namespace MimeKit.Cryptography {
 		/// </exception>
 		public override MimeEntity Decrypt (Stream encryptedData, CancellationToken cancellationToken = default)
 		{
-			return DecryptAsync (encryptedData, false, cancellationToken).GetAwaiter ().GetResult ();
+			if (encryptedData == null)
+				throw new ArgumentNullException (nameof (encryptedData));
+
+			using (var parser = new CmsEnvelopedDataParser (encryptedData)) {
+				var decrypted = GetDecryptedContent (parser);
+
+				try {
+					return MimeEntity.Load (decrypted.ContentStream, false, cancellationToken);
+				} finally {
+					decrypted.ContentStream.Dispose ();
+				}
+			}
 		}
 
 		/// <summary>
@@ -1587,7 +1919,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="encryptedData">The encrypted data.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="encryptedData"/> is <c>null</c>.
+		/// <paramref name="encryptedData"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.OperationCanceledException">
 		/// The operation was canceled via the cancellation token.
@@ -1595,38 +1927,20 @@ namespace MimeKit.Cryptography {
 		/// <exception cref="Org.BouncyCastle.Cms.CmsException">
 		/// An error occurred in the cryptographic message syntax subsystem.
 		/// </exception>
-		public override Task<MimeEntity> DecryptAsync (Stream encryptedData, CancellationToken cancellationToken = default)
-		{
-			return DecryptAsync (encryptedData, true, cancellationToken);
-		}
-
-		async Task DecryptToAsync (Stream encryptedData, Stream decryptedData, bool doAsync, CancellationToken cancellationToken)
+		public override async Task<MimeEntity> DecryptAsync (Stream encryptedData, CancellationToken cancellationToken = default)
 		{
 			if (encryptedData == null)
 				throw new ArgumentNullException (nameof (encryptedData));
 
-			if (decryptedData == null)
-				throw new ArgumentNullException (nameof (decryptedData));
-
 			using (var parser = new CmsEnvelopedDataParser (encryptedData)) {
-				var recipients = parser.GetRecipientInfos ();
-				var algorithm = parser.EncryptionAlgorithmID;
-				AsymmetricKeyParameter key;
+				var decrypted = GetDecryptedContent (parser);
 
-				foreach (RecipientInformation recipient in recipients.GetRecipients ()) {
-					if ((key = GetPrivateKey (recipient.RecipientID)) == null)
-						continue;
-
-					var content = recipient.GetContentStream (key);
-					if (doAsync)
-						await content.ContentStream.CopyToAsync (decryptedData, 4096, cancellationToken).ConfigureAwait (false);
-					else
-						content.ContentStream.CopyTo (decryptedData, 4096);
-					return;
+				try {
+					return await MimeEntity.LoadAsync (decrypted.ContentStream, false, cancellationToken).ConfigureAwait (false);
+				} finally {
+					decrypted.ContentStream.Dispose ();
 				}
 			}
-
-			throw new CmsException ("A suitable private key could not be found for decrypting.");
 		}
 
 		/// <summary>
@@ -1639,9 +1953,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="decryptedData">The output stream.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="encryptedData"/> is <c>null</c>.</para>
+		/// <para><paramref name="encryptedData"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="decryptedData"/> is <c>null</c>.</para>
+		/// <para><paramref name="decryptedData"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.OperationCanceledException">
 		/// The operation was canceled via the cancellation token.
@@ -1651,7 +1965,21 @@ namespace MimeKit.Cryptography {
 		/// </exception>
 		public override void DecryptTo (Stream encryptedData, Stream decryptedData, CancellationToken cancellationToken = default)
 		{
-			DecryptToAsync (encryptedData, decryptedData, false, cancellationToken).GetAwaiter ().GetResult ();
+			if (encryptedData == null)
+				throw new ArgumentNullException (nameof (encryptedData));
+
+			if (decryptedData == null)
+				throw new ArgumentNullException (nameof (decryptedData));
+
+			using (var parser = new CmsEnvelopedDataParser (encryptedData)) {
+				var decrypted = GetDecryptedContent (parser);
+
+				try {
+					decrypted.ContentStream.CopyTo (decryptedData, 4096);
+				} finally {
+					decrypted.ContentStream.Dispose ();
+				}
+			}
 		}
 
 		/// <summary>
@@ -1665,9 +1993,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="decryptedData">The output stream.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="encryptedData"/> is <c>null</c>.</para>
+		/// <para><paramref name="encryptedData"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="decryptedData"/> is <c>null</c>.</para>
+		/// <para><paramref name="decryptedData"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.OperationCanceledException">
 		/// The operation was canceled via the cancellation token.
@@ -1675,9 +2003,23 @@ namespace MimeKit.Cryptography {
 		/// <exception cref="Org.BouncyCastle.Cms.CmsException">
 		/// An error occurred in the cryptographic message syntax subsystem.
 		/// </exception>
-		public override Task DecryptToAsync (Stream encryptedData, Stream decryptedData, CancellationToken cancellationToken = default)
+		public override async Task DecryptToAsync (Stream encryptedData, Stream decryptedData, CancellationToken cancellationToken = default)
 		{
-			return DecryptToAsync (encryptedData, decryptedData, true, cancellationToken);
+			if (encryptedData == null)
+				throw new ArgumentNullException (nameof (encryptedData));
+
+			if (decryptedData == null)
+				throw new ArgumentNullException (nameof (decryptedData));
+
+			using (var parser = new CmsEnvelopedDataParser (encryptedData)) {
+				var decrypted = GetDecryptedContent (parser);
+
+				try {
+					await decrypted.ContentStream.CopyToAsync (decryptedData, 4096, cancellationToken).ConfigureAwait (false);
+				} finally {
+					decrypted.ContentStream.Dispose ();
+				}
+			}
 		}
 
 		/// <summary>
@@ -1691,7 +2033,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="mailboxes">The mailboxes.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="mailboxes"/> is <c>null</c>.
+		/// <paramref name="mailboxes"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// No mailboxes were specified.
@@ -1743,7 +2085,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="mailboxes">The mailboxes.</param>
 		/// <param name="cancellationToken">The cancellation token.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="mailboxes"/> is <c>null</c>.
+		/// <paramref name="mailboxes"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// No mailboxes were specified.
@@ -1760,23 +2102,6 @@ namespace MimeKit.Cryptography {
 		public override Task<MimePart> ExportAsync (IEnumerable<MailboxAddress> mailboxes, CancellationToken cancellationToken = default)
 		{
 			return Task.FromResult (Export (mailboxes, cancellationToken));
-		}
-
-		/// <summary>
-		/// Releases all resources used by the <see cref="BouncyCastleSecureMimeContext"/> object.
-		/// </summary>
-		/// <remarks>Call <see cref="CryptographyContext.Dispose()"/> when you are finished using the <see cref="BouncyCastleSecureMimeContext"/>. The
-		/// <see cref="CryptographyContext.Dispose()"/> method leaves the <see cref="BouncyCastleSecureMimeContext"/> in an unusable state. After
-		/// calling <see cref="CryptographyContext.Dispose()"/>, you must release all references to the <see cref="BouncyCastleSecureMimeContext"/> so
-		/// the garbage collector can reclaim the memory that the <see cref="BouncyCastleSecureMimeContext"/> was occupying.</remarks>
-		protected override void Dispose (bool disposing)
-		{
-			if (disposing && client != null) {
-				client.Dispose ();
-				client = null;
-			}
-
-			base.Dispose (disposing);
 		}
 	}
 }

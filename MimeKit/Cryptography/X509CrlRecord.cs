@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -83,19 +83,19 @@ namespace MimeKit.Cryptography {
 		/// </summary>
 		/// <remarks>
 		/// The id is typically the ROWID of the certificate revocation list in the
-		/// database and is not generally useful outside of the internals of the
+		/// database and is not generally useful outside the internals of the
 		/// database implementation.
 		/// </remarks>
 		/// <value>The identifier.</value>
 		public int Id { get; internal set; }
 
 		/// <summary>
-		/// Gets whether or not this certificate revocation list is a delta.
+		/// Gets whether this certificate revocation list is a delta.
 		/// </summary>
 		/// <remarks>
-		/// Indicates whether or not this certificate revocation list is a delta.
+		/// Indicates whether this certificate revocation list is a delta.
 		/// </remarks>
-		/// <value><c>true</c> if th crl is delta; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if th crl is delta; otherwise, <see langword="false" />.</value>
 		public bool IsDelta { get; internal set; }
 
 		/// <summary>
@@ -142,7 +142,7 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <param name="crl">The certificate revocation list.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="crl"/> is <c>null</c>.
+		/// <paramref name="crl"/> is <see langword="null"/>.
 		/// </exception>
 		public X509CrlRecord (X509Crl crl)
 		{

@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -145,7 +145,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>The Bouncy Castle AsymmetricKeyParameter.</returns>
 		/// <param name="key">The key.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="key"/> is <c>null</c>.
+		/// <paramref name="key"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.NotSupportedException">
 		/// <paramref name="key"/> is an unsupported asymmetric algorithm.
@@ -182,7 +182,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>The Bouncy Castle AsymmetricCipherKeyPair.</returns>
 		/// <param name="key">The key.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="key"/> is <c>null</c>.
+		/// <paramref name="key"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <paramref name="key"/> is a public key.
@@ -247,8 +247,12 @@ namespace MimeKit.Cryptography {
 			var parameters = GetDSAParameters (key);
 			parameters.X = GetPaddedByteArray (key.X, parameters.Q.Length);
 
-			if (pub != null)
+			if (pub != null) {
 				parameters.Y = GetPaddedByteArray (pub.Y, parameters.P.Length);
+			} else {
+				// If pub is null, derive Y from the private key parameters
+				parameters.Y = key.Parameters.G.ModPow (key.X, key.Parameters.P).ToByteArrayUnsigned ();
+			}
 
 			var dsa = new DSACryptoServiceProvider ();
 
@@ -260,7 +264,7 @@ namespace MimeKit.Cryptography {
 		static AsymmetricAlgorithm GetAsymmetricAlgorithm (DsaPublicKeyParameters key)
 		{
 			var parameters = GetDSAParameters (key);
-			parameters.Y = key.Y.ToByteArrayUnsigned ();
+			parameters.Y = GetPaddedByteArray (key.Y, parameters.P.Length);
 
 			var dsa = new DSACryptoServiceProvider ();
 
@@ -314,7 +318,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>The AsymmetricAlgorithm.</returns>
 		/// <param name="key">The AsymmetricKeyParameter.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="key"/> is <c>null</c>.
+		/// <paramref name="key"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.NotSupportedException">
 		/// <paramref name="key"/> is an unsupported asymmetric key parameter.
@@ -352,7 +356,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>The AsymmetricAlgorithm.</returns>
 		/// <param name="key">The AsymmetricCipherKeyPair.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="key"/> is <c>null</c>.
+		/// <paramref name="key"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.NotSupportedException">
 		/// <paramref name="key"/> is an unsupported asymmetric algorithm.

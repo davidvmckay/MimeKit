@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <param name="authservid">The authentication service identifier.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="authservid"/> is <c>null</c>.
+		/// <paramref name="authservid"/> is <see langword="null"/>.
 		/// </exception>
 		public AuthenticationResults (string authservid) : this ()
 		{
@@ -816,13 +816,13 @@ namespace MimeKit.Cryptography {
 		/// Parses an Authentication-Results header value from the supplied buffer starting at the given index
 		/// and spanning across the specified number of bytes.
 		/// </remarks>
-		/// <returns><c>true</c> if the authentication results were successfully parsed; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the authentication results were successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="buffer">The input buffer.</param>
 		/// <param name="startIndex">The starting index of the input buffer.</param>
 		/// <param name="length">The number of bytes in the input buffer to parse.</param>
 		/// <param name="authres">The parsed authentication results.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> and <paramref name="length"/> do not specify
@@ -843,11 +843,11 @@ namespace MimeKit.Cryptography {
 		/// <remarks>
 		/// Parses an Authentication-Results header value from the supplied buffer.
 		/// </remarks>
-		/// <returns><c>true</c> if the authentication results were successfully parsed; otherwise, <c>false</c>.</returns>
+		/// <returns><see langword="true" /> if the authentication results were successfully parsed; otherwise, <see langword="false" />.</returns>
 		/// <param name="buffer">The input buffer.</param>
 		/// <param name="authres">The parsed authentication results.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		public static bool TryParse (byte[] buffer, out AuthenticationResults authres)
 		{
@@ -871,7 +871,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="startIndex">The start index of the buffer.</param>
 		/// <param name="length">The length of the buffer.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="startIndex"/> and <paramref name="length"/> do not specify
@@ -900,7 +900,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>The parsed <see cref="AuthenticationResults"/>.</returns>
 		/// <param name="buffer">The input buffer.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="buffer"/> is <c>null</c>.
+		/// <paramref name="buffer"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="MimeKit.ParseException">
 		/// The <paramref name="buffer"/> could not be parsed.
@@ -934,7 +934,7 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <param name="method">The method used for authentication.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="method"/> is <c>null</c>.
+		/// <paramref name="method"/> is <see langword="null"/>.
 		/// </exception>
 		internal AuthenticationMethodResult (string method)
 		{
@@ -954,9 +954,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="method">The method used for authentication.</param>
 		/// <param name="result">The result of the authentication method.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="method"/> is <c>null</c>.</para>
+		/// <para><paramref name="method"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="result"/> is <c>null</c>.</para>
+		/// <para><paramref name="result"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public AuthenticationMethodResult (string method, string result) : this (method)
 		{
@@ -1228,13 +1228,13 @@ namespace MimeKit.Cryptography {
 		/// <param name="ptype">The property type.</param>
 		/// <param name="property">The name of the property.</param>
 		/// <param name="value">The value of the property.</param>
-		/// <param name="quoted"><c>true</c> if the property value was originally quoted; otherwise, <c>false</c>.</param>
+		/// <param name="quoted"><see langword="true" /> if the property value was originally quoted; otherwise, <see langword="false" />.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="ptype"/> is <c>null</c>.</para>
+		/// <para><paramref name="ptype"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="property"/> is <c>null</c>.</para>
+		/// <para><paramref name="property"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="value"/> is <c>null</c>.</para>
+		/// <para><paramref name="value"/> is <see langword="null"/>.</para>
 		/// </exception>
 		internal AuthenticationMethodProperty (string ptype, string property, string value, bool? quoted)
 		{
@@ -1263,11 +1263,11 @@ namespace MimeKit.Cryptography {
 		/// <param name="property">The name of the property.</param>
 		/// <param name="value">The value of the property.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="ptype"/> is <c>null</c>.</para>
+		/// <para><paramref name="ptype"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="property"/> is <c>null</c>.</para>
+		/// <para><paramref name="property"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="value"/> is <c>null</c>.</para>
+		/// <para><paramref name="value"/> is <see langword="null"/>.</para>
 		/// </exception>
 		public AuthenticationMethodProperty (string ptype, string property, string value) : this (ptype, property, value, null)
 		{

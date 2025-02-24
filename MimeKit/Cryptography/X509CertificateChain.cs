@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,7 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <param name="collection">A collection of certificates.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="collection"/> is <c>null</c>.
+		/// <paramref name="collection"/> is <see langword="null"/>.
 		/// </exception>
 		public X509CertificateChain (IEnumerable<X509Certificate> collection)
 		{
@@ -80,7 +80,7 @@ namespace MimeKit.Cryptography {
 		/// <returns>The index of the specified certificate if found; otherwise <c>-1</c>.</returns>
 		/// <param name="certificate">The certificate to get the index of.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public int IndexOf (X509Certificate certificate)
 		{
@@ -99,7 +99,7 @@ namespace MimeKit.Cryptography {
 		/// <param name="index">The index to insert the certificate.</param>
 		/// <param name="certificate">The certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="index"/> is out of range.
@@ -139,7 +139,7 @@ namespace MimeKit.Cryptography {
 		/// <value>The internet certificate at the specified index.</value>
 		/// <param name="index">The index of the certificate to get or set.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="value"/> is <c>null</c>.
+		/// <paramref name="value"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="index"/> is out of range.
@@ -174,7 +174,7 @@ namespace MimeKit.Cryptography {
 		/// <remarks>
 		/// A <see cref="X509CertificateChain"/> is never read-only.
 		/// </remarks>
-		/// <value><c>true</c> if this instance is read only; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if this instance is read only; otherwise, <see langword="false" />.</value>
 		public bool IsReadOnly {
 			get { return false; }
 		}
@@ -187,7 +187,7 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <param name="certificate">The certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public void Add (X509Certificate certificate)
 		{
@@ -205,7 +205,7 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <param name="certificates">The certificates.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificates"/> is <c>null</c>.
+		/// <paramref name="certificates"/> is <see langword="null"/>.
 		/// </exception>
 		public void AddRange (IEnumerable<X509Certificate> certificates)
 		{
@@ -220,7 +220,7 @@ namespace MimeKit.Cryptography {
 		/// Clears the certificate chain.
 		/// </summary>
 		/// <remarks>
-		/// Removes all of the certificates from the chain.
+		/// Removes all the certificates from the chain.
 		/// </remarks>
 		public void Clear ()
 		{
@@ -231,13 +231,13 @@ namespace MimeKit.Cryptography {
 		/// Checks if the chain contains the specified certificate.
 		/// </summary>
 		/// <remarks>
-		/// Determines whether or not the certificate chain contains the specified certificate.
+		/// Determines whether the certificate chain contains the specified certificate.
 		/// </remarks>
-		/// <returns><value>true</value> if the specified certificate exists;
-		/// otherwise <value>false</value>.</returns>
+		/// <returns><see langword="true" /> if the specified certificate exists;
+		/// otherwise, <see langword="false" />.</returns>
 		/// <param name="certificate">The certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public bool Contains (X509Certificate certificate)
 		{
@@ -248,16 +248,16 @@ namespace MimeKit.Cryptography {
 		}
 
 		/// <summary>
-		/// Copies all of the certificates in the chain to the specified array.
+		/// Copies all the certificates in the chain to the specified array.
 		/// </summary>
 		/// <remarks>
-		/// Copies all of the certificates within the chain into the array,
+		/// Copies all the certificates within the chain into the array,
 		/// starting at the specified array index.
 		/// </remarks>
 		/// <param name="array">The array to copy the certificates to.</param>
 		/// <param name="arrayIndex">The index into the array.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="array"/> is <c>null</c>.
+		/// <paramref name="array"/> is <see langword="null"/>.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// <paramref name="arrayIndex"/> is out of range.
@@ -273,10 +273,10 @@ namespace MimeKit.Cryptography {
 		/// <remarks>
 		/// Removes the specified certificate from the chain.
 		/// </remarks>
-		/// <returns><value>true</value> if the certificate was removed; otherwise <value>false</value>.</returns>
+		/// <returns><see langword="true" /> if the certificate was removed; otherwise, <see langword="false" />.</returns>
 		/// <param name="certificate">The certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public bool Remove (X509Certificate certificate)
 		{
@@ -294,7 +294,7 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <param name="certificates">The certificates.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificates"/> is <c>null</c>.
+		/// <paramref name="certificates"/> is <see langword="null"/>.
 		/// </exception>
 		public void RemoveRange (IEnumerable<X509Certificate> certificates)
 		{

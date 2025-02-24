@@ -3,7 +3,7 @@
 //
 // Author: Jeffrey Stedfast <jestedfa@microsoft.com>
 //
-// Copyright (c) 2013-2023 .NET Foundation and Contributors
+// Copyright (c) 2013-2025 .NET Foundation and Contributors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -91,7 +91,7 @@ namespace MimeKit.Cryptography {
 		/// </summary>
 		/// <remarks>
 		/// The id is typically the ROWID of the certificate in the database and is not
-		/// generally useful outside of the internals of the database implementation.
+		/// generally useful outside the internals of the database implementation.
 		/// </remarks>
 		/// <value>The identifier.</value>
 		public int Id { get; internal set; }
@@ -109,18 +109,18 @@ namespace MimeKit.Cryptography {
 		/// Gets or sets a value indicating whether the certificate is trusted.
 		/// </summary>
 		/// <remarks>
-		/// Indiciates whether or not the certificate is trusted.
+		/// Indicates whether the certificate is trusted.
 		/// </remarks>
-		/// <value><c>true</c> if the certificate is trusted; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the certificate is trusted; otherwise, <see langword="false" />.</value>
 		public bool IsTrusted { get; set; }
 
 		/// <summary>
-		/// Gets whether or not the certificate is an anchor.
+		/// Gets whether the certificate is an anchor.
 		/// </summary>
 		/// <remarks>
-		/// Gets whether or not the certificate is an anchor.
+		/// Gets whether the certificate is an anchor.
 		/// </remarks>
-		/// <value><c>true</c> if the certificate is an anchor; otherwise, <c>false</c>.</value>
+		/// <value><see langword="true" /> if the certificate is an anchor; otherwise, <see langword="false" />.</value>
 		public bool IsAnchor { get { return Certificate.IsSelfSigned (); } }
 
 		/// <summary>
@@ -133,19 +133,19 @@ namespace MimeKit.Cryptography {
 		public X509KeyUsageFlags KeyUsage { get { return Certificate.GetKeyUsageFlags (); } }
 
 		/// <summary>
-		/// Gets the starting date and time where the certificate is valid.
+		/// Gets the starting date and time for which the certificate is valid.
 		/// </summary>
 		/// <remarks>
-		/// Gets the starting date and time where the certificate is valid.
+		/// Gets the starting date and time for which the certificate is valid.
 		/// </remarks>
 		/// <value>The date and time in coordinated universal time (UTC).</value>
 		public DateTime NotBefore { get { return Certificate.NotBefore.ToUniversalTime (); } }
 
 		/// <summary>
-		/// Gets the end date and time where the certificate is valid.
+		/// Gets the end date and time for which the certificate is valid.
 		/// </summary>
 		/// <remarks>
-		/// Gets the end date and time where the certificate is valid.
+		/// Gets the end date and time for which the certificate is valid.
 		/// </remarks>
 		/// <value>The date and time in coordinated universal time (UTC).</value>
 		public DateTime NotAfter { get { return Certificate.NotAfter.ToUniversalTime (); } }
@@ -202,7 +202,25 @@ namespace MimeKit.Cryptography {
 		/// Gets the subject email address.
 		/// </remarks>
 		/// <value>The subject email address.</value>
-		public string SubjectEmail { get { return Certificate.GetSubjectEmailAddress (); } }
+		public string SubjectEmail { get { return Certificate.GetSubjectEmailAddress (true).ToLowerInvariant (); } }
+
+		/// <summary>
+		/// Gets the subject DNS names.
+		/// </summary>
+		/// <remarks>
+		/// Gets the subject DNS names.
+		/// </remarks>
+		/// <value>The subject DNS names.</value>
+		public string[] SubjectDnsNames {
+			get {
+				var domains = Certificate.GetSubjectDnsNames (true);
+
+				for (int i = 0; i < domains.Length; i++)
+					domains[i] = domains[i].ToLowerInvariant ();
+
+				return domains;
+			}
+		}
 
 		/// <summary>
 		/// Gets the fingerprint of the certificate.
@@ -259,9 +277,9 @@ namespace MimeKit.Cryptography {
 		/// <param name="certificate">The certificate.</param>
 		/// <param name="key">The private key.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <para><paramref name="certificate"/> is <c>null</c>.</para>
+		/// <para><paramref name="certificate"/> is <see langword="null"/>.</para>
 		/// <para>-or-</para>
-		/// <para><paramref name="key"/> is <c>null</c>.</para>
+		/// <para><paramref name="key"/> is <see langword="null"/>.</para>
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// <paramref name="key"/> is not a private key.
@@ -285,7 +303,7 @@ namespace MimeKit.Cryptography {
 		/// </remarks>
 		/// <param name="certificate">The certificate.</param>
 		/// <exception cref="System.ArgumentNullException">
-		/// <paramref name="certificate"/> is <c>null</c>.
+		/// <paramref name="certificate"/> is <see langword="null"/>.
 		/// </exception>
 		public X509CertificateRecord (X509Certificate certificate) : this ()
 		{
